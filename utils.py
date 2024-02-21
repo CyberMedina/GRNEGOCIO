@@ -21,4 +21,9 @@ def obtener_index_columna(cursor, nombre_columna):
     columnas = list(cursor.keys())
     index = columnas.index(nombre_columna)
     return index
-    
+
+    # Crea una función para retornar la cantidad de resultados de una tabla x con x estado
+def contar_resultados(db_session, tabla, estado):
+    query = text(f'SELECT COUNT(*) FROM {tabla} WHERE estado = :estado')
+    result = db_session.execute(query, {"estado": estado})
+    return result.fetchone()[0]

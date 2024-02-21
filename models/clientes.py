@@ -63,7 +63,6 @@ def insertar_persona(db_session, nombres, apellidos, genero, cedula, fecha_nacim
 
         db_session.execute(query, {"id_persona": id_persona, "nombres": nombres, "apellidos": apellidos,
                            "genero": genero, "cedula": cedula, "fecha_nacimiento": fecha_nacimiento, "estado": estado})
-        db_session.commit()
 
         return id_persona
 
@@ -72,8 +71,6 @@ def insertar_persona(db_session, nombres, apellidos, genero, cedula, fecha_nacim
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
 
 
 def insertar_direccion(db_session, nombre_direccion, direccion_escrita, direccion_mapa, estado):
@@ -89,7 +86,7 @@ def insertar_direccion(db_session, nombre_direccion, direccion_escrita, direccio
 
         db_session.execute(query, {"id_direccion": id_direccion, "nombre_direccion": nombre_direccion,
                            "direccion_escrita": direccion_escrita, "direccion_mapa": direccion_mapa, "estado": estado})
-        db_session.commit()
+
 
         return id_direccion
 
@@ -98,8 +95,7 @@ def insertar_direccion(db_session, nombre_direccion, direccion_escrita, direccio
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
+
 
 
 def insertar_telefono(db_session, id_compania, nombre_telefono, numero_telefono, estado):
@@ -115,7 +111,7 @@ def insertar_telefono(db_session, id_compania, nombre_telefono, numero_telefono,
 
         db_session.execute(query, {"id_telefono": id_telefono, "id_compania": id_compania,
                            "nombre_telefono": nombre_telefono, "numero_telefono": numero_telefono, "estado": estado})
-        db_session.commit()
+
 
         return id_telefono
 
@@ -124,8 +120,7 @@ def insertar_telefono(db_session, id_compania, nombre_telefono, numero_telefono,
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
+
 
 
 def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
@@ -138,7 +133,7 @@ def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
 
         db_session.execute(
             query, {"id_persona": id_persona, "id_direccion": id_direccion, "estado": estado})
-        db_session.commit()
+
 
         return True
 
@@ -147,8 +142,6 @@ def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
 
 
 def insertar_direccion_telelfono(db_session, id_direccion, id_telefono, estado):
@@ -161,7 +154,6 @@ def insertar_direccion_telelfono(db_session, id_direccion, id_telefono, estado):
 
         db_session.execute(query, {
                            "id_direccion": id_direccion, "id_telefono": id_telefono, "estado": estado})
-        db_session.commit()
 
         return True
 
@@ -170,8 +162,6 @@ def insertar_direccion_telelfono(db_session, id_direccion, id_telefono, estado):
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
 
 
 def insertar_cliente(db_session, id_persona, id_tipoCliente, imagenCliente, imagenCedula, estado):
@@ -187,7 +177,7 @@ def insertar_cliente(db_session, id_persona, id_tipoCliente, imagenCliente, imag
 
         db_session.execute(query, {"id_cliente": id_cliente, "id_persona": id_persona, "id_tipoCliente": id_tipoCliente,
                            "imagenCliente": imagenCliente, "imagenCedula": imagenCedula, "estado": estado})
-        db_session.commit()
+
 
         return id_cliente
 
@@ -196,13 +186,13 @@ def insertar_cliente(db_session, id_persona, id_tipoCliente, imagenCliente, imag
         print(f"Error: {e}")
         return False
 
-    finally:
-        db_session.close()
+
 
 def listar_clientes(db_session, estado):
     try:
         estado = estado[0]
-        query_no_definidos = text("""
+        print(f'El número de estado a consultar es: {estado}')
+        query_listar_clientes = text("""
                      SELECT cl.id_cliente, CONCAT(p.nombres, ' ', p.apellidos) AS 'Nombre',
 d.direccion_escrita AS 'Dirección',
 CONCAT(c.nombre_compania, ' ', t.numero_telefono) AS 'Teléfono',
@@ -215,31 +205,12 @@ JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
 JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE
-cl.estado = '0'
+cl.estado = :estado;
                      """)
         
-        query_activos =  text("""
-                     SELECT cl.id_cliente, CONCAT(p.nombres, ' ', p.apellidos) AS 'Nombre',
-d.direccion_escrita AS 'Dirección',
-CONCAT(c.nombre_compania, ' ', t.numero_telefono) AS 'Teléfono',
-  cl.estado AS 'Estado'
-FROM cliente cl
-JOIN persona p ON cl.id_persona = p.id_persona
-JOIN persona_direccion pd ON pd.id_persona = p.id_persona
-JOIN direccion d ON d.id_direccion = pd.id_direccion
-JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
-JOIN telefono t ON t.id_telefono = dt.id_telefono
-JOIN companias_telefonicas c ON c.id_compania = t.id_compania
-WHERE
-cl.estado = '1'
-                     """)
+        result = db_session.execute(query_listar_clientes, {"estado": estado})
+        return result
 
-        if estado == '0':
-            return db_session.execute(query_no_definidos)
-        elif estado == '1':
-            return db_session.execute(query_activos)
-
-    
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -247,44 +218,23 @@ cl.estado = '1'
     finally:
         db_session.close()
 
-def listar_clientes_activos(db_session):
+
+def cantidad_clientes(db_session, estado):
     try:
-        query = text("""
-                     SELECT cl.id_cliente, CONCAT(p.nombres, ' ', p.apellidos) AS 'Nombre',
-d.direccion_escrita AS 'Dirección',
-CONCAT(c.nombre_compania, ' ', t.numero_telefono) AS 'Teléfono',
-  cl.estado AS 'Estado'
-FROM cliente cl
-JOIN persona p ON cl.id_persona = p.id_persona
-JOIN persona_direccion pd ON pd.id_persona = p.id_persona
-JOIN direccion d ON d.id_direccion = pd.id_direccion
-JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
-JOIN telefono t ON t.id_telefono = dt.id_telefono
-JOIN companias_telefonicas c ON c.id_compania = t.id_compania
-WHERE
-cl.estado = '1'
-                     """)
+        estado = estado[0]
+        query_cantidad_clientes = text("""
+        SELECT COUNT(*) AS 'Cantidad'
+        FROM cliente
+        WHERE estado = :estado;
+        """)
 
-         
-        return db_session.execute(query)
-    
+        result = db_session.execute(query_cantidad_clientes, {"estado": estado})
+        return result
+
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
         return None
     finally:
         db_session.close()
-
-
-def ordenar_por_listadoClientes(db_session, numero_seleccionado):
-    acciones = {
-        '0': listar_clientes_no_definidos,
-        '1': listar_clientes_activos,
-    }
-    print(numero_seleccionado)
-    funcion = acciones.get(numero_seleccionado, lambda: "Invalido")
-    funcion(db_session)  # Call the function with the db_session argument
-
-
-
 ############## TERMINA PROCESO DE INSERTAR UN CLIENTE ##############

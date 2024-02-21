@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
@@ -18,6 +18,13 @@ app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
 CORS(app)
 
+# Si no hay un número seleccionado en sesión, simplemente se asigna 1 
+@app.before_request
+def before_request():
+    if "numero_seleccionado" not in session:
+        session["numero_seleccionado"] = '1'
+    
+
 
 @app.route('/')
 def index():
@@ -28,7 +35,7 @@ def index():
 def guardar_en_sesion():
     data = request.get_json()  # Obtener datos enviados desde el frontend
     selected_value = data.get("selectedValue")
-
+    
     # Guardar el valor en la sesión
     session["numero_seleccionado"] = selected_value
     print(session)
@@ -40,11 +47,12 @@ def guardar_en_sesion():
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
 
-
+    print(session.get("numero_seleccionado"))
     # Obtenemos la lista de clientes cruda sin procesar
 
     
     cursor = listar_clientes(db_session, [session.get("numero_seleccionado")])
+    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado")])
     print(cursor)
 
     
@@ -55,6 +63,7 @@ def clientes():
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
         "listar_clientes_data": cursor.fetchall(),
         "listar_clientes_columns": cursor.keys(),
+        "cantidad_clientes": cantidad_clientes,
         "index_estado": obtener_index_columna(cursor, "Estado"),
         "index_id": obtener_index_columna(cursor, "id_cliente")
     }
@@ -76,6 +85,8 @@ def clientes():
         fotoCliente = request.files['fotoCliente']
         foto_cedula = request.files['foto_cedula']
 
+        db_session.begin()
+
         try:
             id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
             id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
@@ -92,6 +103,7 @@ def clientes():
             return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
         
         except Exception as e:
+            db_session.rollback()
             print(f"Unexpected error: {str(e)}")
             return render_template('error.html', error="Unexpected error occurred"), 500
         
@@ -101,7 +113,7 @@ def clientes():
 
 
 
-        return render_template('clientes/clientes.html', **formulario_clientes)
+        return redirect(url_for('clientes'))
 
 
 
@@ -115,9 +127,79 @@ def datos_cliente():
 
 
 ########### Empieza el modulo de prestamos ###########
+@app.route('/prestamos', methods=['GET', 'POST'])
+def prestamos():
 
 
+    print(session.get("numero_seleccionado"))
+    # Obtenemos la lista de clientes cruda sin procesar
 
+    
+    cursor = listar_clientes(db_session, [session.get("numero_seleccionado")])
+    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado")])
+    print(cursor)
+
+    
+
+
+    # Procesamos la lista de clientes para mostrarla en el formulario
+    formulario_clientes = {
+        "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "listar_clientes_data": cursor.fetchall(),
+        "listar_clientes_columns": cursor.keys(),
+        "cantidad_clientes": cantidad_clientes,
+        "index_estado": obtener_index_columna(cursor, "Estado"),
+        "index_id": obtener_index_columna(cursor, "id_cliente")
+    }
+
+    print(formulario_clientes)
+
+    if request.method == 'POST':
+        nombres = request.form['nombres']
+        apellidos = request.form['apellidos']
+        cedula = request.form['cedula']
+        fechaNac = request.form['fechaNac']
+        genero = request.form['genero']
+        direccion = request.form['direccion']
+        direccionMaps = request.form['direccionMaps']
+        nombreDireccion = request.form['nombreDireccion']
+        idCompaniTelefonica = request.form['idCompaniTelefonica']
+        telefono = request.form['telefono']
+        nombreTelefono = request.form['nombreTelefono']
+        fotoCliente = request.files['fotoCliente']
+        foto_cedula = request.files['foto_cedula']
+
+        db_session.begin()
+
+        try:
+            id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
+            id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
+            id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
+            id_insertar_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, inactivo)
+
+            db_session.commit()
+
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {str(e)}")
+            return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
+        
+        except Exception as e:
+            db_session.rollback()
+            print(f"Unexpected error: {str(e)}")
+            return render_template('error.html', error="Unexpected error occurred"), 500
+        
+        finally:
+            db_session.close()
+
+    return render_template('prestamos/prestamos.html', **formulario_clientes)
+
+
+@app.route('/anadir_prestamo', methods=['GET', 'POST'])
+def anadir_prestamo():
+    return render_template('prestamos/anadir_prestamo.html')
 
 
 ########### Empieza el modulo de capital ###########

@@ -1,0 +1,462 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Prestamos{% endblock %}
+{% block body %}
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Solicitudes de préstamos</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Préstamos
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <!-- ========== tables-wrapper start ========== -->
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div
+                            class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
+                            <h6>
+                                Total solicitudes
+                                <span class="text-regular text-sm">({{ cantidad_clientes }})</span>
+                            </h6>
+
+                            <div class="d-flex align-items-center">
+                                <h6>Ordenar por:</h6>
+                                <div class="select-style-1 mb-0 ml-10">
+                                    <div class="select-position">
+                                        <select id="filtro-comboBox" class="p-0 pe-5 border-0">
+                                            {% if session["numero_seleccionado"] == '1' %}
+                                            <option value="0">En proceso</option>
+                                            <option value="1" selected>Activos</option>
+                                            <option value="2">Inactivos</option>
+                                            <option value="3">Todos</option>
+                                            {% elif session["numero_seleccionado"] == '2' %}
+                                            <option value="0">En proceso</option>
+                                            <option value="1">Activos</option>
+                                            <option value="2" selected>Inactivos</option>
+                                            <option value="3">Todos</option>
+                                            {% elif session["numero_seleccionado"] == '3' %}
+                                            <option value="0">En proceso</option>
+                                            <option value="1">Activos</option>
+                                            <option value="2">Inactivos</option>
+                                            <option value="3" selected>Todos</option>
+                                            {% else %}
+                                            <option value="0" selected>En proceso</option>
+                                            <option value="1">Activos</option>
+                                            <option value="2">Inactivos</option>
+                                            <option value="3">Todos</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrapper table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        {% for column in listar_clientes_columns %}
+                                        <!-- Esta validación es para omitier el nombre de la columna id_cliente -->
+                                        {% if loop.index0 == index_id %}
+
+                                        {% else %}
+                                        <th class="lead-info">
+                                            <h6>{{ column }}</h6>
+                                        </th>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <th>
+                                            <h6>Acción</h6>
+                                        </th>
+                                    </tr>
+                                    <!-- end table row-->
+                                </thead>
+                                <tbody>
+                                    {% for row in listar_clientes_data %}
+                                    <tr>
+                                        {% for value in row %}
+                                        {% if loop.index0 == index_estado and value == 0 %}
+                                        <td class="min-width">
+                                            <a href="/anadir_prestamo"
+                                                class="main-btn primary-btn-light rounded-full btn-hover px-3 py-2">
+                                                <i class="lni lni-plus"></i>
+                                                Añadir préstamo
+                                            </a>
+                                        </td>
+                                        {% elif loop.index0 == index_estado and value == 1 %}
+                                        <td class="min-width">
+                                            <span class="status-btn success-btn">Cliente activo</span>
+                                        </td>
+                                        {% elif loop.index0 == index_estado and value == 2 %}
+                                        <td class="min-width">
+                                            <span class="status-btn danger-btn">Cliente inactivo</span>
+                                        </td>
+                                        {% else %}
+                                        {% if loop.index0 == index_id %}
+                                        <td class="min-width">
+                                            <div class="lead">
+                                                <div class="lead-image">
+                                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                                </div>
+                                                <div class="lead-text">
+                                                    <p><a href="{{ row.id_cliente }}">{{ row.Nombre }}</a></p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% elif loop.index0 > 1 %}
+                                        <td class="min-width">
+                                            <p>{{ value }}</p>
+                                        </td>
+
+                                        {% endif %}
+
+                                        {% endif %}
+                                        {% endfor %}
+                                        <td>
+                                            <div class="action">
+                                                <button class="text-danger">
+                                                    <i class="lni lni-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- end table -->
+                        </div>
+                    </div>
+                    <!-- end card -->
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== tables-wrapper end ========== -->
+    </div>
+    <!-- end container -->
+</section>
+<!-- ========== table components end ========== -->
+
+<!-- ========== footer start =========== -->
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 order-last order-md-first">
+                <div class="copyright text-center text-md-start">
+                    <p class="text-sm">
+                        Designed and Developed by
+                        <a href="https://plainadmin.com" rel="nofollow" target="_blank">
+                            PlainAdmin
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <!-- end col-->
+            <div class="col-md-6">
+                <div class="terms d-flex justify-content-center justify-content-md-end">
+                    <a href="#0" class="text-sm">Term & Conditions</a>
+                    <a href="#0" class="text-sm ml-15">Privacy & Policy</a>
+                </div>
+            </div>
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- end container -->
+</footer>
+<!-- ========== footer end =========== -->
+
+<div class="warning-modal">
+    <div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h2 class="text-bold">Nuevo cliente</h2>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="input-style-3">
+                                        <label>Nombre(s)*</label>
+                                        <input type="text" placeholder="Nombres" name="nombres" id="nombres" required />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-style-3">
+                                        <label>Apellido(s)*</label>
+                                        <input type="text" placeholder="Apellidos" name="apellidos" id="apellidos"
+                                            required />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-style-3">
+                                        <label>Cédula</label>
+                                        <input type="text" placeholder="xxx-xxxxxx-xxxxx" name="cedula" id="cedula" />
+                                        <span class="icon"><i class="fa-regular fa-envelope"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-style-1">
+                                        <label>Fecha de nacimiento*</label>
+                                        <input type="date" required name="fechaNac" id="fechaNac" />
+                                    </div>
+                                </div>
+                                <!-- end col -->
+                                <div class="col-sm-6">
+                                    <div class="select-style-1">
+                                        <label>Género*</label>
+                                        <div class="select-position">
+                                            <select class="light-bg" required name="genero" id="genero">
+                                                <option value="0">Seleccione el género</option>
+                                                <option value="1">Masculino</option>
+                                                <option value="2">Femenino</option>
+                                                <option value="3">Otro...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <!-- end col -->
+                                <h5 class="text-bold text-center">Datos de contacto</h5>
+                                <div class="input-style-3">
+                                    <label>Dirección*</label>
+                                    <textarea placeholder="Dirección" rows="5" name="direccion"
+                                        id="direccion"></textarea>
+                                    <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                                </div>
+                                <!-- end textarea -->
+                                <!-- end col -->
+                                <div class="col-12">
+                                    <div class="input-style-3">
+                                        <label>Dirección vía enlace Google Maps</label>
+                                        <input type="text" placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9"
+                                            name="direccionMaps" id="direccionMaps" />
+                                        <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                                    </div>
+                                </div>
+                                <div class="select-style-1">
+                                    <label>Nombre de esa dirección</label>
+                                    <div class="select-position">
+                                        <select class="light-bg" required name="nombreDireccion" id="nombreDireccion">
+                                            <option value="0">Seleccione el nombre</option>
+                                            <option value="1">Casa</option>
+                                            <option value="2">Trabajo</option>
+                                            <option value="3">Otro...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- end select -->
+                                <div class="col-sm-6">
+                                    <div class="select-style-1">
+                                        <label>Compañía teléfonica*</label>
+                                        <div class="select-position">
+                                            <select class="light-bg" required name="idCompaniTelefonica"
+                                                id="idCompaniTelefonica">
+                                                <option value="0">Seleccione la compañía</option>
+                                                {% for companias_telef in companias_telefonicas %}
+                                                <option value="{{companias_telef.id_compania}}">
+                                                    {{companias_telef.nombre_compania}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- end select -->
+                                </div>
+                                <!-- end col -->
+                                <div class="col-sm-6">
+                                    <div class="input-style-3">
+                                        <label>Teléfono*</label>
+                                        <input type="telf" placeholder="8171-9638" maxlength="8" required
+                                            name="telefono" id="telefono" />
+                                        <span class="icon"><i class="lni lni-phone"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="select-style-1">
+                                        <label>Nombre de ese teléfono</label>
+                                        <div class="select-position">
+                                            <select class="light-bg" required name="nombreTelefono" id="nombreTelefono">
+                                                <option value="0">Seleccione el nombre</option>
+                                                <option value="1">Convencional</option>
+                                                <option value="2">Móvil</option>
+                                                <option value="3">Otro...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-style-3">
+                                        <label>Foto del cliente</label>
+                                        <input type="file" placeholder="" accept="image/*" name="fotoCliente"
+                                            id="fotoCliente" />
+                                        <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-style-3">
+                                        <label>Fotocopia de cédula</label>
+                                        <input type="file" placeholder="" accept="image/*" name="foto_cedula"
+                                            id="foto_cedula" />
+                                        <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                                    </div>
+                                </div>
+
+                                <!-- end col -->
+                                <div class="col-12">
+                                    <div class="button-group d-flex justify-content-center flex-wrap">
+                                        <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
+                                            Guardar
+                                        </button>
+                                        <button class="main-btn danger-btn-outline m-2">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end row -->
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- end col -->
+            <!-- end input -->
+        </div>
+    </div>
+
+
+    {% endblock %}
+
+    {% block customJS %}
+    <script src="{{ url_for('static', filename='assets/js/charts_home.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/cloudinary.js') }}"></script>
+
+    <script>
+        // Agregar un listener al evento change del input
+
+        document.getElementById("filtro-comboBox").addEventListener("change", function () {
+            const selectedValue = this.value; // Valor seleccionado en el combobox
+            // Enviar una solicitud POST al servidor con el valor seleccionado
+            // Puedes usar fetch o axios para hacer la solicitud
+            // Ejemplo:
+            console.log('Valor seleccionado:', selectedValue)
+            fetch("/guardar_en_sesion", {
+                method: "POST",
+                body: JSON.stringify({ selectedValue }), // Convertir a JSON
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Valor guardado en sesión:", data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("Error al guardar en sesión:", error);
+                });
+        });
+
+        const fileInput = document.querySelector('input[type="file"]');
+
+        fileInput.addEventListener('change', function (event) {
+
+            // Definiendo los tipos de imagenes permitidos
+            var types = ['image/png', 'image/jpeg', 'image/gif'];
+
+            // Obtener el archivo
+            var file = fileInput.files[0];
+            // Obtener el tamaño del archivo en bytes
+            var size = file.size;
+
+            var type = file.type;
+
+            // Definir el límite en bytes (5 MB = 5 * 1024 * 1024)
+            var limit = 5 * 1024 * 1024;
+            // Comparar el tamaño con el límite
+
+
+            if (!types.includes(type)) {
+                // Mostrar un mensaje de error
+                alert("El archivo no es una imagen.");
+                // Limpiar el valor del input
+                fileInput.value = "";
+            }
+
+            else if (size > limit) {
+                // Mostrar un mensaje de error
+                alert("El archivo es demasiado grande. El tamaño máximo es 5 MB.");
+                // Limpiar el valor del input
+                fileInput.value = "";
+            }
+
+
+            else if (fileInput.files.length === 0) {
+
+                // Mostrar un mensaje de error
+                alert("No se seleccionó ningún archivo.");
+                // Limpiar el valor del input
+                fileInput.value = "";
+            }
+
+
+            // Obtén los elementos del formulario
+            const formulario = document.getElementById("anadirClientes");
+            const btnGuardar = document.getElementById("btnGuardar");
+
+            // Escucha el evento "input" en los campos requeridos
+            formulario.addEventListener("input", () => {
+                // Verifica si todos los campos requeridos están completados
+                const camposCompletados = Array.from(formulario.elements).every(
+                    (elemento) => elemento.required ? elemento.value.trim() !== "" : true
+                );
+
+                // Habilita o deshabilita el botón según los campos completados
+                btnGuardar.disabled = !camposCompletados;
+            });
+
+
+
+
+
+        });
+
+    </script>
+    {% endblock %}
