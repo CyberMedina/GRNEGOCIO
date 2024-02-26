@@ -1,120 +1,962 @@
 {% extends 'layout.html' %}
 
 
-{% block title %}Blank{% endblock %}
+{% block title %}Añadir un préstamo{% endblock %}
 
 {% block customCSS %}
 <style>
-    #container {
-        max-width: 550px;  
-      }
-      
-          .step-container {
-            position: relative;
-            text-align: center;
-            transform: translateY(-43%);
-          }
-      
-          .step-circle {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #fff;
-            border: 2px solid #007bff;
-            line-height: 30px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-            cursor: pointer; /* Added cursor pointer */
-          }
-      
-          .step-line {
-            position: absolute;
-            top: 16px;
-            left: 50px;
-            width: calc(100% - 100px);
-            height: 2px;
-            background-color: #007bff;
-            z-index: -1;
-          }
-          
-          #multi-step-form{
-              overflow-x: hidden;
-          }
+  .step-container {
+    position: relative;
+    text-align: center;
+    transform: translateY(-43%);
+  }
+
+  .step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #007bff;
+    line-height: 30px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+    /* Added cursor pointer */
+  }
+
+  .step-line {
+    position: absolute;
+    top: 16px;
+    left: 50px;
+    width: calc(100% - 100px);
+    height: 2px;
+    background-color: #007bff;
+    z-index: -1;
+  }
+
+  #multi-step-form {
+    overflow-x: hidden;
+  }
 </style>
 
 {% endblock %}
 
 {% block body %}
- <!-- ========== section start ========== -->
- <section class="section">
-    <div class="container-fluid">
-        <div id="container" class="container mt-5">
-            <div class="progress px-1" style="height: 3px;">
-              <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+<!-- ========== section start ========== -->
+<section class="table-components">
+  <div class="container-fluid">
+    <!-- ========== title-wrapper start ========== -->
+    <div class="title-wrapper pt-30">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="title">
+            <h2>Contrato de préstamo</h2>
+          </div>
+        </div>
+        <!-- end col -->
+        <div class="col-md-6">
+          <div class="breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="#0">Dashboard</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  Préstamos
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+        <!-- end col -->
+      </div>
+      <!-- end row -->
+    </div>
+    <!-- ========== title-wrapper end ========== -->
+
+    <!-- ========== tables-wrapper start ========== -->
+    <div class="tables-wrapper">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card-style mb-30">
+            <div class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
+              <div class="container-fluid">
+                <div id="container" class="container mt-5">
+                  <div class="progress px-1" style="height: 3px;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0"
+                      aria-valuemax="100"></div>
+                  </div>
+                  <div class="step-container d-flex justify-content-between">
+                    <div class="step-circle" onclick="displayStep(1)">1</div>
+                    <div class="step-circle" onclick="displayStep(2)">2</div>
+                    <div class="step-circle" onclick="displayStep(3)">3</div>
+                    <div class="step-circle" onclick="displayStep(4)">4</div>
+                  </div>
+
+                  <form action="/clientes" method="POST" enctype="multipart/form-data" id="multi-step-form">
+                    <div class="row step step-1">
+                      <h3 class="mb-5 text-center">
+                        Verificación de datos personales
+                      </h3>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Nombre(s)*</label>
+                          <input type="text" value="{{ datos_cliente.nombres }}" placeholder="Nombres" name="nombres"
+                            id="nombres" required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Apellido(s)*</label>
+                          <input type="text" value="{{ datos_cliente.apellidos }}" placeholder="Apellidos"
+                            name="apellidos" id="apellidos" required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Cédula</label>
+                          <input type="text" value="{{ datos_cliente.cedula }}" placeholder="xxx-xxxxxx-xxxxx"
+                            name="cedula" id="cedula" />
+                          <span class="icon"><i class="fa-regular fa-envelope"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha de nacimiento*</label>
+                          <input type="date" value="{{ datos_cliente.fecha_nacimiento }}" required name="fechaNac"
+                            id="fechaNac" />
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Género*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="genero" id="genero">
+                              <option value="0">Seleccione el género</option>
+                              <option value="1" {% if datos_cliente.genero==1 %}selected{% endif %}>Masculino</option>
+                              <option value="2" {% if datos_cliente.genero==2 %}selected{% endif %}>Femenino</option>
+                              <option value="3" {% if datos_cliente.genero==3 %}selected{% endif %}>Otro...</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <h5 class="text-bold text-center">Datos de contacto</h5>
+                      <div class="input-style-3">
+                        <label>Dirección*</label>
+                        <textarea placeholder="Dirección" rows="5" name="direccion"
+                          id="direccion">{{ datos_cliente.direccion_escrita }}</textarea>
+                        <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                      </div>
+                      <!-- end textarea -->
+                      <!-- end col -->
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Dirección vía enlace Google Maps</label>
+                          <input value="{{ datos_cliente.direccion_mapa }}" type="text"
+                            placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMaps"
+                            id="direccionMaps" />
+                          <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                        </div>
+                      </div>
+                      <div class="select-style-1">
+                        <label>Nombre de esa dirección</label>
+                        <div class="select-position">
+                          <select class="light-bg" required name="nombreDireccion" id="nombreDireccion">
+                            <option value="0">Seleccione el nombre</option>
+                            <option value="1" {% if datos_cliente.nombre_direccion=='1' %}selected{% endif %}>Casa
+                            </option>
+                            <option value="2" {% if datos_cliente.nombre_direccion=='2' %}selected{% endif %}>Trabajo
+                            </option>
+                            <option value="3" {% if datos_cliente.nombre_direccion=='3' %}selected{% endif %}>Otro...
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- end select -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Compañía teléfonica*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="idCompaniTelefonica" id="idCompaniTelefonica">
+                              <option value="0">Seleccione la compañía</option>
+                              {% for companias_telef in companias_telefonicas %}
+                              <option value="{{companias_telef.id_compania}}" {% if
+                                companias_telef.nombre_compania==datos_cliente.nombre_compania %} selected {% endif %}>
+                                {{companias_telef.nombre_compania}}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Teléfono*</label>
+                          <input value="{{ datos_cliente.numero_telefono }}" type="telf" placeholder="8171-9638"
+                            maxlength="8" required name="telefono" id="telefono" />
+                          <span class="icon"><i class="lni lni-phone"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Nombre de ese teléfono</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="nombreTelefono" id="nombreTelefono">
+                              <option value="0">Seleccione el nombre</option>
+                              <option value="1" {% if datos_cliente.nombre_telefono=='1' %}selected{% endif %}>
+                                Convencional</option>
+                              <option value="2" {% if datos_cliente.nombre_telefono=='2' %}selected{% endif %}>Móvil
+                              </option>
+                              <option value="3" {% if datos_cliente.nombre_telefono=='3' %}selected{% endif %}>Otro...
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Foto del cliente</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCliente" id="fotoCliente" />
+                          <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de cédula</label>
+                          <input type="file" placeholder="" accept="image/*" name="foto_cedula" id="foto_cedula" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="button-group d-flex justify-content-center flex-wrap">
+                          <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                            Siguiente
+                          </button>
+                        </div>
+                      </div>
+
+
+                    </div>
+                    <!-- end col -->
+
+
+                    <div class="row step step-2">
+                      <h3 class="mb-5 text-center">
+                        Datos del trabajador
+                      </h3>
+                      <div class="col-sm-12">
+                        <div class="select-style-1">
+                          <label>Estado Civil*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="estadoCivil" id="estadoCivil">
+                              <option value="0">Seleccione</option>
+                              <option value="1">Soltero</option>
+                              <option value="2">Casado</option>
+                              <option value="3">Divorciado</option>
+                              <option value="4">Viud@</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Nombre de su delegación</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="nombreDelegacion" id="nombreDelegacion">
+                              <option value="0">Seleccione</option>
+                              <option value="1">Delegación Selim Shible</option>
+                              <option value="2">Delegación INSS Central</option>
+                              <option value="2">Delegación Siete Sur</option>
+                              <option value="2">Delegación José Benito Escovar (SERVIGOB)</option>
+                              <option value="2">Delegación Julio Buitrago Urroz</option>
+                              <option value="2">Delegación El Triunfo</option>
+                              <option value="3">Otro...</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Departamento o área de trabajo</label>
+                          <input type="text" placeholder="Atención al cliente" name="dptoArea" id="dptoArea" />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de colilla de INSS</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss" id="fotoCopiaColillaInss" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <h3 class="mb-5 text-center">
+                        Datos del préstamo
+                      </h3>
+                      <div class="col-sm-12">
+                        <div class="select-style-1">
+                          <label>Tipo de cliente*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="tipoCliente" id="tipoCliente">
+                              <option value="1">Normal</option>
+                              <option value="2">Especial</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Monto solicitado</label>
+                          <input type="nums" placeholder="0" name="montoSolicitado" id="montoSolicitado" />
+                          <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-3">
+                        <div class="select-style-1">
+                          <label>‎ </label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="tipoMonedaMontoSolictado" id="tipoMonedaMontoSolicitado">
+                              <option value="1">$ Dólares</option>
+                              <option value="2">C$ Córdobas</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="row">
+
+                        <div class="col-sm-4">
+                          <div class="input-style-3">
+                            <label>Plazo solicitado</label>
+                            <input type="number" placeholder="0" name="plazoSolicitado" id="plazoSolicitado" />
+                            <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+
+                        <div class="col-sm-4">
+                          <div class="select-style-1">
+                            <label>‎</label>
+                            <div class="select-position">
+                              <select class="light-bg" required name="tipoTiempoPlazoSolicitado" id="tipoTiempoPlazoSolicitado">
+                                <option value="1">Meses</option>
+                                <option value="2">Años</option>
+                              </select>
+                            </div>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha del préstamo*</label>
+                          <input type="date" required name="fechaPrestamo" id="fechaPrestamo" />
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="button-group d-flex justify-content-center flex-wrap">
+                          <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
+                            Anterior
+                          </button>
+                          <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                            Siguiente
+                          </button>
+
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="row step step-3">
+                      <h3 class="mb-5 text-center">
+                        Datos del fiador
+                      </h3>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Nombre(s)*</label>
+                          <input type="text" value="" placeholder="Nombres" name="nombresFiador" id="nombresFiador"
+                            required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Apellido(s)*</label>
+                          <input type="text" value="" placeholder="Apellidos" name="apellidosFiador"
+                            id="apellidosFiador" required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Cédula</label>
+                          <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador"
+                            id="cedulaFiador" />
+                          <span class="icon"><i class="fa-regular fa-envelope"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha de nacimiento*</label>
+                          <input type="date" value="" required name="fechaNacFiador" id="fechaNacFiador" />
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Género*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="generoFiador" id="generoFiador">
+                              <option value="0">Seleccione el género</option>
+                              <option value="1">Masculino</option>
+                              <option value="2">Femenino</option>
+                              <option value="3">Otro...</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <h5 class="text-bold text-center">Datos de contacto</h5>
+                      <div class="input-style-3">
+                        <label>Dirección*</label>
+                        <textarea placeholder="Dirección" rows="5" name="direccionFiador"
+                          id="direccionFiador"></textarea>
+                        <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                      </div>
+                      <!-- end textarea -->
+                      <!-- end col -->
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Dirección vía enlace Google Maps</label>
+                          <input value="{{ datos_cliente.direccion_mapa }}" type="text"
+                            placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMapsFiador"
+                            id="direccionMapsFiador" />
+                          <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                        </div>
+                      </div>
+                      <div class="select-style-1">
+                        <label>Nombre de esa dirección</label>
+                        <div class="select-position">
+                          <select class="light-bg" required name="nombreDireccionFiador" id="nombreDireccionFiador">
+                            <option value="0">Seleccione el nombre</option>
+                            <option value="1">Casa
+                            </option>
+                            <option value="2">Trabajo
+                            </option>
+                            <option value="3">Otro...
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- end select -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Compañía teléfonica*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="idCompaniTelefonicaFiador"
+                              id="idCompaniTelefonicaFiador">
+                              <option value="0">Seleccione la compañía</option>
+                              {% for companias_telef in companias_telefonicas %}
+                              <option value="{{companias_telef.id_compania}}">
+                                {{companias_telef.nombre_compania}}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Teléfono*</label>
+                          <input value="" type="telf" placeholder="8171-9638" maxlength="8" required
+                            name="telefonoFiador" id="telefonoFiador" />
+                          <span class="icon"><i class="lni lni-phone"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Nombre de ese teléfono</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="nombreTelefonoFiador" id="nombreTelefonoFiador">
+                              <option value="0">Seleccione el nombre</option>
+                              <option value="1">
+                                Convencional</option>
+                              <option value="2">Móvil
+                              </option>
+                              <option value="3">Otro...
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Foto del cliente</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoFiador" id="fotoFiador" />
+                          <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de cédula</label>
+                          <input type="file" placeholder="" accept="image/*" name="foto_cedulaFiador"
+                            id="foto_cedulaFiador" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="button-group d-flex justify-content-center flex-wrap">
+                          <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
+                            Anterior
+                          </button>
+                          <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step" onclick="revision_contrato()">
+                            Siguiente
+                          </button>
+
+                        </div>
+                      </div>
+
+
+                    </div>
+                    <div class="row step step-4">
+
+                      <h3 class="mb-5 text-center">
+                        Revisión del contrato
+                      </h3>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Nombre(s)*</label>
+                          <input type="text" value="" placeholder="Nombres" name="nombresRevisionContrato"
+                            id="nombresRevisionContrato" required readonly />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Apellido(s)*</label>
+                          <input type="text" value="" placeholder="Apellidos"
+                            name="apellidosRevisionContrato" id="apellidosRevisionContrato" required readonly />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Cédula</label>
+                          <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx"
+                            name="cedulaRevisionContrato" id="cedulaRevisionContrato" readonly/>
+                          <span class="icon"><i class="fa-regular fa-envelope"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha de nacimiento*</label>
+                          <input type="date" value="" required readonly name="fechaNacRevisionContrato"
+                            id="fechaNacRevisionContrato" />
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-1">
+                          <label>Género</label>
+                          <input type="text" value="" required readonly name="generoRevisionContrato"
+                            id="generoRevisionContrato" />
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-1">
+                          <label>Estado civil</label>
+                          <input type="text" value="" required readonly name="estadoCivilRevisionContrato"
+                            id="estadoCivilRevisionContrato" />
+                        </div>
+                      </div>
+
+                      <div class="col-sm-6">
+                        <div class="col-sm-6">
+                          <div class="input-style-1">
+                            <label>Nombre delegación INSS</label>
+                            <input type="text" value="" required readonly name="nombreDelegacionRevisionContrato"
+                              id="nombreDelegacionRevisionContrato" />
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Departamento o área de trabajo</label>
+                          <input type="text" placeholder="Atención al cliente" name="dptoAreaRevisionContrato" id="dptoAreaRevisionContrato" />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+
+                      <h5 class="text-bold text-center">Datos de contacto</h5>
+                      <div class="input-style-3">
+                        <label>Dirección*</label>
+                        <textarea placeholder="Dirección" rows="2" name="direccionRevisionContrato"
+                          id="direccionRevisionContrato" readonly></textarea>
+                        <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                      </div>
+                      <!-- end textarea -->
+                      <!-- end col -->
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Dirección vía enlace Google Maps</label>
+                          <input value="" type="text"
+                            placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMapsRevisionContrato"
+                            id="direccionMapsRevisionContrato" readonly />
+                          <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                        </div>
+                      </div>
+                      <div class="input-style-3">
+                        <label>Nombre de esa dirección</label>
+                        <input type="text" placeholder="Atención al cliente" name="nombreDireccionRevisionContrato" id="nombreDireccionRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-regular fa-building"></i></span>
+                      </div>
+                      <!-- end select -->
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Compañia Teléfonica</label>
+                          <input type="text" placeholder="Atención al cliente" name="companiaTelefonicaRevisionContrato" id="companiaTelefonicaRevisionContrato" readonly />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Número de teléfono</label>
+                          <input type="text" placeholder="Atención al cliente" name="telefonoContratoRevision" id="telefonoContratoRevision" readonly />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Nombre del teléfono</label>
+                          <input type="text" placeholder="Atención al cliente" name="nombreTelefonoRevisionContrato" id="nombreTelefonoRevisionContrato" readonly />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Foto del cliente</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCliente" id="fotoCliente" />
+                          <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de cédula</label>
+                          <input type="file" placeholder="" accept="image/*" name="foto_cedula" id="foto_cedula" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+
+                      <!-- end col -->
+                      <h3 class="mb-5 text-center">
+                        Datos del préstamo
+                      </h3>
+                      <div class="col-sm-12">
+                        <div class="select-style-1">
+                          <label>Tipo de cliente*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="tipoCliente" id="tipoCliente">
+                              <option value="1">Normal</option>
+                              <option value="2">Especial</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Monto solicitado</label>
+                          <input type="nums" placeholder="0" name="montoSolicitado" id="montoSolicitado" />
+                          <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-3">
+                        <div class="select-style-1">
+                          <label>‎ </label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="tipoMonedaMontoSolictado" id="tipoMonedaMontoSolicitado">
+                              <option value="1">$ Dólares</option>
+                              <option value="2">C$ Córdobas</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="row">
+
+                        <div class="col-sm-4">
+                          <div class="input-style-3">
+                            <label>Plazo solicitado</label>
+                            <input type="number" placeholder="0" name="plazoSolicitado" id="plazoSolicitado" />
+                            <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+
+                        <div class="col-sm-4">
+                          <div class="select-style-1">
+                            <label>‎</label>
+                            <div class="select-position">
+                              <select class="light-bg" required name="tipoTiempoPlazoSolicitado" id="tipoTiempoPlazoSolicitado">
+                                <option value="1">Meses</option>
+                                <option value="2">Años</option>
+                              </select>
+                            </div>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha del préstamo*</label>
+                          <input type="date" required name="fechaPrestamo" id="fechaPrestamo" />
+                        </div>
+                      </div>
+
+                      <h3 class="mb-5 text-center">
+                        Datos del fiador
+                      </h3>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Nombre(s)*</label>
+                          <input type="text" value="" placeholder="Nombres" name="nombresFiador" id="nombresFiador"
+                            required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Apellido(s)*</label>
+                          <input type="text" value="" placeholder="Apellidos" name="apellidosFiador"
+                            id="apellidosFiador" required />
+                          <span class="icon"><i class="lni lni-user"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Cédula</label>
+                          <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador"
+                            id="cedulaFiador" />
+                          <span class="icon"><i class="fa-regular fa-envelope"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-1">
+                          <label>Fecha de nacimiento*</label>
+                          <input type="date" value="" required name="fechaNacFiador" id="fechaNacFiador" />
+                        </div>
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Género*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="generoFiador" id="generoFiador">
+                              <option value="0">Seleccione el género</option>
+                              <option value="1">Masculino</option>
+                              <option value="2">Femenino</option>
+                              <option value="3">Otro...</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <h5 class="text-bold text-center">Datos de contacto</h5>
+                      <div class="input-style-3">
+                        <label>Dirección*</label>
+                        <textarea placeholder="Dirección" rows="5" name="direccionFiador"
+                          id="direccionFiador"></textarea>
+                        <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                      </div>
+                      <!-- end textarea -->
+                      <!-- end col -->
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Dirección vía enlace Google Maps</label>
+                          <input value="{{ datos_cliente.direccion_mapa }}" type="text"
+                            placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMapsFiador"
+                            id="direccionMapsFiador" />
+                          <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                        </div>
+                      </div>
+                      <div class="select-style-1">
+                        <label>Nombre de esa dirección</label>
+                        <div class="select-position">
+                          <select class="light-bg" required name="nombreDireccionFiador" id="nombreDireccionFiador">
+                            <option value="0">Seleccione el nombre</option>
+                            <option value="1">Casa
+                            </option>
+                            <option value="2">Trabajo
+                            </option>
+                            <option value="3">Otro...
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- end select -->
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Compañía teléfonica*</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="idCompaniTelefonicaFiador"
+                              id="idCompaniTelefonicaFiador">
+                              <option value="0">Seleccione la compañía</option>
+                              {% for companias_telef in companias_telefonicas %}
+                              <option value="{{companias_telef.id_compania}}">
+                                {{companias_telef.nombre_compania}}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+                      <!-- end col -->
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Teléfono*</label>
+                          <input value="" type="telf" placeholder="8171-9638" maxlength="8" required
+                            name="telefonoFiador" id="telefonoFiador" />
+                          <span class="icon"><i class="lni lni-phone"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Nombre de ese teléfono</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="nombreTelefonoFiador" id="nombreTelefonoFiador">
+                              <option value="0">Seleccione el nombre</option>
+                              <option value="1">
+                                Convencional</option>
+                              <option value="2">Móvil
+                              </option>
+                              <option value="3">Otro...
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <h3 class="mb-5 text-center">
+                        Archivos adjuntos
+                      </h3>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Foto del cliente</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoFiador" id="fotoFiador" />
+                          <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de cédula</label>
+                          <input type="file" placeholder="" accept="image/*" name="foto_cedulaFiador"
+                            id="foto_cedulaFiador" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de colilla de INSS</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss" id="fotoCopiaColillaInss" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
+
+
+                      <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
+                        Anterior
+                      </button>
+                      <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                        Siguiente
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+
+
+
+                <!-- end table -->
+              </div>
             </div>
-            <div class="step-container d-flex justify-content-between">
-              <div class="step-circle" onclick="displayStep(1)">1</div>
-              <div class="step-circle" onclick="displayStep(2)">2</div>
-              <div class="step-circle" onclick="displayStep(3)">3</div>
-            </div>
-          
-            <form id="multi-step-form">
-              <div class="step step-1">
-                <!-- Step 1 form fields here -->
-                <h3>Step 1</h3>
-                <div class="mb-3">
-                  <label for="field1" class="form-label">Field 1:</label>
-                  <input type="text" class="form-control" id="field1" name="field1">
-                </div>
-                <div class="mb-3">
-                    <label for="field1" class="form-label">Field 1:</label>
-                    <input type="text" class="form-control" id="field1" name="field1">
-                  </div>
-                  <div class="mb-3">
-                    <label for="field1" class="form-label">Field 1:</label>
-                    <input type="text" class="form-control" id="field1" name="field1">
-                  </div>
-                  <div class="mb-3">
-                    <label for="field1" class="form-label">Field 1:</label>
-                    <input type="text" class="form-control" id="field1" name="field1">
-                  </div>
-                <button type="button" class="btn btn-primary next-step">Next</button>
-              </div>
-          
-              <div class="step step-2">
-                <!-- Step 2 form fields here -->
-                <h3>Step 2</h3>
-                <div class="mb-3">
-                  <label for="field2" class="form-label">Field 2:</label>
-                  <input type="text" class="form-control" id="field2" name="field2">
-                </div>
-                <button type="button" class="btn btn-primary prev-step">Previous</button>
-                <button type="button" class="btn btn-primary next-step">Next</button>
-              </div>
-          
-              <div class="step step-3">
-                <!-- Step 3 form fields here -->
-                <h3>Step 3</h3>
-                <div class="mb-3">
-                  <label for="field3" class="form-label">Field 3:</label>
-                  <input type="text" class="form-control" id="field3" name="field3">
-                </div>
-                <button type="button" class="btn btn-primary prev-step">Previous</button>
-                <button type="submit" class="btn btn-success">Submit</button>
-              </div>
-            </form>
-          </div>======== title-wrapper end ========== -->
+            <!-- end card -->
+          </div>
+          <!-- end col -->
+        </div>
+        <!-- end row -->
+      </div>
+      <!-- ========== tables-wrapper end ========== -->
     </div>
     <!-- end container -->
-  </section>
-  <!-- ========== section end ========== -->
+</section>
+<!-- ========== section end ========== -->
+
+
 
 {% endblock %}
 
 {% block customJS %}
+
+
 
 <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -123,53 +965,74 @@
 
 
 
+
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{{ url_for('static', filename='assets/js/prestamos/prestamos.js') }}"></script>
 
 <script>
-    var currentStep = 1;
-    var updateProgressBar;
-    
-      function displayStep(stepNumber) {
-        if (stepNumber >= 1 && stepNumber <= 3) {
-          $(".step-" + currentStep).hide();
-          $(".step-" + stepNumber).show();
-          currentStep = stepNumber;
+
+  var currentStep = 1;
+  var updateProgressBar;
+
+  // Seleccionar los botones
+  var nextStep = document.querySelector(".next-step");
+  var prevStep = document.querySelector(".prev-step");
+
+  // Agregar el evento click a cada botón
+  nextStep.addEventListener("click", function () {
+    // Subir al principio de la página
+    window.scrollTo(0, 0);
+  });
+
+  prevStep.addEventListener("click", function () {
+    // Subir al principio de la página
+    window.scrollTo(0, 0);
+  });
+
+
+  function displayStep(stepNumber) {
+    if (stepNumber >= 1 && stepNumber <= 4) {
+      $(".step-" + currentStep).hide();
+      $(".step-" + stepNumber).show();
+      currentStep = stepNumber;
+      updateProgressBar();
+    }
+  }
+
+  $(document).ready(function () {
+    $('#multi-step-form').find('.step').slice(1).hide();
+
+    $(".next-step").click(function () {
+      if (currentStep < 4) {
+        $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
+        currentStep++;
+        setTimeout(function () {
+          $(".step").removeClass("animate__animated animate__fadeOutLeft").hide();
+          $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInRight");
           updateProgressBar();
-        }
+        }, 500);
       }
-    
-      $(document).ready(function() {
-        $('#multi-step-form').find('.step').slice(1).hide();
-      
-        $(".next-step").click(function() {
-          if (currentStep < 3) {
-            $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
-            currentStep++;
-            setTimeout(function() {
-              $(".step").removeClass("animate__animated animate__fadeOutLeft").hide();
-              $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInRight");
-              updateProgressBar();
-            }, 500);
-          }
-        });
-    
-        $(".prev-step").click(function() {
-          if (currentStep > 1) {
-            $(".step-" + currentStep).addClass("animate__animated animate__fadeOutRight");
-            currentStep--;
-            setTimeout(function() {
-              $(".step").removeClass("animate__animated animate__fadeOutRight").hide();
-              $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInLeft");
-              updateProgressBar();
-            }, 500);
-          }
-        });
-    
-        updateProgressBar = function() {
-          var progressPercentage = ((currentStep - 1) / 2) * 100;
-          $(".progress-bar").css("width", progressPercentage + "%");
-        }
-      });
+    });
+
+    $(".prev-step").click(function () {
+      if (currentStep > 1) {
+        $(".step-" + currentStep).addClass("animate__animated animate__fadeOutRight");
+        currentStep--;
+        setTimeout(function () {
+          $(".step").removeClass("animate__animated animate__fadeOutRight").hide();
+          $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInLeft");
+          updateProgressBar();
+        }, 500);
+      }
+    });
+
+    updateProgressBar = function () {
+      var progressPercentage = ((currentStep - 1) / 3) * 100;
+      $(".progress-bar").css("width", progressPercentage + "%");
+    }
+  });
+
+
 </script>
 
 

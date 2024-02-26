@@ -51,17 +51,17 @@
                   <div class="select-style-1 mb-0 ml-10">
                     <div class="select-position">
                       <select id="filtro-comboBox" class="p-0 pe-5 border-0">
-                        {% if session["numero_seleccionado"] == '1' %}
+                        {% if session["numero_seleccionado_ordenar_clientes"] == '1' %}
                         <option value="0">En proceso</option>
                         <option value="1" selected>Activos</option>
                         <option value="2">Inactivos</option>
                         <option value="3">Todos</option>
-                        {% elif session["numero_seleccionado"] == '2' %}
+                        {% elif session["numero_seleccionado_ordenar_clientes"] == '2' %}
                         <option value="0">En proceso</option>
                         <option value="1">Activos</option>
                         <option value="2" selected>Inactivos</option>
                         <option value="3">Todos</option>
-                        {% elif session["numero_seleccionado"] == '3' %}
+                        {% elif session["numero_seleccionado_ordenar_clientes"] == '3' %}
                         <option value="0">En proceso</option>
                         <option value="1">Activos</option>
                         <option value="2">Inactivos</option>
@@ -169,33 +169,7 @@
   </section>
   <!-- ========== table components end ========== -->
 
-  <!-- ========== footer start =========== -->
-  <footer class="footer">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-6 order-last order-md-first">
-          <div class="copyright text-center text-md-start">
-            <p class="text-sm">
-              Designed and Developed by
-              <a href="https://plainadmin.com" rel="nofollow" target="_blank">
-                PlainAdmin
-              </a>
-            </p>
-          </div>
-        </div>
-        <!-- end col-->
-        <div class="col-md-6">
-          <div class="terms d-flex justify-content-center justify-content-md-end">
-            <a href="#0" class="text-sm">Term & Conditions</a>
-            <a href="#0" class="text-sm ml-15">Privacy & Policy</a>
-          </div>
-        </div>
-      </div>
-      <!-- end row -->
-    </div>
-    <!-- end container -->
-  </footer>
-  <!-- ========== footer end =========== -->
+ 
 
   <div class="warning-modal">
     <div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
@@ -375,7 +349,7 @@
     // Puedes usar fetch o axios para hacer la solicitud
     // Ejemplo:
     console.log('Valor seleccionado:', selectedValue)
-    fetch("/guardar_en_sesion", {
+    fetch("/guardar_en_sesion_ordenar_clientes", {
       method: "POST",
       body: JSON.stringify({ selectedValue }), // Convertir a JSON
       headers: {

@@ -13,6 +13,7 @@ from db import *
 from utils import *
 from models.clientes import *
 from models.constantes import activo, inactivo, no_definido, cliente_normal, cliente_especial, fiador
+from models.prestamos import *
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -21,8 +22,11 @@ CORS(app)
 # Si no hay un número seleccionado en sesión, simplemente se asigna 1 
 @app.before_request
 def before_request():
-    if "numero_seleccionado" not in session:
-        session["numero_seleccionado"] = '1'
+    if "numero_seleccionado_ordenar_clientes" not in session:
+        session["numero_seleccionado_ordenar_clientes"] = '1'
+
+    if "numero_seleccionado_ordenar_prestamos" not in session:
+        session["numero_seleccionado_ordenar_prestamos"] = '0'
     
 
 
@@ -31,15 +35,27 @@ def index():
     return render_template('index.html')
 
 
-@app.route("/guardar_en_sesion", methods=["POST"])
-def guardar_en_sesion():
+@app.route("/guardar_en_sesion_ordenar_clientes", methods=["POST"])
+def guardar_en_sesion_ordenar_clientes():
     data = request.get_json()  # Obtener datos enviados desde el frontend
     selected_value = data.get("selectedValue")
     
     # Guardar el valor en la sesión
-    session["numero_seleccionado"] = selected_value
+    session["numero_seleccionado_ordenar_clientes"] = selected_value
     print(session)
-    print(session.get("numero_seleccionado"))
+    print(session.get("numero_seleccionado_ordenar_clientes"))
+
+    return jsonify({"message": "Número guardado en sesión correctamente"})
+
+@app.route("/guardar_en_sesion_ordenar_prestamos", methods=["POST"])
+def guardar_en_sesion_ordenar_prestamos():
+    data = request.get_json()  # Obtener datos enviados desde el frontend
+    selected_value = data.get("selectedValue")
+    
+    # Guardar el valor en la sesión
+    session["numero_seleccionado_ordenar_prestamos"] = selected_value
+    print(session)
+    print(session.get("numero_seleccionado_ordenar_prestamos"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
@@ -47,12 +63,12 @@ def guardar_en_sesion():
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
 
-    print(session.get("numero_seleccionado"))
+    print(session.get("numero_seleccionado_ordenar_clientes"))
     # Obtenemos la lista de clientes cruda sin procesar
 
     
-    cursor = listar_clientes(db_session, [session.get("numero_seleccionado")])
-    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado")])
+    cursor = listar_clientes(db_session, [session.get("numero_seleccionado_ordenar_clientes")])
+    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado_ordenar_clientes")])
     print(cursor)
 
     
@@ -130,13 +146,13 @@ def datos_cliente():
 @app.route('/prestamos', methods=['GET', 'POST'])
 def prestamos():
 
-
-    print(session.get("numero_seleccionado"))
+    print("PRESTMOAS")
+    print(session.get("numero_seleccionado_ordenar_prestamos"))
     # Obtenemos la lista de clientes cruda sin procesar
 
     
-    cursor = listar_clientes(db_session, [session.get("numero_seleccionado")])
-    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado")])
+    cursor = listar_prestamos(db_session, [session.get("numero_seleccionado_ordenar_prestamos")])
+    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado_ordenar_prestamos")])
     print(cursor)
 
     
@@ -197,10 +213,30 @@ def prestamos():
     return render_template('prestamos/prestamos.html', **formulario_clientes)
 
 
-@app.route('/anadir_prestamo', methods=['GET', 'POST'])
-def anadir_prestamo():
-    return render_template('prestamos/anadir_prestamo.html')
+@app.route('/anadir_prestamo/<int:id_cliente>', methods=['GET', 'POST'])
+def anadir_prestamo(id_cliente):
+    print(id_cliente)
 
+    datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
+
+    print(datos_cliente)
+
+    datos_formulario_anadir_prestamo = {
+        "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "datos_cliente": datos_cliente
+    }
+
+    return render_template('prestamos/anadir_prestamo.html', **datos_formulario_anadir_prestamo)
+
+
+@app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
+def prueba_extraer_plata():
+
+    dolar = obtener_tasa_cambio()
+    print(dolar)
+
+
+    return 'Si entró!'
 
 ########### Empieza el modulo de capital ###########
 
