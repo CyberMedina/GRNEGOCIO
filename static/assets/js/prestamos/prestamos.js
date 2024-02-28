@@ -1,7 +1,11 @@
+
+
 function revision_contrato(){
     let inputsForm1 = document.querySelectorAll(".step-1 input , .step-1 select , .step-1 textarea");
     let inputsForm2 = document.querySelectorAll(".step-2 input , .step-2 select , .step-2 textarea");
     let inputsForm3 = document.querySelectorAll(".step-3 input , .step-3 select , .step-3 textarea");
+
+   
 
     var formContrato = {};
 
@@ -64,3 +68,4 @@ function revision_contrato_HTML(formContrato){
 
 
 }
+
