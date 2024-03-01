@@ -271,7 +271,7 @@
                           <label>Estado Civil*</label>
                           <div class="select-position">
                             <select class="light-bg" required name="estadoCivil" id="estadoCivil">
-                              <option value="0">Seleccione</option>
+                              <option value="">Seleccione</option>
                               <option value="1">Soltero</option>
                               <option value="2">Casado</option>
                               <option value="3">Divorciado</option>
@@ -286,7 +286,7 @@
                           <label>Nombre de su delegación</label>
                           <div class="select-position">
                             <select class="light-bg" required name="nombreDelegacion" id="nombreDelegacion">
-                              <option value="0">Seleccione</option>
+                              <option value="">Seleccione</option>
                               <option value="1">Delegación Selim Shible</option>
                               <option value="2">Delegación INSS Central</option>
                               <option value="2">Delegación Siete Sur</option>
@@ -313,7 +313,7 @@
                         <div class="input-style-3">
                           <label>Fotocopia de colilla de INSS</label>
                           <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
-                            id="fotoCopiaColillaInss" required />
+                            id="fotoCopiaColillaInss"/>
                           <span class="icon"><i class="fa-regular fa-address-card"></i></span>
                         </div>
                       </div>
@@ -426,7 +426,7 @@
                         <div class="input-style-3">
                           <label>Cédula</label>
                           <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador"
-                            id="cedulaFiador" />
+                            id="cedulaFiador" required/>
                           <span class="icon"><i class="fa-regular fa-id-card"></i></span>
                         </div>
                         <!-- end select -->
@@ -443,7 +443,7 @@
                           <label>Género*</label>
                           <div class="select-position">
                             <select class="light-bg" required name="generoFiador" id="generoFiador">
-                              <option value="0">Seleccione el género</option>
+                              <option value="">Seleccione el género</option>
                               <option value="1">Masculino</option>
                               <option value="2">Femenino</option>
                               <option value="3">Otro...</option>
@@ -455,9 +455,9 @@
                       <!-- end col -->
                       <h5 class="text-bold text-center">Datos de contacto</h5>
                       <div class="input-style-3">
-                        <label>Dirección</label>
+                        <label>Dirección*</label>
                         <textarea placeholder="Dirección" rows="5" name="direccionFiador"
-                          id="direccionFiador"></textarea>
+                          id="direccionFiador" required></textarea>
                         <span class="icon"><i class="lni lni-map ms-2"></i></span>
                       </div>
                       <!-- end textarea -->
@@ -475,7 +475,7 @@
                         <label>Nombre de esa dirección</label>
                         <div class="select-position">
                           <select class="light-bg" required name="nombreDireccionFiador" id="nombreDireccionFiador">
-                            <option value="0">Seleccione el nombre</option>
+                            <option value="">Seleccione el nombre</option>
                             <option value="1">Casa
                             </option>
                             <option value="2">Trabajo
@@ -492,7 +492,7 @@
                           <div class="select-position">
                             <select class="light-bg" required name="idCompaniTelefonicaFiador"
                               id="idCompaniTelefonicaFiador">
-                              <option value="0">Seleccione la compañía</option>
+                              <option value="">Seleccione la compañía</option>
                               {% for companias_telef in companias_telefonicas %}
                               <option value="{{companias_telef.id_compania}}">
                                 {{companias_telef.nombre_compania}}</option>
@@ -518,7 +518,7 @@
                           <label>Nombre de ese teléfono</label>
                           <div class="select-position">
                             <select class="light-bg" required name="nombreTelefonoFiador" id="nombreTelefonoFiador">
-                              <option value="0">Seleccione el nombre</option>
+                              <option value="">Seleccione el nombre</option>
                               <option value="1">
                                 Convencional</option>
                               <option value="2">Móvil
@@ -552,8 +552,7 @@
                           <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
                             Anterior
                           </button>
-                          <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step"
-                            onclick="revision_contrato()">
+                          <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
                             Siguiente
                           </button>
 
@@ -679,8 +678,8 @@
                       <div class="col-sm-6">
                         <div class="input-style-3">
                           <label>Número de teléfono</label>
-                          <input type="text" placeholder="" name="telefonoContratoRevision"
-                            id="telefonoContratoRevision" readonly />
+                          <input type="text" placeholder="" name="telefonoRevisionContrato"
+                            id="telefonoRevisionContrato" readonly />
                           <span class="icon"><i class="fa-solid fa-phone"></i></span>
                         </div>
                         <!-- end select -->
@@ -745,7 +744,7 @@
                           <div class="input-style-3">
                             <label>Fecha del préstamo</label>
                             <input type="text" value="" placeholder="" name="fechaPrestamoRevisionContrato"
-                              id="FechaPrestamoRevisionContrato" readonly />
+                              id="fechaPrestamoRevisionContrato" readonly />
                             <span class="icon"><i class="fa-regular fa-calendar-days"></i></span>
                           </div>
                           <!-- end select -->
@@ -836,8 +835,8 @@
                         <div class="col-sm-6">
                           <div class="input-style-3">
                             <label>Número de teléfono</label>
-                            <input type="text" placeholder="" name="telefonoFiadorContratoRevision"
-                              id="telefonoFiadorContratoRevision" readonly />
+                            <input type="text" placeholder="" name="telefonoFiadorRevisionContrato"
+                              id="telefonoFiadorRevisionContrato" readonly />
                             <span class="icon"><i class="fa-solid fa-phone"></i></span>
                           </div>
                           <!-- end select -->
@@ -937,103 +936,7 @@
 
 <script>
 
-  var currentStep = 1;
-  var updateProgressBar;
-
-  // Seleccionar los botones
-  var nextStep = document.querySelector(".next-step");
-  var prevStep = document.querySelector(".prev-step");
-
-  // Seleccionar el elemento span con el id "step-indicator"
-  var stepIndicator = document.getElementById("step-indicator");
-
-  // Agregar una línea al final de la función displayStep para cambiar el contenido del elemento span
-  function displayStep(stepNumber) {
-    if (stepNumber >= 1 && stepNumber <= 4) {
-      $(".step-" + currentStep).hide();
-      $(".step-" + stepNumber).show();
-      currentStep = stepNumber;
-      updateProgressBar();
-
-    }
-  }
-
-  $(document).ready(function () {
-    $('#multi-step-form').find('.step').slice(1).hide();
-
-
-
-    $(".next-step").click(function () {
-
-      if (currentStep < 4) {
-        // Solo validar si el paso actual es el 2 o el 3
-        if (currentStep == 2 || currentStep == 3) {
-          var formContrato = document.querySelector(".step-" + currentStep); // selecciona el form del paso actual
-          var inputs = formContrato.querySelectorAll("input"); // selecciona todos los inputs dentro del form
-          var valido = true; // asume que el form es válido
-
-          for (var i = 0; i < inputs.length; i++) { // recorre todos los inputs
-            if (!inputs[i].checkValidity()) { // si alguno no es válido
-              valido = false; // cambia la variable a false
-              window.alert("El campo " + inputs[i].name + " es inválido"); // muestra un mensaje de error
-              inputs[i].reportValidity(); // muestra el mensaje de error
-              break; // sale del bucle
-            }
-          }
-
-          if (valido) { // si el form es válido
-            $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
-            currentStep++;
-            setTimeout(function () {
-              $(".step").removeClass("animate__animated animate__fadeOutLeft").hide();
-              $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInRight");
-              updateProgressBar();
-            }, 500);
-          }
-        } else { // si no hay que validar, solo avanzar al siguiente paso
-          // Subir al principio de la página
-          $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
-          currentStep++;
-          setTimeout(function () {
-            $(".step").removeClass("animate__animated animate__fadeOutLeft").hide();
-            $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInRight");
-            updateProgressBar();
-          }, 500);
-        }
-      }
-
-    });
-
-
-    $(".prev-step").click(function () {
-      if (currentStep > 1) {
-        $(".step-" + currentStep).addClass("animate__animated animate__fadeOutRight");
-        currentStep--;
-        setTimeout(function () {
-          $(".step").removeClass("animate__animated animate__fadeOutRight").hide();
-          $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInLeft");
-          updateProgressBar();
-        }, 500);
-      }
-    });
-
-    updateProgressBar = function () {
-      console.log("ENTRO´!")
-      console.log(currentStep);
-      // Cambiar el contenido del elemento span con el número del paso actual usando javascript puro
-      stepIndicator.textContent = "Paso " + currentStep;
-      // Subir al principio de la página
-      window.scrollTo(0, 0);
-      // Esperar un segundo (1000 milisegundos)
-      setTimeout(function () {
-        // Calcular el porcentaje de progreso
-        var progressPercentage = ((currentStep - 1) / 3) * 100;
-        // Cambiar el ancho de la barra de progreso
-        $(".progress-bar").css("width", progressPercentage + "%");
-      }, 500);
-    }
-
-  });
+  
 
 
 </script>
