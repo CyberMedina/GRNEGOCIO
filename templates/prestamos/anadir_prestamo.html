@@ -5,6 +5,11 @@
 
 {% block customCSS %}
 <style>
+  .inactive{
+    color: transparent;
+    pointer-events: none;
+    cursor: default;
+  }
   .step-container {
     position: relative;
     text-align: center;
@@ -82,7 +87,7 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="card-style mb-30">
-            <div class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
+            <div class="title">
               <div class="container-fluid">
                 <div id="container" class="container mt-5">
                   <div class="progress px-1" style="height: 3px;">
@@ -313,7 +318,7 @@
                         <div class="input-style-3">
                           <label>Fotocopia de colilla de INSS</label>
                           <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
-                            id="fotoCopiaColillaInss"/>
+                            id="fotoCopiaColillaInss" />
                           <span class="icon"><i class="fa-regular fa-address-card"></i></span>
                         </div>
                       </div>
@@ -336,7 +341,7 @@
                       <div class="col-sm-4">
                         <div class="input-style-3">
                           <label>Monto solicitado</label>
-                          <input type="nums" placeholder="0" name="montoSolicitado" id="montoSolicitado" required />
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="montoSolicitado" id="montoSolicitado" required />
                           <span class="icon"><i class="fa-solid fa-coins"></i></span>
                         </div>
                         <!-- end select -->
@@ -354,12 +359,47 @@
                         </div>
                         <!-- end select -->
                       </div>
+
+                      <div class="row">
+
+                        <div class="col-sm-4">
+                          <div class="input-style-3">
+                            <label>Tasa de interes</label>
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="tasaInteres" id="tasaInteres" required />
+                            <span class="icon" id="porcentaje" style="margin-left: 3.8rem; margin-top: 2rem">%</span>
+                            <!-- Aquí se mostrará el porcentaje -->
+                          </div>
+                          <!-- end select -->
+                        </div>
+
+                        <div class="col-sm-4">
+                          <div class="input-style-3">
+                            <label>Pago mensual</label>
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="pagoMensual" id="pagoMensual" readonly
+                              required />
+                            <span class="icon"><i class="fa-solid fa-star"></i></span>
+                            <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal" data-bs-target="#ModalThree">Ver procedimiento</a>
+                          </div>
+                          <!-- end select -->
+                        </div>
+
+                        <div class="col-sm-4">
+                          <div class="input-style-3">
+                            <label>Pago quincenal</label>
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="pagoQuincenal" id="pagoQuincenal" readonly
+                              required />
+                            <span class="icon"><i class="fa-regular fa-star-half-stroke"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                      </div>
+
                       <div class="row">
 
                         <div class="col-sm-4">
                           <div class="input-style-3">
                             <label>Plazo solicitado</label>
-                            <input type="number" placeholder="0" name="plazoSolicitado" id="plazoSolicitado" required />
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="plazoSolicitado" id="plazoSolicitado" required />
                             <span class="icon"><i class="fa-regular fa-clock"></i></span>
                           </div>
                           <!-- end select -->
@@ -386,6 +426,173 @@
                           <input type="date" required name="fechaPrestamo" id="fechaPrestamo" />
                         </div>
                       </div>
+
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Monto primer pago</label>
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="montoPrimerPago" id="montoPrimerPago" required />
+                          <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                          <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal" data-bs-target="#ModalThree">Ver procedimiento</a>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+
+                      <!-- ModalThree start -->
+                      <div class="warning-modal">
+                        <div class="modal fade" id="modalCalculoPrimerPago" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content card-style">
+                              <div class="modal-header px-0 border-0">
+                                <h3 class="text-bold">Cálculo primer pago</h3>
+                                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                  <i class="lni lni-cross-circle"></i>
+                                </button>
+                              </div>
+                              <div class="modal-body px-0">
+                                <div class="content mb-30">
+
+                                  <div class="tab-style-3 mb-30">
+                                    <nav class="nav" id="nav-tab">
+                                      <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                        data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
+                                        Pago diario
+                                      </button>
+                                      <button id="tab-3-2" class="main-btn deactive-btn rounded-full"
+                                        data-bs-toggle="tab" data-bs-target="#tabContent-3-2">
+                                        Primer pago
+                                      </button>
+                                    </nav>
+                                    <div class="tab-content" id="nav-tabContent3">
+                                      <div class="tab-pane fade show active" id="tabContent-3-1">
+
+                                        <div class="row">
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1">
+                                              <label>Pago mensual</label>
+                                              <input class="text-center" type="number" placeholder="0"
+                                                name="pagoMensualModal" id="pagoMensualModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                              <label>Dividido</label>
+                                              <input class="text-center" type="text" placeholder="" value="/" readonly>
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                              <label>Mes comercial</label>
+                                              <input class="text-center" type="text" value="30 días" name="noDiasMesModal" id="noDiasMesModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                              <label>resultado</label>
+                                              <input class="text-center" type="text" placeholder="" value="=" readonly>
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                              <label class="text-success text-bold">Pago diario</label>
+                                              <input class="text-center" type="number" name="resultadoPagoDiarioModal" id="resultadoPagoDiarioModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="tab-pane fade" id="tabContent-3-2">
+
+
+                                        <div class="row">
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1">
+                                              <label>Pago diario</label>
+                                              <input class="text-center" type="number" placeholder="0"
+                                                name="pagoMensual" id="pagoDiario2Modal" name="pagoDiario2Modal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                              <label>Multiplicado</label>
+                                              <input class="text-center" type="text" placeholder="" value="X" readonly>
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                              <label id="diasRestantesCorteModal"></label>
+                                              <input class="text-center" type="text" value="" id="diasHastaProximoCorte" name="diasHastaProximoCorte" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                              <label>Resultado</label>
+                                              <input class="text-center" type="text" placeholder="" value="=" readonly>
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+                                          <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                              <label class="text-success text-bold">Primer pago</label>
+                                              <input class="text-center" type="number" value="" id="montoPrimerPagoModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                          </div>
+
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <!-- end card -->
+
+
+
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- ModalThree End -->
+
+                       <!-- ModalThree start -->
+                       <div class="warning-modal">
+                        <div class="modal fade" id="modalNoCalculo" tabindex="-1" aria-hidden="true">
+                          <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content card-style">
+                              <div class="modal-header px-0 border-0">
+                                <h3 class="text-bold">Cálculo primer pago</h3>
+                                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                  <i class="lni lni-cross-circle"></i>
+                                </button>
+                              </div>
+                              <div class="modal-body px-0">
+                                <p>El monto del primer pago es igual al pago quincenal, debido a que se está prestando a la quincena</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- ModalThree End -->
+
 
                       <div class="col-12">
                         <div class="button-group d-flex justify-content-center flex-wrap">
@@ -426,7 +633,7 @@
                         <div class="input-style-3">
                           <label>Cédula</label>
                           <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador"
-                            id="cedulaFiador" required/>
+                            id="cedulaFiador" required />
                           <span class="icon"><i class="fa-regular fa-id-card"></i></span>
                         </div>
                         <!-- end select -->
@@ -456,8 +663,8 @@
                       <h5 class="text-bold text-center">Datos de contacto</h5>
                       <div class="input-style-3">
                         <label>Dirección*</label>
-                        <textarea placeholder="Dirección" rows="5" name="direccionFiador"
-                          id="direccionFiador" required></textarea>
+                        <textarea placeholder="Dirección" rows="5" name="direccionFiador" id="direccionFiador"
+                          required></textarea>
                         <span class="icon"><i class="lni lni-map ms-2"></i></span>
                       </div>
                       <!-- end textarea -->
@@ -915,6 +1122,33 @@
 </section>
 <!-- ========== section end ========== -->
 
+<!-- ModalTwo start -->
+<div class="warning-modal">
+  <div class="modal fade" id="modalAlertaFecha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content card-style warning-card text-center">
+        <div class="modal-body">
+          <div class="icon text-danger mb-20">
+            <i class="lni lni-warning"></i>
+          </div>
+          <div class="content mb-30">
+            <h2 class="mb-15">!Atención!</h2>
+            <p id="pModalAlertaFecha" class="text-sm text-medium">
+
+            </p>
+          </div>
+          <div class="action d-flex flex-wrap justify-content-center">
+            <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn rounded-full btn-hover m-1">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ModalTwo End -->
+
 
 
 {% endblock %}
@@ -936,7 +1170,7 @@
 
 <script>
 
-  
+
 
 
 </script>
