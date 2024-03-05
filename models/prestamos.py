@@ -21,7 +21,7 @@ JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE
 cl.estado = :estado;
                      """)
-        
+
         result = db_session.execute(query_listar_clientes, {"estado": estado})
         return result
 
@@ -42,7 +42,8 @@ def cantidad_clientes(db_session, estado):
         WHERE estado = :estado;
         """)
 
-        result = db_session.execute(query_cantidad_clientes, {"estado": estado})
+        result = db_session.execute(
+            query_cantidad_clientes, {"estado": estado})
         return result
 
     except SQLAlchemyError as e:
@@ -72,7 +73,8 @@ cl.id_cliente = :id_cliente
 AND
 cl.estado = '0';
                      """)
-        result = db_session.execute(query, {"id_cliente": id_cliente}).fetchone()
+        result = db_session.execute(
+            query, {"id_cliente": id_cliente}).fetchone()
 
         return result
     except SQLAlchemyError as e:
@@ -81,3 +83,27 @@ cl.estado = '0';
         return None
     finally:
         db_session.close()
+
+
+def insertar_contrato(id_contrato, id_cliente, estado_civil, nombre_delegacion, dptoArea_trabajo, monto_solicitado, plazo_solicitado, estado):
+    try:
+
+        # Obtener el ID de la tabla tipo_cliente
+        id_contrato = ObtenerIDTabla(
+        db_session, "id_contrato", "contrato")
+
+        query = text("""
+        INSERT INTO contrato (id_contrato, id_cliente, id_contrato, estado_civil, nombre_delegacion, dptoArea_trabajo, monto_solicitado, plazo_solicitado, estado)
+        VALUES (:id_contrato, :id_cliente, :id_contrato, :estado_civil, :nombre_delegacion, :dptoArea_trabajo, :monto_solicitado, :plazo_solicitado, :estado);
+                     """)
+
+        db_session.execute(query, {"id_contrato": id_contrato, "id_cliente": id_cliente, "id_contrato": id_contrato, "estado_civil": estado_civil,
+                           "nombre_delegacion": nombre_delegacion, "dptoArea_trabajo": dptoArea_trabajo, "monto_solicitado": monto_solicitado, "plazo_solicitado": plazo_solicitado, "estado": estado})
+
+        db_session.commit()
+
+        return id_contrato
+
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        return None

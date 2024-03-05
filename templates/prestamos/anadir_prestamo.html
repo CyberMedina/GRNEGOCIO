@@ -5,11 +5,12 @@
 
 {% block customCSS %}
 <style>
-  .inactive{
+  .inactive {
     color: transparent;
     pointer-events: none;
     cursor: default;
   }
+
   .step-container {
     position: relative;
     text-align: center;
@@ -341,7 +342,8 @@
                       <div class="col-sm-4">
                         <div class="input-style-3">
                           <label>Monto solicitado</label>
-                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="montoSolicitado" id="montoSolicitado" required />
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                            name="montoSolicitado" id="montoSolicitado" required />
                           <span class="icon"><i class="fa-solid fa-coins"></i></span>
                         </div>
                         <!-- end select -->
@@ -365,7 +367,8 @@
                         <div class="col-sm-4">
                           <div class="input-style-3">
                             <label>Tasa de interes</label>
-                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="tasaInteres" id="tasaInteres" required />
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                              name="tasaInteres" id="tasaInteres" required />
                             <span class="icon" id="porcentaje" style="margin-left: 3.8rem; margin-top: 2rem">%</span>
                             <!-- Aquí se mostrará el porcentaje -->
                           </div>
@@ -375,10 +378,11 @@
                         <div class="col-sm-4">
                           <div class="input-style-3">
                             <label>Pago mensual</label>
-                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="pagoMensual" id="pagoMensual" readonly
-                              required />
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                              name="pagoMensual" id="pagoMensual" readonly required />
                             <span class="icon"><i class="fa-solid fa-star"></i></span>
-                            <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal" data-bs-target="#ModalThree">Ver procedimiento</a>
+                            <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal"
+                              data-bs-target="#ModalThree">Ver procedimiento</a>
                           </div>
                           <!-- end select -->
                         </div>
@@ -386,8 +390,8 @@
                         <div class="col-sm-4">
                           <div class="input-style-3">
                             <label>Pago quincenal</label>
-                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="pagoQuincenal" id="pagoQuincenal" readonly
-                              required />
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                              name="pagoQuincenal" id="pagoQuincenal" readonly required />
                             <span class="icon"><i class="fa-regular fa-star-half-stroke"></i></span>
                           </div>
                           <!-- end select -->
@@ -399,13 +403,14 @@
                         <div class="col-sm-4">
                           <div class="input-style-3">
                             <label>Plazo solicitado</label>
-                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="plazoSolicitado" id="plazoSolicitado" required />
+                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                              name="plazoSolicitado" id="plazoSolicitado" required />
                             <span class="icon"><i class="fa-regular fa-clock"></i></span>
                           </div>
                           <!-- end select -->
                         </div>
 
-                        <div class="col-sm-4">
+                        <div class="col-sm-2">
                           <div class="select-style-1">
                             <label>‎</label>
                             <div class="select-position">
@@ -418,7 +423,25 @@
                           </div>
                           <!-- end select -->
                         </div>
+
+                        <div id="divIntervaloPago" class="col-sm-4" hidden>
+                          <div class="select-style-1">
+                            <label>Intervalo de pago</label>
+                            <div class="select-position">
+                              <select class="light-bg" required name="IntervaloPagoClienteEspecial"
+                                id="IntervaloPagoClienteEspecial">
+                                <option value="1">Quincenal</option>
+                                <option value="2">Mensual</option>
+                              </select>
+                            </div>
+                          </div>
+                          <!-- end select -->
+                        </div>
                       </div>
+
+
+
+
 
                       <div class="col-12">
                         <div class="input-style-1">
@@ -430,9 +453,11 @@
                       <div class="col-sm-4">
                         <div class="input-style-3">
                           <label>Monto primer pago</label>
-                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="montoPrimerPago" id="montoPrimerPago" required />
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                            name="montoPrimerPago" id="montoPrimerPago" required />
                           <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                          <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal" data-bs-target="#ModalThree">Ver procedimiento</a>
+                          <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal"
+                            data-bs-target="#ModalThree">Ver procedimiento</a>
                         </div>
 
                         <!-- end select -->
@@ -488,7 +513,8 @@
                                           <div class="col-sm-3">
                                             <div class="input-style-1 text-center">
                                               <label>Mes comercial</label>
-                                              <input class="text-center" type="text" value="30 días" name="noDiasMesModal" id="noDiasMesModal" readonly />
+                                              <input class="text-center" type="text" value="30 días"
+                                                name="noDiasMesModal" id="noDiasMesModal" readonly />
                                             </div>
                                             <!-- end select -->
                                           </div>
@@ -504,7 +530,8 @@
                                           <div class="col-sm-3">
                                             <div class="input-style-1 text-center">
                                               <label class="text-success text-bold">Pago diario</label>
-                                              <input class="text-center" type="number" name="resultadoPagoDiarioModal" id="resultadoPagoDiarioModal" readonly />
+                                              <input class="text-center" type="number" name="resultadoPagoDiarioModal"
+                                                id="resultadoPagoDiarioModal" readonly />
                                             </div>
                                             <!-- end select -->
                                           </div>
@@ -519,7 +546,8 @@
                                             <div class="input-style-1">
                                               <label>Pago diario</label>
                                               <input class="text-center" type="number" placeholder="0"
-                                                name="pagoMensual" id="pagoDiario2Modal" name="pagoDiario2Modal" readonly />
+                                                name="pagoMensual" id="pagoDiario2Modal" name="pagoDiario2Modal"
+                                                readonly />
                                             </div>
                                             <!-- end select -->
                                           </div>
@@ -535,7 +563,8 @@
                                           <div class="col-sm-3">
                                             <div class="input-style-1 text-center">
                                               <label id="diasRestantesCorteModal"></label>
-                                              <input class="text-center" type="text" value="" id="diasHastaProximoCorte" name="diasHastaProximoCorte" readonly />
+                                              <input class="text-center" type="text" value="" id="diasHastaProximoCorte"
+                                                name="diasHastaProximoCorte" readonly />
                                             </div>
                                             <!-- end select -->
                                           </div>
@@ -551,7 +580,8 @@
                                           <div class="col-sm-3">
                                             <div class="input-style-1 text-center">
                                               <label class="text-success text-bold">Primer pago</label>
-                                              <input class="text-center" type="number" value="" id="montoPrimerPagoModal" readonly />
+                                              <input class="text-center" type="number" value=""
+                                                id="montoPrimerPagoModal" readonly />
                                             </div>
                                             <!-- end select -->
                                           </div>
@@ -573,8 +603,8 @@
                       </div>
                       <!-- ModalThree End -->
 
-                       <!-- ModalThree start -->
-                       <div class="warning-modal">
+                      <!-- ModalThree start -->
+                      <div class="warning-modal">
                         <div class="modal fade" id="modalNoCalculo" tabindex="-1" aria-hidden="true">
                           <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content card-style">
@@ -585,7 +615,8 @@
                                 </button>
                               </div>
                               <div class="modal-body px-0">
-                                <p>El monto del primer pago es igual al pago quincenal, debido a que se está prestando a la quincena</p>
+                                <p>El monto del primer pago es igual al pago quincenal, debido a que se está prestando a
+                                  la quincena</p>
                               </div>
                             </div>
                           </div>
@@ -607,6 +638,7 @@
                       </div>
 
                     </div>
+                    
                     <div class="row step step-3">
                       <h3 class="mb-5 text-center">
                         Datos del fiador

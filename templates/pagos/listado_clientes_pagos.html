@@ -1,0 +1,408 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Clientes{% endblock %}
+{% block body %}
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Listado de clientes</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="/">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Pagos
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <!-- ========== tables-wrapper start ========== -->
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div
+                            class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
+                            <h6>
+                                Total de clientes
+                                <span class="text-regular text-sm">{{ cantidad_clientes }}</span>
+                            </h6>
+
+                            <div class="d-flex align-items-center">
+                                <h6>Ordenar por:</h6>
+                                <div class="select-style-1 mb-0 ml-10">
+                                    <div class="select-position">
+                                        <select id="filtro-comboBox" class="p-0 pe-5 border-0">
+                                            {% if session["numero_seleccionado_ordenar_clientesPrestamos"] == '1' %}
+                                            <option value="0">Todos</option>
+                                            <option value="1" selected>Normales</option>
+                                            <option value="2">Especiales</option>
+                                            {% elif session["numero_seleccionado_ordenar_clientesPrestamos"] == '2' %}
+                                            <option value="0">Todos</option>
+                                            <option value="1">Normales</option>
+                                            <option value="2" selected>Especiales</option>
+                                            {% else %}
+                                            <option value="0" selected>Todos</option>
+                                            <option value="1">Normales</option>
+                                            <option value="2">Especiales</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrapper table-responsive">
+                            <h2>Clientes Normales</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <h6>Nombre</h6>
+                                        </th>
+                                        <th>
+                                            <h6>Acción</h6>
+                                        </th>
+                                    </tr>
+                                    <!-- end table row-->
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Ruben Doglas Garcia Chevara</p>
+                                            <span class="status-btn close-btn">No ha pagado</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Carlos Javier Soza Sanchez</p>
+                                            <span class="status-btn info-btn">Ya pagó</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Juan Obregon García Bustamante</p>
+                                            <span class="status-btn info-btn">Ya pagó</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- end table -->
+                        </div>
+                        <div class="table-wrapper table-responsive">
+                            <h2>Clientes especiales</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <h6>Nombre</h6>
+                                        </th>
+                                        <th>
+                                            <h6>Acción</h6>
+                                        </th>
+                                    </tr>
+                                    <!-- end table row-->
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Ruben Doglas Garcia Chevara</p>
+                                            <span class="status-btn close-btn">No ha pagado</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Carlos Javier Soza Sanchez</p>
+                                            <span class="status-btn info-btn">Ya pagó</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="min-width">
+                                            <p>Juan Obregon García Bustamante</p>
+                                            <span class="status-btn close-btn">No ha pagado</span>
+                                        </td>
+                                        <td class="min-width">
+                                            <div class="action">
+                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
+                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- end table -->
+                        </div>
+                    </div>
+                    <!-- end card -->
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== tables-wrapper end ========== -->
+    </div>
+    <!-- end container -->
+</section>
+<!-- ========== table components end ========== -->
+
+
+
+<div class="warning-modal">
+    <div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h2 class="text-bold">Juan Ramón</h2>
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                      </button>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+                        <div class="container mb-3">
+                            <div class="row">
+                                <a href="#0"
+                                    class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
+                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                    <i class="lni lni-plus"></i>
+                                    Gestionar pago
+                                </a>
+                            </div>
+                        </div>
+                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                            <div class="row">
+                                <h4 class="mb-3">Capital</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
+                                            readonly />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
+                                            id="apellidos" readonly required />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                                <h4 class="mb-3">Pago mensual</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
+                                            readonly />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
+                                            id="apellidos" readonly required />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+                                <h4 class="mb-3">Pago quincenal</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
+                                            readonly />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
+                                            id="apellidos" readonly required />
+                                        <span class="icon"><i class="lni lni-user"></i></span>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+            </main>
+            <!-- ======== main-wrapper end =========== -->
+
+            {% endblock %}
+
+            {% block customJS %}
+            <script src="{{ url_for('static', filename='assets/js/charts_home.js') }}"></script>
+            <script src="{{ url_for('static', filename='assets/js/cloudinary.js') }}"></script>
+
+            <script>
+                // Agregar un listener al evento change del input
+
+                document.getElementById("filtro-comboBox").addEventListener("change", function () {
+                    const selectedValue = this.value; // Valor seleccionado en el combobox
+                    // Enviar una solicitud POST al servidor con el valor seleccionado
+                    // Puedes usar fetch o axios para hacer la solicitud
+                    // Ejemplo:
+                    console.log('Valor seleccionado:', selectedValue)
+                    fetch("/guardar_en_sesion_ordenar_clientesPrestamos", {
+                        method: "POST",
+                        body: JSON.stringify({ selectedValue }), // Convertir a JSON
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Valor guardado en sesión:", data);
+                            location.reload();
+                        })
+                        .catch(error => {
+                            console.error("Error al guardar en sesión:", error);
+                        });
+                });
+
+                const fileInput = document.querySelector('input[type="file"]');
+
+                fileInput.addEventListener('change', function (event) {
+
+                    // Definiendo los tipos de imagenes permitidos
+                    var types = ['image/png', 'image/jpeg', 'image/gif'];
+
+                    // Obtener el archivo
+                    var file = fileInput.files[0];
+                    // Obtener el tamaño del archivo en bytes
+                    var size = file.size;
+
+                    var type = file.type;
+
+                    // Definir el límite en bytes (5 MB = 5 * 1024 * 1024)
+                    var limit = 5 * 1024 * 1024;
+                    // Comparar el tamaño con el límite
+
+
+                    if (!types.includes(type)) {
+                        // Mostrar un mensaje de error
+                        alert("El archivo no es una imagen.");
+                        // Limpiar el valor del input
+                        fileInput.value = "";
+                    }
+
+                    else if (size > limit) {
+                        // Mostrar un mensaje de error
+                        alert("El archivo es demasiado grande. El tamaño máximo es 5 MB.");
+                        // Limpiar el valor del input
+                        fileInput.value = "";
+                    }
+
+
+                    else if (fileInput.files.length === 0) {
+
+                        // Mostrar un mensaje de error
+                        alert("No se seleccionó ningún archivo.");
+                        // Limpiar el valor del input
+                        fileInput.value = "";
+                    }
+
+
+                    // Obtén los elementos del formulario
+                    const formulario = document.getElementById("anadirClientes");
+                    const btnGuardar = document.getElementById("btnGuardar");
+
+                    // Escucha el evento "input" en los campos requeridos
+                    formulario.addEventListener("input", () => {
+                        // Verifica si todos los campos requeridos están completados
+                        const camposCompletados = Array.from(formulario.elements).every(
+                            (elemento) => elemento.required ? elemento.value.trim() !== "" : true
+                        );
+
+                        // Habilita o deshabilita el botón según los campos completados
+                        btnGuardar.disabled = !camposCompletados;
+                    });
+
+
+
+
+
+                });
+
+            </script>
+            {% endblock %}

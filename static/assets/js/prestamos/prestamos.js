@@ -227,6 +227,9 @@ $(document).ready(function () {
 
 // Obtener referencias a los elementos del DOM
 // Obtenemos los inputs del formlario normal
+const tipoClienteComboBox = document.getElementById('tipoCliente');
+const divIntervaloPagoClienteEspecial = document.getElementById('divIntervaloPago');
+const IntervaloPagoClienteEspecial = document.getElementById('IntervaloPagoClienteEspecial');
 const montoSolicitadoInput = document.getElementById('montoSolicitado');
 const tasaInteresInput = document.getElementById('tasaInteres');
 const pagoMensualInput = document.getElementById('pagoMensual');
@@ -250,6 +253,26 @@ const pagoDiario2Modal = document.getElementById('pagoDiario2Modal');
 const diasRestantesCorteModal = document.getElementById('diasRestantesCorteModal');
 
 
+
+
+// Agregar un evento de cambio al campo de entrada tipoCliente
+tipoClienteComboBox.addEventListener('change', function(){
+
+  const tipoCliente = tipoClienteComboBox.value;
+
+  if (tipoCliente == "1") {
+
+    divIntervaloPagoClienteEspecial.hidden = true;
+    
+  }
+
+  else if (tipoCliente == "2") {
+    divIntervaloPagoClienteEspecial.hidden = false;
+    IntervaloPagoClienteEspecial.selectedIndex = 1;
+  }
+
+
+});
 
 // Agregar un evento al cambiar el campo de fechaPrestamo
 fechaPrestamoInput.addEventListener('change', function () {

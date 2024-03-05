@@ -27,6 +27,9 @@ def before_request():
 
     if "numero_seleccionado_ordenar_prestamos" not in session:
         session["numero_seleccionado_ordenar_prestamos"] = '0'
+
+    if "numero_seleccionado_ordenar_clientesPrestamos" not in session:
+        session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
     
 
 
@@ -34,7 +37,8 @@ def before_request():
 def index():
     return render_template('index.html')
 
-
+######## Rutas para guardar en sesión el número seleccionado en diferentes templates ########
+##### Clientes#########
 @app.route("/guardar_en_sesion_ordenar_clientes", methods=["POST"])
 def guardar_en_sesion_ordenar_clientes():
     data = request.get_json()  # Obtener datos enviados desde el frontend
@@ -47,6 +51,7 @@ def guardar_en_sesion_ordenar_clientes():
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
+##### Prestamos ########
 @app.route("/guardar_en_sesion_ordenar_prestamos", methods=["POST"])
 def guardar_en_sesion_ordenar_prestamos():
     data = request.get_json()  # Obtener datos enviados desde el frontend
@@ -56,6 +61,19 @@ def guardar_en_sesion_ordenar_prestamos():
     session["numero_seleccionado_ordenar_prestamos"] = selected_value
     print(session)
     print(session.get("numero_seleccionado_ordenar_prestamos"))
+
+    return jsonify({"message": "Número guardado en sesión correctamente"})
+
+
+###### Pagos #########
+@app.route("/guardar_en_sesion_ordenar_clientesPrestamos", methods=["POST"])
+def guardar_en_sesion_ordenar_clientesPrestamos():
+    data = request.get_json()
+    selected_value = data.get("selectedValue")
+
+    session["numero_seleccionado_ordenar_clientesPrestamos"] = selected_value
+    print(session)
+    print(session.get("numero_seleccionado_ordenar_clientesPrestamos"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
@@ -226,7 +244,104 @@ def anadir_prestamo(id_cliente):
         "datos_cliente": datos_cliente
     }
 
+    if request.method == 'POST':
+
+        ## Step-1 form ###
+        nombres = request.form['nombres']
+        apellidos = request.form['apellidos']
+        cedula = request.form['cedula']
+        fechaNac = request.form['fechaNac']
+        genero = request.form['genero']
+        direccion = request.form['direccion']
+        direccionMaps = request.form['direccionMaps']
+        nombreDireccion = request.form['nombreDireccion']
+        idCompaniTelefonica = request.form['idCompaniTelefonica']
+        telefono = request.form['telefono']
+        nombreTelefono = request.form['nombreTelefono']
+        fotoCliente = request.files['fotoCliente']
+        foto_cedula = request.files['foto_cedula']
+
+        ### Step-2 form ###
+        estadoCivil = request.form['estadoCivil']
+        nombreDelegacion = request.form['nombreDelegacion']
+        dptoArea = request.form['dptoArea']
+        fotoCopiaColillaInss = request.files['fotoCopiaColillaInss']
+        tipoCliente = request.form['tipoCliente']
+        montoSolicitado = request.form['montoSolicitado']
+        tipoMonedaMontoSolictado = request.form['tipoMonedaMontoSolictado']
+        tasaInteres = request.form['tasaInteres']
+        pagoMensual = request.form['pagoMensual']
+        pagoQuincenal = request.form['pagoQuincenal']
+        plazoSolicitado = request.form['plazoSolicitado']
+        tipoTiempoPlazoSolicitado = request.form['tipoTiempoPlazoSolicitado']
+        IntervaloPagoClienteEspecial = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
+        fechaPrestamo = request.form['fechaPrestamo']
+        montoPrimerPago = request.form['montoPrimerPago']
+
+        #### Step-3 form ####
+        nombresFiador = request.form['nombresFiador']
+        apellidosFiador = request.form['apellidosFiador']
+        cedulaFiador = request.form['cedulaFiador']
+        fechaNacFiador = request.form['fechaNacFiador']
+        generoFiador = request.form['generoFiador']
+        direccionFiador = request.form['direccionFiador']
+        direccionMapsFiador = request.form['direccionMapsFiador']
+        nombreDireccionFiador = request.form['nombreDireccionFiador']
+        idCompaniTelefonicaFiador = request.form['idCompaniTelefonicaFiador']
+        telefonoFiador = request.form['telefonoFiador']
+        nombreTelefonoFiador = request.form['nombreTelefonoFiador']
+        fotoFiador = request.files['fotoFiador']
+        foto_cedulaFiador = request.files['foto_cedulaFiador']
+
+        db_session.begin()
+
+        try:
+
+            ## Step-1 form ###
+            id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
+            id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
+            id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
+            id_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, inactivo)
+
+            ## Step-2 form ###
+            id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, activo)
+            
+
+        
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {str(e)}")
+            return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
+        
+        except Exception as e:
+            db_session.rollback()
+            print(f"Unexpected error: {str(e)}")
+            return render_template('error.html', error="Unexpected error occurred"), 500
+        
+        finally:
+            db_session.close()
+
+
+
+
+
+        return redirect(url_for('prestamos'))
+
+
     return render_template('prestamos/anadir_prestamo.html', **datos_formulario_anadir_prestamo)
+
+
+########### Empieza el modulo de pagos ############
+
+@app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
+def listado_clientes_pagos():
+    return render_template('pagos/listado_clientes_pagos.html')
+
+
+
+
 
 
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
