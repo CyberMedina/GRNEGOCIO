@@ -237,6 +237,8 @@ def anadir_prestamo(id_cliente):
 
     datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
 
+
+
     print(datos_cliente)
 
     datos_formulario_anadir_prestamo = {
@@ -298,12 +300,14 @@ def anadir_prestamo(id_cliente):
         try:
 
             ## Step-1 form ###
-            id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
+            actualizar_persona(db_session, datos_cliente.id_persona, nombres, apellidos, genero, cedula, fechaNac, activo) #Actualizar datos del cliente y cambiar activo
+
+            obtenerID_direccionYtelefono = obtenerID_direccionYtelefono(db_session, datos_cliente.id_persona)
             id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
             id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
             id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
             id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, inactivo)
+            id_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, activo)
 
             ## Step-2 form ###
             id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, activo)

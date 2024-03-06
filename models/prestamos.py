@@ -57,7 +57,7 @@ def cantidad_clientes(db_session, estado):
 def listar_datosClientes_porID(db_session, id_cliente):
     try:
         query = text("""
-        SELECT cl.id_cliente, P.nombres, p.apellidos, p.cedula, p.fecha_nacimiento, p.genero,
+        SELECT cl.id_cliente, p.id_persona, p.nombres, p.apellidos, p.cedula, p.fecha_nacimiento, p.genero,
 d.direccion_escrita, d.direccion_mapa, d.nombre_direccion,
 c.nombre_compania, t.nombre_telefono, t.numero_telefono,
 cl.imagenCliente, cl.imagenCedula, cl.estado
