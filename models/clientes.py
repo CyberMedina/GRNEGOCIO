@@ -153,6 +153,24 @@ def insertar_telefono(db_session, id_compania, nombre_telefono, numero_telefono,
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def actualizar_telefono(db_session, id_telefono, id_compania, nombre_telefono, numero_telefono, estado):
+    try:
+        query = text("""
+        UPDATE telefono
+        SET id_compania = :id_compania, nombre_telefono = :nombre_telefono, numero_telefono = :numero_telefono
+        WHERE id_telefono = :id_telefono;
+        """)
+
+        db_session.execute(query, {"id_compania": id_compania, "nombre_telefono": nombre_telefono,
+                           "numero_telefono": numero_telefono, "estado": estado, "id_telefono": id_telefono})
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
 
 
 def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
@@ -172,6 +190,8 @@ def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+
 
 
 def insertar_direccion_telelfono(db_session, id_direccion, id_telefono, estado):
@@ -208,6 +228,24 @@ def insertar_cliente(db_session, id_persona, id_tipoCliente, imagenCliente, imag
                            "imagenCliente": imagenCliente, "imagenCedula": imagenCedula, "estado": estado})
 
         return id_cliente
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    
+def actualizar_cliente(db_session, id_cliente, id_persona, id_tipoCliente, imagenCliente, imagenCedula, estado):
+    try:
+        query = text("""
+        UPDATE cliente
+        SET id_persona = :id_persona, id_tipoCliente = :id_tipoCliente, imagenCliente = :imagenCliente, imagenCedula = :imagenCedula
+        WHERE id_cliente = :id_cliente;
+        """)
+
+        db_session.execute(query, {"id_persona": id_persona, "id_tipoCliente": id_tipoCliente, "imagenCliente": imagenCliente,
+                           "imagenCedula": imagenCedula, "estado": estado, "id_cliente": id_cliente})
+
+        return True
 
     except SQLAlchemyError as e:
         db_session.rollback()

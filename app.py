@@ -6,13 +6,15 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
+from datetime import datetime
+from babel.dates import format_date
 
 
 # Importando desde archivos locales
 from db import *
 from utils import *
 from models.clientes import *
-from models.constantes import activo, inactivo, no_definido, cliente_normal, cliente_especial, fiador
+from models.constantes import *
 from models.prestamos import *
 
 app = Flask(__name__)
@@ -50,6 +52,37 @@ def guardar_en_sesion_ordenar_clientes():
     print(session.get("numero_seleccionado_ordenar_clientes"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
+
+
+@app.route("/convertir_numeros_a_letras", methods=["POST"])
+def convertir_numeros_a_letras():
+    data = request.get_json()
+    monto = data.get("monto")
+    monto_letras = num2words(monto, lang='es')
+    return jsonify({"monto_letras": monto_letras})
+
+@app.route("/convertir_fechas_a_letras", methods=["POST"])
+def convertir_fechas_a_letras():
+    data = request.get_json()
+    fecha_str = data.get("fecha")  # Obtener la fecha como cadena de texto
+
+    # Convertir la cadena de texto a un objeto de fecha
+    fecha = datetime.strptime(fecha_str, "%Y-%m-%d")  # Suponiendo que la cadena de texto está en formato 'YYYY-MM-DD'
+
+
+
+    dia = num2words(fecha.day, lang='es')
+    mes = format_date(fecha, format='MMMM', locale='es_ES')
+    año = num2words(fecha.year, lang='es')
+
+    texto_fecha = f"a los {dia} días del mes de {mes} del año {año}"
+    print(texto_fecha)  # 'nueve de febrero del año dosmil veinticuatro'
+
+
+
+    return jsonify({"fecha_letras": texto_fecha})
+
+
 
 ##### Prestamos ########
 @app.route("/guardar_en_sesion_ordenar_prestamos", methods=["POST"])
@@ -267,7 +300,7 @@ def anadir_prestamo(id_cliente):
         estadoCivil = request.form['estadoCivil']
         nombreDelegacion = request.form['nombreDelegacion']
         dptoArea = request.form['dptoArea']
-        fotoCopiaColillaInss = request.files['fotoCopiaColillaInss']
+        ftoColillaINSS = request.files['fotoCopiaColillaInss']
         tipoCliente = request.form['tipoCliente']
         montoSolicitado = request.form['montoSolicitado']
         tipoMonedaMontoSolictado = request.form['tipoMonedaMontoSolictado']
@@ -276,7 +309,7 @@ def anadir_prestamo(id_cliente):
         pagoQuincenal = request.form['pagoQuincenal']
         plazoSolicitado = request.form['plazoSolicitado']
         tipoTiempoPlazoSolicitado = request.form['tipoTiempoPlazoSolicitado']
-        IntervaloPagoClienteEspecial = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
+        intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
         fechaPrestamo = request.form['fechaPrestamo']
         montoPrimerPago = request.form['montoPrimerPago']
 
@@ -286,6 +319,7 @@ def anadir_prestamo(id_cliente):
         cedulaFiador = request.form['cedulaFiador']
         fechaNacFiador = request.form['fechaNacFiador']
         generoFiador = request.form['generoFiador']
+        estadoCivilFiador = request.form['estadoCivilFiador']
         direccionFiador = request.form['direccionFiador']
         direccionMapsFiador = request.form['direccionMapsFiador']
         nombreDireccionFiador = request.form['nombreDireccionFiador']
@@ -303,14 +337,19 @@ def anadir_prestamo(id_cliente):
             actualizar_persona(db_session, datos_cliente.id_persona, nombres, apellidos, genero, cedula, fechaNac, activo) #Actualizar datos del cliente y cambiar activo
 
             obtenerID_direccionYtelefono = obtenerID_direccionYtelefono(db_session, datos_cliente.id_persona)
-            id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
-            id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
-            id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
-            id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, activo)
+            actualizar_direccion(db_session, obtenerID_direccionYtelefono.id_direccion, nombreDireccion, direccion, direccionMaps, activo)
+            actualizar_telefono(db_session, obtenerID_direccionYtelefono.id_telefono, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            actualizar_cliente(db_session, id_cliente, datos_cliente.id_persona, tipoCliente, fotoCliente, foto_cedula, activo) #Actualizar datos del cliente y cambiar activo
 
             ## Step-2 form ###
-            id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, activo)
+
+            id_contrato_fiador = insertar_contrato_fiador(db_session, id_cliente, nombre_delegacion, dptoArea_trabajo, estado)
+
+            if tipoCliente == cliente_normal:
+                id_contrato = insertar_contrato(db_session, id_cliente, id_contrato_fiador, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, prestamo_cliente_normal, ftoColillaINSS, activo)
+            elif tipoCliente == cliente_especial:
+                id_contrato = insertar_contrato(db_session, id_cliente, id_contrato_fiador, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, intervalo_tiempoPago, ftoColillaINSS, activo)
+            
             
 
         

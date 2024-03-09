@@ -296,11 +296,11 @@
                               <option value="">Seleccione</option>
                               <option value="1">Delegación Selim Shible</option>
                               <option value="2">Delegación INSS Central</option>
-                              <option value="2">Delegación Siete Sur</option>
-                              <option value="2">Delegación José Benito Escovar (SERVIGOB)</option>
-                              <option value="2">Delegación Julio Buitrago Urroz</option>
-                              <option value="2">Delegación El Triunfo</option>
-                              <option value="3">Otro...</option>
+                              <option value="3">Delegación Siete Sur</option>
+                              <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
+                              <option value="5">Delegación Julio Buitrago Urroz</option>
+                              <option value="6">Delegación El Triunfo</option>
+                              <option value="7">Otro...</option>
                             </select>
                           </div>
                         </div>
@@ -353,10 +353,10 @@
                         <div class="select-style-1">
                           <label>‎ </label>
                           <div class="select-position">
-                            <select class="light-bg" required name="tipoMonedaMontoSolictado"
+                            <select class="light-bg" required name="tipoMonedaMontoSolicitado"
                               id="tipoMonedaMontoSolicitado">
-                              <option value="1">$ Dólares</option>
-                              <option value="2">C$ Córdobas</option>
+                              <option value="1">Dólares</option>
+                              <option value="2">Córdobas</option>
                             </select>
                           </div>
                         </div>
@@ -431,8 +431,8 @@
                             <div class="select-position">
                               <select class="light-bg" required name="IntervaloPagoClienteEspecial"
                                 id="IntervaloPagoClienteEspecial">
-                                <option value="1">Quincenal</option>
-                                <option value="2">Mensual</option>
+                                <option value="15">Quincenal</option>
+                                <option value="30">Mensual</option>
                               </select>
                             </div>
                           </div>
@@ -692,6 +692,57 @@
                         </div>
                         <!-- end select -->
                       </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Estado Civil</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="estadoCivilFiador" id="estadoCivilFiador">
+                              <option value="">Seleccione</option>
+                              <option value="1">Soltero</option>
+                              <option value="2">Casado</option>
+                              <option value="3">Divorciado</option>
+                              <option value="4">Viud@</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="select-style-1">
+                          <label>Nombre de su delegación</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="nombreDelegacionFiador" id="nombreDelegacionFiador">
+                              <option value="">Seleccione</option>
+                              <option value="1">Delegación Selim Shible</option>
+                              <option value="2">Delegación INSS Central</option>
+                              <option value="3">Delegación Siete Sur</option>
+                              <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
+                              <option value="5">Delegación Julio Buitrago Urroz</option>
+                              <option value="6">Delegación El Triunfo</option>
+                              <option value="7">Otro...</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                      <div class="col-sm-6">
+                        <div class="input-style-3">
+                          <label>Departamento o área de trabajo</label>
+                          <input type="text" placeholder="Atención al cliente" name="dptoAreaFiador" id="dptoAreaFiador" />
+                          <span class="icon"><i class="fa-regular fa-building"></i></span>
+                        </div>
+
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de colilla de INSS</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
+                            id="fotoCopiaColillaInss" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div>
                       <!-- end col -->
                       <h5 class="text-bold text-center">Datos de contacto</h5>
                       <div class="input-style-3">
@@ -788,6 +839,14 @@
                       </div>
 
                       <div class="col-12">
+                        <div class="form-check checkbox-style checkbox-danger mb-20">
+                          <input class="form-check-input" type="checkbox" value="5" id="chckbxNoDeudor" />
+                          <label class="form-check-label" for="checkbox-5">
+                            El deudor no cuenta con fiador</label>
+                        </div>
+                      </div>
+
+                      <div class="col-12">
                         <div class="button-group d-flex justify-content-center flex-wrap">
                           <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
                             Anterior
@@ -801,7 +860,7 @@
 
 
                     </div>
-                    <div class="row step step-4">
+                    <div class="row step step-4" id="imprimirContrato">
 
                       <h3 class="mb-5 text-center">
                         Revisión del contrato
@@ -933,7 +992,7 @@
                         <!-- end select -->
                       </div>
 
-                      <div class="col-12">
+                      <!-- <div class="col-12">
                         <div class="input-style-3">
                           <label>Foto del cliente</label>
                           <input type="file" placeholder="" accept="image/*" name="fotoCliente" id="fotoCliente" />
@@ -946,7 +1005,7 @@
                           <input type="file" placeholder="" accept="image/*" name="foto_cedula" id="foto_cedula" />
                           <span class="icon"><i class="fa-regular fa-address-card"></i></span>
                         </div>
-                      </div>
+                      </div> -->
 
                       <!-- end col -->
                       <h3 class="mb-5 text-center">
@@ -990,106 +1049,116 @@
                           <!-- end select -->
                         </div>
 
-                        <h3 class="mb-5 text-center">
-                          Datos del fiador
-                        </h3>
-                        <div class="col-sm-6">
-                          <div class="input-style-3">
-                            <label>Nombre(s)</label>
-                            <input type="text" value="" placeholder="" name="nombresFiadorRevisionContrato"
-                              id="nombresFiadorRevisionContrato" readonly required />
-                            <span class="icon"><i class="lni lni-user"></i></span>
-                          </div>
-                          <!-- end select -->
-                        </div>
-                        <div class="col-sm-6">
-                          <div class="input-style-3">
-                            <label>Apellido(s)</label>
-                            <input type="text" value="" placeholder="" name="apellidosFiadorRevisionContrato"
-                              id="apellidosFiadorRevisionContrato" required readonly />
-                            <span class="icon"><i class="lni lni-user"></i></span>
-                          </div>
-                          <!-- end select -->
-                        </div>
-                        <div class="col-12">
-                          <div class="input-style-3">
-                            <label>Cédula</label>
-                            <input type="text" value="" placeholder="" name="cedulaFiadorRevisionContrato"
-                              id="cedulaFiadorRevisionContrato" readonly />
-                            <span class="icon"><i class="fa-regular fa-id-card"></i></span>
-                          </div>
-                          <!-- end select -->
-                        </div>
-                        <div class="col-12">
-                          <div class="input-style-1">
-                            <label>Fecha de nacimiento</label>
-                            <input type="date" value="" required name="fechaNacFiadorRevisionContrato"
-                              id="fechaNacFiadorRevisionContrato" readonly />
-                          </div>
-                        </div>
-                        <!-- end col -->
-                        <div class="col-sm-6">
-                          <div class="input-style-3">
-                            <label>Género</label>
-                            <input type="text" value="" placeholder="" name="generoFiadorRevisionContrato"
-                              id="generoFiadorRevisionContrato" readonly />
-                            <span class="icon"><i class="fa-solid fa-venus-mars"></i></span>
-                          </div>
-                          <!-- end select -->
-                        </div>
-                        <!-- end col -->
-                        <h5 class="text-bold text-center">Datos de contacto</h5>
-                        <div class="input-style-3">
-                          <label>Dirección</label>
-                          <textarea placeholder="Dirección" rows="4" name="direccionFiadorRevisionContrato"
-                            id="direccionFiadorRevisionContrato" readonly></textarea>
-                          <span class="icon"><i class="lni lni-map ms-2"></i></span>
-                        </div>
-                        <!-- end textarea -->
-                        <!-- end col -->
-                        <div class="col-12">
-                          <div class="input-style-3">
-                            <label>Dirección vía enlace Google Maps</label>
-                            <input value="" type="text" placeholder="" name="direccionMapsFiadorRevisionContrato"
-                              id="direccionMapsFiadorRevisionContrato" readonly />
-                            <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <div class="input-style-1">
-                            <label>Nombre de esa dirección</label>
-                            <input value="" type="text" placeholder="" name="nombreDireccionFiadorRevisionContrato"
-                              id="nombreDireccionFiadorRevisionContrato" readonly />
-                          </div>
-                        </div>
-                        <div class="col-sm-6">
-                          <div class="input-style-1">
-                            <label>Compañia Teléfonica</label>
-                            <input type="text" placeholder="" name="companiaTelefonicaFiadorRevisionContrato"
-                              id="companiaTelefonicaFiadorRevisionContrato" readonly />
-                          </div>
+                        <div class="datos_fiador" id="datos_fiador">
+                          <div class="row">
 
-                          <!-- end select -->
-                        </div>
-                        <!-- end col -->
-                        <div class="col-sm-6">
-                          <div class="input-style-3">
-                            <label>Número de teléfono</label>
-                            <input type="text" placeholder="" name="telefonoFiadorRevisionContrato"
-                              id="telefonoFiadorRevisionContrato" readonly />
-                            <span class="icon"><i class="fa-solid fa-phone"></i></span>
+                            <h3 class="mb-5 text-center">
+                              Datos del fiador
+                            </h3>
+                            <div class="col-sm-6">
+                              <div class="input-style-3">
+                                <label>Nombre(s)</label>
+                                <input type="text" value="" placeholder="" name="nombresFiadorRevisionContrato"
+                                  id="nombresFiadorRevisionContrato" readonly required />
+                                <span class="icon"><i class="lni lni-user"></i></span>
+                              </div>
+                              <!-- end select -->
+                            </div>
+                            <div class="col-sm-6">
+                              <div class="input-style-3">
+                                <label>Apellido(s)</label>
+                                <input type="text" value="" placeholder="" name="apellidosFiadorRevisionContrato"
+                                  id="apellidosFiadorRevisionContrato" required readonly />
+                                <span class="icon"><i class="lni lni-user"></i></span>
+                              </div>
+                              <!-- end select -->
+                            </div>
+                            <div class="col-12">
+                              <div class="input-style-3">
+                                <label>Cédula</label>
+                                <input type="text" value="" placeholder="" name="cedulaFiadorRevisionContrato"
+                                  id="cedulaFiadorRevisionContrato" readonly />
+                                <span class="icon"><i class="fa-regular fa-id-card"></i></span>
+                              </div>
+                              <!-- end select -->
+                            </div>
+                            <div class="col-12">
+                              <div class="input-style-1">
+                                <label>Fecha de nacimiento</label>
+                                <input type="date" value="" required name="fechaNacFiadorRevisionContrato"
+                                  id="fechaNacFiadorRevisionContrato" readonly />
+                              </div>
+                            </div>
+                            <!-- end col -->
+                            <div class="col-sm-6">
+                              <div class="input-style-3">
+                                <label>Género</label>
+                                <input type="text" value="" placeholder="" name="generoFiadorRevisionContrato"
+                                  id="generoFiadorRevisionContrato" readonly />
+                                <span class="icon"><i class="fa-solid fa-venus-mars"></i></span>
+                              </div>
+                              <!-- end select -->
+                            </div>
+                            <!-- end col -->
+                            <h5 class="text-bold text-center">Datos de contacto</h5>
+                            <div class="input-style-3">
+                              <label>Dirección</label>
+                              <textarea placeholder="Dirección" rows="4" name="direccionFiadorRevisionContrato"
+                                id="direccionFiadorRevisionContrato" readonly></textarea>
+                              <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                            </div>
+                            <!-- end textarea -->
+                            <!-- end col -->
+                            <div class="col-12">
+                              <div class="input-style-3">
+                                <label>Dirección vía enlace Google Maps</label>
+                                <input value="" type="text" placeholder="" name="direccionMapsFiadorRevisionContrato"
+                                  id="direccionMapsFiadorRevisionContrato" readonly />
+                                <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                              </div>
+                            </div>
+                            <div class="col-12">
+                              <div class="input-style-1">
+                                <label>Nombre de esa dirección</label>
+                                <input value="" type="text" placeholder="" name="nombreDireccionFiadorRevisionContrato"
+                                  id="nombreDireccionFiadorRevisionContrato" readonly />
+                              </div>
+                            </div>
+                            <div class="col-sm-6">
+                              <div class="input-style-1">
+                                <label>Compañia Teléfonica</label>
+                                <input type="text" placeholder="" name="companiaTelefonicaFiadorRevisionContrato"
+                                  id="companiaTelefonicaFiadorRevisionContrato" readonly />
+                              </div>
+    
+                              <!-- end select -->
+                            </div>
+                            <!-- end col -->
+                            <div class="col-sm-6">
+                              <div class="input-style-3">
+                                <label>Número de teléfono</label>
+                                <input type="text" placeholder="" name="telefonoFiadorRevisionContrato"
+                                  id="telefonoFiadorRevisionContrato" readonly />
+                                <span class="icon"><i class="fa-solid fa-phone"></i></span>
+                              </div>
+                              <!-- end select -->
+                            </div>
+                            <div class="col-sm-6">
+                              <div class="input-style-1">
+                                <label>Nombre del teléfono</label>
+                                <input type="text" placeholder="" name="nombreTelefonoFiadorRevisionContrato"
+                                  id="nombreTelefonoFiadorRevisionContrato" readonly />
+                              </div>
+                              <!-- end select -->
+                            </div>
+
                           </div>
-                          <!-- end select -->
-                        </div>
-                        <div class="col-sm-6">
-                          <div class="input-style-1">
-                            <label>Nombre del teléfono</label>
-                            <input type="text" placeholder="" name="nombreTelefonoFiadorRevisionContrato"
-                              id="nombreTelefonoFiadorRevisionContrato" readonly />
-                          </div>
-                          <!-- end select -->
+                         
+                          
                         </div>
 
+                        
+<!-- 
                         <h3 class="mb-5 text-center">
                           Archivos adjuntos
                         </h3>
@@ -1118,9 +1187,21 @@
                             <span class="icon"><i class="fa-regular fa-address-card"></i></span>
                           </div>
                         </div>
+
+                        <div class="col-12">
+                          
+                        </div> -->
+                      </div>
+                    
+
+                      <div class="col-12">
+                        <a class="main-btn secondary-btn" onclick="enviarFormulario()">1. Imprimir contrato</a>
+                        <a class="main-btn secondary-btn" onclick="enviarCarta()">2. Imprimir carta</a>
                       </div>
 
                       <div class="col-12">
+
+                        <a class="main-btn secondary-btn" onclick="enviarFormulario()">Imprimir contrato</a>
 
                         <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
                           Anterior
@@ -1129,11 +1210,15 @@
                           Finalizar
                         </button>
 
+                        
+                        
+
                       </div>
 
 
 
                     </div>
+                    
 
                   </form>
                 </div>

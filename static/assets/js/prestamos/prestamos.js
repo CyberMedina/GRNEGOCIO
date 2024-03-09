@@ -37,7 +37,7 @@ function revision_contrato() {
 
   inputsForm3.forEach(function (input) {
 
-    if (input.name == "generoFiador" || input.name == "nombreDireccionFiador" || input.name == "idCompaniTelefonicaFiador" || input.name == "nombreTelefonoFiador") {
+    if (input.name == "generoFiador" || input.name == "nombreDireccionFiador" || input.name == "idCompaniTelefonicaFiador" || input.name == "nombreTelefonoFiador" || input.name == "estadoCivilFiador" || input.name == "nombreDelegacionFiador") {
 
       let selected = input.options[input.selectedIndex]
 
@@ -104,12 +104,14 @@ function revision_contrato() {
     }
   }
 
+  return formContrato;
 
 }
 
 
 var currentStep = 1;
 var updateProgressBar;
+let chckbxNoDeudor = document.getElementById('chckbxNoDeudor');
 
 // Seleccionar los botones
 var nextStep = document.querySelector(".next-step");
@@ -117,6 +119,8 @@ var prevStep = document.querySelector(".prev-step");
 
 // Seleccionar el elemento span con el id "step-indicator"
 var stepIndicator = document.getElementById("step-indicator");
+
+var datos_fiador = document.getElementById('datos_fiador');
 
 // Agregar una línea al final de la función displayStep para cambiar el contenido del elemento span
 function displayStep(stepNumber) {
@@ -129,6 +133,7 @@ function displayStep(stepNumber) {
   }
 }
 
+
 $(document).ready(function () {
   $('#multi-step-form').find('.step').slice(1).hide();
 
@@ -139,6 +144,32 @@ $(document).ready(function () {
     if (currentStep < 4) {
       // Solo validar si el paso actual es el 2 o el 3
       if (currentStep == 2 || currentStep == 3) {
+
+
+        datos_fiador.hidden = false;
+
+        if (currentStep == 3 && chckbxNoDeudor.checked) {
+          $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
+          currentStep++;
+
+          revision_contrato();
+
+
+
+
+          datos_fiador.hidden = true;
+
+          setTimeout(function () {
+            $(".step").removeClass("animate__animated animate__fadeOutLeft").hide();
+            $(".step-" + currentStep).show().addClass("animate__animated animate__fadeInRight");
+            updateProgressBar();
+          }, 500);
+          return;
+
+        }
+
+
+
         var formContrato = document.querySelector(".step-" + currentStep); // selecciona el form del paso actual
         var inputs = formContrato.querySelectorAll("input, select"); // selecciona todos los inputs dentro del form
         var valido = true; // asume que el form es válido
@@ -153,6 +184,7 @@ $(document).ready(function () {
         }
 
         if (valido) { // si el form es válido
+
           $(".step-" + currentStep).addClass("animate__animated animate__fadeOutLeft");
           currentStep++;
 
@@ -256,14 +288,14 @@ const diasRestantesCorteModal = document.getElementById('diasRestantesCorteModal
 
 
 // Agregar un evento de cambio al campo de entrada tipoCliente
-tipoClienteComboBox.addEventListener('change', function(){
+tipoClienteComboBox.addEventListener('change', function () {
 
   const tipoCliente = tipoClienteComboBox.value;
 
   if (tipoCliente == "1") {
 
     divIntervaloPagoClienteEspecial.hidden = true;
-    
+
   }
 
   else if (tipoCliente == "2") {
@@ -294,7 +326,7 @@ tasaInteresInput.addEventListener('change', function () {
     calcularPagos();
     calcularMontoPrimerPago();
   }
-  else{
+  else {
     pagoMensualInput.value = 0;
     pagoQuincenalInput.value = 0;
   }
@@ -470,3 +502,271 @@ function calcularMontoPrimerPago() {
 function mostrarDiasRestanteModal(fechaPrestamo, corteQuincena, nombreMes) {
   diasRestantesCorteModal.textContent = "Cantidad de días desde el " + fechaPrestamo.getDate() + " de " + nombreMes + " hasta el " + corteQuincena + " de " + nombreMes;
 }
+
+
+function enviarCarta(){
+
+  revision_contrato();
+
+  var contrato = revision_contrato();
+
+  var nombresPrint = contrato.nombres;
+  var apellidosPrint = contrato.apellidos;
+  var cedulaPrint = contrato.cedula;
+  var estadoCivilPrint = contrato.estadoCivil;
+  var montoSolicitado = contrato.montoSolicitado;
+  var tipoMonedaMontoSolicitadoFiadorPrint = contrato.tipoMonedaMontoSolicitado;
+  var fechaPrestamoPrint = contrato.fechaPrestamo;
+  var montoSolicitadoLetras = "";
+  var fechaLetras = "";
+
+  async function fetchData() {
+    try {
+      const dataMontoFetch1 = { fecha: fechaPrestamoPrint };
+
+        // Primer fetch
+        const responseMonto = await fetch('/convertir_fechas_a_letras', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataMontoFetch1)
+        });
+
+        const dataMontoResult = await responseMonto.json();
+        console.log(dataMontoResult);
+
+        fechaLetras = dataMontoResult.fecha_letras;
+
+        // Segundo fetch
+        const dataFetch2 = { monto: montoSolicitado };
+        const response = await fetch('/convertir_numeros_a_letras', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataFetch2)
+        });
+
+        const dataResult = await response.json();
+        console.log(dataResult);
+        montoSolicitadoLetras = dataResult.monto_letras;
+
+        // Generar contenido HTML y abrir una nueva ventana
+        var contenidoHTML = `
+        <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Solicitud de Préstamo</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  margin: 2cm 3cm; /* Márgenes similares a una carta */
+              }
+      
+              h2 {
+                  text-align: center; /* Centrar los títulos */
+                  margin-bottom: 20px; /* Espacio inferior para el título */
+              }
+      
+              p {
+      
+                  text-align: justify; /* Justificar el texto */
+                  margin-bottom: 20px; /* Espacio inferior para los párrafos */
+              }
+      
+              .firmas {
+                  display: flex;
+                  justify-content: space-between; /* Distribuir las firmas */
+                  align-items: flex-start; /* Alinear las firmas arriba */
+                  margin-top: 50px; /* Espacio superior para las firmas */
+              }
+      
+              .firmas > div {
+                  text-align: center; /* Centrar el contenido de las firmas */
+              }
+          </style>
+      </head>
+      <body>
+      
+          <h2>Solicitud de préstamo</h2>
+          <p>Yo, ${nombresPrint} ${apellidosPrint} mayor de edad, ${estadoCivilPrint}, oficinista, con cédula de identidad No. ${cedulaPrint}, y del domicilio de Managua. Por el presente documento hago constar que soy en deberle al señor Germán René Medina Mayorga la suma de ${montoSolicitadoLetras} ${tipoMonedaMontoSolicitadoFiadorPrint} .</p>
+          
+          <p>Dinero que será cancelado en los primeros 15 días del mes de XXXX, al mismo tiempo autorizo al señor Medina Mayorga que si no cancelo en la fecha antes estipulada podrá hacerme una demanda judicial en mi contra.</p>
+          
+          <p>Dado en la ciudad de Managua ${fechaLetras}. Estando ambos de común acuerdo, firmamos una hoja del mismo tenor.</p>
+          
+          <div class="firmas">
+              <div>
+                  <p>_________________</p>
+                  <p><strong>${nombresPrint} ${apellidosPrint}</strong></p>
+                  <p><strong>Deudor</strong></p>
+              </div>
+              <div>
+                  <p>_______________</p>
+                  <p><strong>Germán René Medina Mayorga</strong></p>
+                  <p><strong>Acreedor</strong></p>
+              </div>
+          </div>
+      
+      
+          <script>
+          // Imprimir la ventana después de cargar el contenido
+          window.onload = function() {
+              window.print(); // Imprimir la ventana
+          };
+      </script>
+      
+      </body>
+      </html>
+        `;
+
+        var nuevaVentana = window.open('', '_blank');
+        nuevaVentana.document.write(contenidoHTML);
+        nuevaVentana.document.close(); // Finalizar escritura en la ventana
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Llamada a la función fetchData
+fetchData();
+
+
+
+}
+
+function enviarFormulario() {
+  // Capturar los valores de los campos
+  revision_contrato();
+  console.log("probando si funciona el enviar formulario");
+
+  // Obtener el formulario
+  var contrato = revision_contrato();
+  console.log(contrato);
+  var nombresPrint = contrato.nombres;
+  var apellidosPrint = contrato.apellidos;
+  var cedulaPrint = contrato.cedula;
+  var fechaNacPrint = contrato.fechaNac;
+  var estadoCivilPrint = contrato.estadoCivil;
+  var dptoAreaPrint = contrato.dptoArea;
+  var nombreDelegacionPrint = contrato.nombreDelegacion;
+  var direccionPrint = contrato.direccion;
+  var telefonoPrint = contrato.telefono;
+
+
+
+  var montoSolicitado = contrato.montoSolicitado;
+  var plazoSolicitado = contrato.plazoSolicitado;
+  var tipoTiempoPlazoSolicitadoPrint = contrato.tipoTiempoPlazoSolicitado;
+  var tipoMonedaMontoSolicitadoFiadorPrint = contrato.tipoMonedaMontoSolicitado;
+  var fechaPrestamoPrint = contrato.fechaPrestamo;
+
+  var nombresFiadorPrint = contrato.nombresFiador;
+  var apellidosFiadorPrint = contrato.apellidosFiador;
+  var cedulaFiadorPrint = contrato.cedulaFiador;
+  var fechaNacFiadorPrint = contrato.fechaNacFiador;
+  var estadiCivilFiadorPrint = contrato.estadoCivilFiador;
+  var dptoAreaFiadorPrint = contrato.dptoAreaFiador;
+  var nombreDelegacionFiadorPrint = contrato.nombreDelegacionFiador;
+  var direccionFiadorPrint = contrato.direccionFiador;
+  var telefonoFiadorPrint = contrato.telefonoFiador;
+
+
+  // Construir el contenido HTML para la nueva ventana
+  var contenidoHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Préstamo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2cm 2cm; /* Márgenes similares a una carta */
+        }
+
+        h2 {
+            text-align: center; /* Centrar los títulos */
+        }
+
+        .firmas {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinear las firmas arriba */
+            margin-top: 20px; /* Espacio superior para las firmas */
+        }
+
+        .firmas > div {
+            margin: 0 10px; /* Ajustar el espacio entre las firmas */
+        }
+
+        .firmas p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Solicitud de préstamo</h2>
+<p><strong>Nombre: </strong>${nombresPrint} ${apellidosPrint}</p>
+<p><strong>Cédula: </strong>${cedulaPrint}</p>
+<p><strong>Fecha de nacimiento: </strong>${fechaNacPrint}</p>
+<p><strong>Estado Civil: </strong>${estadoCivilPrint}</p>
+<p><strong>Departamento o área de trabajo: </strong>${dptoAreaPrint}</p>
+<p><strong>Nombre de la delegación: </strong>${nombreDelegacionPrint}</p>
+<p><strong>Dirección: </strong>${direccionPrint}</p>
+<p><strong>Número de teléfono: </strong>${telefonoPrint}</p>
+
+<h2>Datos del préstamo</h2>
+<p><strong>Monto solicitado: </strong>$${montoSolicitado} ${tipoMonedaMontoSolicitadoFiadorPrint} </p>
+<p><strong>Plazo solicitado: </strong>${plazoSolicitado} ${tipoTiempoPlazoSolicitadoPrint}</p>
+<p><strong>Fecha del préstamo: </strong>${fechaPrestamoPrint}</p>
+
+<h2>Datos del fiador</h2>
+<p><strong>Nombre: </strong>${nombresFiadorPrint} ${apellidosFiadorPrint}</p>
+<p><strong>Cédula: </strong>${cedulaFiadorPrint}</p>
+<p><strong>Fecha de nacimiento: </strong>${fechaNacFiadorPrint}</p>
+<p><strong>Estado Civil: </strong>${estadiCivilFiadorPrint}</p>
+<p><strong>Departamento o área de trabajo: </strong>${dptoAreaFiadorPrint}</p>
+<p><strong>Nombre de la delegación: </strong>${nombreDelegacionFiadorPrint}</p>
+<p><strong>Dirección: </strong>${direccionFiadorPrint}</p>
+<p><strong>Número de teléfono: </strong>${telefonoFiadorPrint}</p>
+
+<br>
+
+<div class="firmas">
+    <div>
+        <p>________________________</p>
+        <br>
+        
+        <p><strong>Firma deudor</strong></p>
+    </div>
+    <div>
+        <p>________________________</p>
+        <br>
+        <p><strong>Firma fiador</strong></p>
+    </div>
+</div>
+
+<script>
+    // Imprimir la ventana después de cargar el contenido
+    window.onload = function() {
+        window.print(); // Imprimir la ventana
+    };
+</script>
+
+</body>
+</html>
+`;
+
+  // Abrir una nueva ventana y escribir el contenido
+  var nuevaVentana = window.open('', '_blank');
+  nuevaVentana.document.write(contenidoHTML);
+  nuevaVentana.document.close(); // Finalizar escritura en la ventana
+
+}
+
