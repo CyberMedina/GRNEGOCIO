@@ -160,7 +160,7 @@ def clientes():
             id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
             id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
             id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_insertar_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, inactivo)
+            id_insertar_cliente = insertar_cliente(db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, cliente_en_proceso)
 
             db_session.commit()
 
@@ -244,7 +244,7 @@ def prestamos():
             id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
             id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
             id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_insertar_cliente = insertar_cliente(db_session, id_persona, no_definido, fotoCliente, foto_cedula, inactivo)
+            id_insertar_cliente = insertar_cliente(db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, inactivo)
 
             db_session.commit()
 
@@ -276,6 +276,7 @@ def anadir_prestamo(id_cliente):
 
     datos_formulario_anadir_prestamo = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "tipos_monedas" : obtener_tipos_monedas(db_session),
         "datos_cliente": datos_cliente
     }
 
@@ -301,17 +302,22 @@ def anadir_prestamo(id_cliente):
         nombreDelegacion = request.form['nombreDelegacion']
         dptoArea = request.form['dptoArea']
         ftoColillaINSS = request.files['fotoCopiaColillaInss']
-        tipoCliente = request.form['tipoCliente']
+        tipoClienteString = request.form['tipoCliente']
+        tipoCliente = int(tipoClienteString)
         montoSolicitado = request.form['montoSolicitado']
-        tipoMonedaMontoSolictado = request.form['tipoMonedaMontoSolictado']
+        tipoMonedaMontoSolictado = request.form['tipoMonedaMontoSolicitado']
         tasaInteres = request.form['tasaInteres']
         pagoMensual = request.form['pagoMensual']
         pagoQuincenal = request.form['pagoQuincenal']
-        plazoSolicitado = request.form['plazoSolicitado']
-        tipoTiempoPlazoSolicitado = request.form['tipoTiempoPlazoSolicitado']
-        intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
         fechaPrestamo = request.form['fechaPrestamo']
+        fechaPago = request.form['fechaPago']
+        intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
         montoPrimerPago = request.form['montoPrimerPago']
+        
+
+
+
+
 
         #### Step-3 form ####
         nombresFiador = request.form['nombresFiador']
@@ -320,6 +326,8 @@ def anadir_prestamo(id_cliente):
         fechaNacFiador = request.form['fechaNacFiador']
         generoFiador = request.form['generoFiador']
         estadoCivilFiador = request.form['estadoCivilFiador']
+        nombreDelegacionFiador = request.form['nombreDelegacionFiador']
+        dptoAreaFiador = request.form['dptoAreaFiador']
         direccionFiador = request.form['direccionFiador']
         direccionMapsFiador = request.form['direccionMapsFiador']
         nombreDireccionFiador = request.form['nombreDireccionFiador']
@@ -328,27 +336,91 @@ def anadir_prestamo(id_cliente):
         nombreTelefonoFiador = request.form['nombreTelefonoFiador']
         fotoFiador = request.files['fotoFiador']
         foto_cedulaFiador = request.files['foto_cedulaFiador']
+        fotoCopiaColillaInssFiador = request.files['fotoCopiaColillaInssFiador']
 
         db_session.begin()
 
         try:
 
             ## Step-1 form ###
+
+            #### Actualizar datos del cliente ####
             actualizar_persona(db_session, datos_cliente.id_persona, nombres, apellidos, genero, cedula, fechaNac, activo) #Actualizar datos del cliente y cambiar activo
 
-            obtenerID_direccionYtelefono = obtenerID_direccionYtelefono(db_session, datos_cliente.id_persona)
-            actualizar_direccion(db_session, obtenerID_direccionYtelefono.id_direccion, nombreDireccion, direccion, direccionMaps, activo)
-            actualizar_telefono(db_session, obtenerID_direccionYtelefono.id_telefono, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            id_direccionYtelefono = obtenerID_direccionYtelefono(db_session, datos_cliente.id_persona)
+            actualizar_direccion(db_session, id_direccionYtelefono.id_direccion, nombreDireccion, direccion, direccionMaps, activo)
+            actualizar_telefono(db_session, id_direccionYtelefono.id_telefono, idCompaniTelefonica, nombreTelefono, telefono, activo)
             actualizar_cliente(db_session, id_cliente, datos_cliente.id_persona, tipoCliente, fotoCliente, foto_cedula, activo) #Actualizar datos del cliente y cambiar activo
+
+            #### Terminar de actualizar datos del cliente ####
 
             ## Step-2 form ###
 
-            id_contrato_fiador = insertar_contrato_fiador(db_session, id_cliente, nombre_delegacion, dptoArea_trabajo, estado)
+            
+            #### Insertamos al fiador ####
 
+            # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
+            if 'chckbxNoDeudor' in request.form:
+                id_persona = insertar_persona(db_session, sin_especificar, sin_especificar, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_direccion = insertar_direccion(db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_telefono = insertar_telefono(db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_persona_direccion = insertar_persona_direccion(db_session, sin_especificar, sin_especificar, activo)
+                id_direccion_telefono = insertar_direccion_telelfono(db_session, sin_especificar, sin_especificar, activo)
+                id_insertar_clienteFiador = insertar_cliente(db_session, id_persona, fiador, sin_especificar, sin_especificar, activo)
+            else:
+                id_persona = insertar_persona(db_session, nombresFiador, apellidosFiador, generoFiador, cedulaFiador, fechaNacFiador, activo)
+                id_direccion = insertar_direccion(db_session, nombreDireccionFiador, direccionFiador, direccionMapsFiador, activo)
+                id_telefono = insertar_telefono(db_session, idCompaniTelefonicaFiador, nombreTelefonoFiador, telefonoFiador, activo)
+                id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
+                id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
+                id_insertar_clienteFiador = insertar_cliente(db_session, id_persona, fiador, fotoFiador, foto_cedulaFiador, activo)
+
+
+
+
+            #### Terminamos de insertar al fiador ####
+
+
+            ##### Insertamos el contrato especificamente datos del fiador #######
+
+            # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
+            if 'chckbxNoDeudor' in request.form:
+                checkbox_no_deudor = request.form['chckbxNoDeudor'] ## Revisar si el fiador es no deudor se recibirá un valor de 5 en el checkbox
+                id_contrato_fiador = insertar_contrato_fiador(db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador,fotoCopiaColillaInssFiador , no_fiador)
+            
+            else:
+                id_contrato_fiador = insertar_contrato_fiador(db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
+
+
+            print(tipoCliente)
+            print("debería haber validaciones aquí")
             if tipoCliente == cliente_normal:
-                id_contrato = insertar_contrato(db_session, id_cliente, id_contrato_fiador, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, prestamo_cliente_normal, ftoColillaINSS, activo)
+
+                print("Cliente normal")
+
+                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS, 
+                      montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo, 
+                      fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
+                
+                print(id_contrato)
+
             elif tipoCliente == cliente_especial:
-                id_contrato = insertar_contrato(db_session, id_cliente, id_contrato_fiador, estadoCivil, nombreDelegacion, dptoArea, montoSolicitado, plazoSolicitado, intervalo_tiempoPago, ftoColillaINSS, activo)
+
+                print("Cliente especial")
+                
+                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS, 
+                      montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo, 
+                      fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
+                
+                print(id_contrato)
+
+
+            db_session.commit()
+
+
+            
+            
+            
             
             
 
@@ -356,7 +428,7 @@ def anadir_prestamo(id_cliente):
         except SQLAlchemyError as e:
             db_session.rollback()
             print(f"Error: {str(e)}")
-            return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
+            return redirect(url_for('prestamos', error="Error en la base de datos"))
         
         except Exception as e:
             db_session.rollback()

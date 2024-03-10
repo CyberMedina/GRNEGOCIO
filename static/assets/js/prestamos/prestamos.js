@@ -69,7 +69,7 @@ function revision_contrato() {
     "nombreTelefono": "nombreTelefonoRevisionContrato",
     "tipoCliente": "tipoClienteRevisionContrato",
     "montoSolicitado": "montoSolicitadoRevisionContrato",
-    "plazoSolicitado": "plazoSolicitadoRevisionContrato",
+    "fechaPagoLetras": "plazoSolicitadoRevisionContrato",
     "fechaPrestamo": "fechaPrestamoRevisionContrato",
     "nombresFiador": "nombresFiadorRevisionContrato",
     "apellidosFiador": "apellidosFiadorRevisionContrato",
@@ -269,9 +269,13 @@ const pagoQuincenalInput = document.getElementById('pagoQuincenal');
 const pagoMensualInputModal = document.getElementById('pagoMensualModal');
 const diasHastaProximoCorte = document.getElementById('diasHastaProximoCorte');
 
+
+
 // Obtener los inputs del formulario normal
 const fechaPrestamoInput = document.getElementById('fechaPrestamo');
 const montoPrimerPagoInput = document.getElementById('montoPrimerPago');
+const fechaPagoLetras = document.getElementById('fechaPagoLetras');
+const fechaPago = document.getElementById('fechaPago');
 
 
 ///////////////   MODALS //////////////////////////////////////////
@@ -368,6 +372,9 @@ function modalAlertafecha() {
   }
 }
 
+
+
+
 // Función para calcular los pagos mensuales y quincenales
 function calcularPagos() {
   // Obtener los valores de los campos de entrada
@@ -385,6 +392,55 @@ function calcularPagos() {
 }
 
 
+
+fechaPago.addEventListener('change', function () {
+  calcularFechaQuincena();
+  });
+  
+
+
+function calcularFechaQuincena(){
+
+  var fechaPagoValue = document.getElementById('fechaPago').value;
+ 
+
+  const [year, month, day] = fechaPagoValue.split('-');
+
+  const fechaPago = new Date(year, month - 1, day);
+
+  
+  const meses = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  const nombreMes = meses[parseInt(month, 10) - 1]; // Restamos 1 porque los índices de los arrays empiezan en 0
+
+  primeraSegundaQuincena = "";
+
+  PrimeraQuincena = 15;
+  SegundaQuincena = 30;
+
+  if (fechaPago.getDate() <= 15) {
+
+    primeraSegundaQuincena = "Primera quincena de " + nombreMes + " de " + year;
+
+  }
+
+  else if (fechaPago.getDate() > 15) {
+
+    primeraSegundaQuincena = "Segunda quincena de " + nombreMes + " de " + year;
+  }
+
+  console.log(primeraSegundaQuincena);
+
+  fechaPagoLetras.value = primeraSegundaQuincena;
+
+
+
+
+
+
+}
 
 
 
@@ -517,6 +573,7 @@ function enviarCarta(){
   var montoSolicitado = contrato.montoSolicitado;
   var tipoMonedaMontoSolicitadoFiadorPrint = contrato.tipoMonedaMontoSolicitado;
   var fechaPrestamoPrint = contrato.fechaPrestamo;
+  var fechaPagoLetrasPrint = contrato.fechaPagoLetras;
   var montoSolicitadoLetras = "";
   var fechaLetras = "";
 
@@ -594,7 +651,7 @@ function enviarCarta(){
           <h2>Solicitud de préstamo</h2>
           <p>Yo, ${nombresPrint} ${apellidosPrint} mayor de edad, ${estadoCivilPrint}, oficinista, con cédula de identidad No. ${cedulaPrint}, y del domicilio de Managua. Por el presente documento hago constar que soy en deberle al señor Germán René Medina Mayorga la suma de ${montoSolicitadoLetras} ${tipoMonedaMontoSolicitadoFiadorPrint} .</p>
           
-          <p>Dinero que será cancelado en los primeros 15 días del mes de XXXX, al mismo tiempo autorizo al señor Medina Mayorga que si no cancelo en la fecha antes estipulada podrá hacerme una demanda judicial en mi contra.</p>
+          <p>Dinero que será cancelado en la ${fechaPagoLetrasPrint}, al mismo tiempo autorizo al señor Medina Mayorga que si no cancelo en la fecha antes estipulada podrá hacerme una demanda judicial en mi contra.</p>
           
           <p>Dado en la ciudad de Managua ${fechaLetras}. Estando ambos de común acuerdo, firmamos una hoja del mismo tenor.</p>
           
@@ -663,6 +720,7 @@ function enviarFormulario() {
   var tipoTiempoPlazoSolicitadoPrint = contrato.tipoTiempoPlazoSolicitado;
   var tipoMonedaMontoSolicitadoFiadorPrint = contrato.tipoMonedaMontoSolicitado;
   var fechaPrestamoPrint = contrato.fechaPrestamo;
+  var fechaPagoLetrasPrint = contrato.fechaPagoLetras;
 
   var nombresFiadorPrint = contrato.nombresFiador;
   var apellidosFiadorPrint = contrato.apellidosFiador;
@@ -723,8 +781,8 @@ function enviarFormulario() {
 
 <h2>Datos del préstamo</h2>
 <p><strong>Monto solicitado: </strong>$${montoSolicitado} ${tipoMonedaMontoSolicitadoFiadorPrint} </p>
-<p><strong>Plazo solicitado: </strong>${plazoSolicitado} ${tipoTiempoPlazoSolicitadoPrint}</p>
 <p><strong>Fecha del préstamo: </strong>${fechaPrestamoPrint}</p>
+<p><strong>Fecha de pago: </strong>${fechaPagoLetrasPrint}</p>
 
 <h2>Datos del fiador</h2>
 <p><strong>Nombre: </strong>${nombresFiadorPrint} ${apellidosFiadorPrint}</p>
@@ -740,13 +798,13 @@ function enviarFormulario() {
 
 <div class="firmas">
     <div>
-        <p>________________________</p>
+        <p>________________________________</p>
         <br>
         
         <p><strong>Firma deudor</strong></p>
     </div>
     <div>
-        <p>________________________</p>
+        <p>________________________________</p>
         <br>
         <p><strong>Firma fiador</strong></p>
     </div>

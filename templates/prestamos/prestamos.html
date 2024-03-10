@@ -52,16 +52,16 @@
                                 <div class="select-style-1 mb-0 ml-10">
                                     <div class="select-position">
                                         <select id="filtro-comboBox" class="p-0 pe-5 border-0">
-                                            {% if session["numero_seleccionado_ordenar_prestamos"] == '0' %}
-                                            <option value="0" selected>Pendientes</option>
+                                            {% if session["numero_seleccionado_ordenar_prestamos"] == '5' %}
+                                            <option value="5" selected>Pendientes</option>
                                             <option value="1">Rechazadas</option>
                                             <option value="2">Todos</option>
                                             {% elif session["numero_seleccionado_ordenar_prestamos"] == '1' %}
-                                            <option value="0">Pendientes</option>
+                                            <option value="5">Pendientes</option>
                                             <option value="1" selected>Rechazadas</option>
                                             <option value="2">Todos</option>
                                             {% elif session["numero_seleccionado_ordenar_prestamos"] == '2' %}
-                                            <option value="0">Pendientes</option>
+                                            <option value="5">Pendientes</option>
                                             <option value="1">Rechazadas</option>
                                             <option value="2" selected>Todos</option>
                                             {% endif %}
@@ -94,7 +94,7 @@
                                     {% for row in listar_clientes_data %}
                                     <tr>
                                         {% for value in row %}
-                                        {% if loop.index0 == index_estado and value == 0 %}
+                                        {% if loop.index0 == index_estado and value == 5 %}
                                         <td class="min-width">
                                             <a href="/anadir_prestamo/{{ row.id_cliente }}"
                                                 class="main-btn primary-btn-light rounded-full btn-hover px-3 py-2">

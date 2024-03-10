@@ -107,7 +107,7 @@
                     style="z-index: 999; position: fixed; top: 10px; right: 650px; padding: 10px; background-color: lightblue; font-size: 30px;"></span>
 
 
-                  <form action="/clientes" method="POST" enctype="multipart/form-data" id="multi-step-form">
+                  <form action="/anadir_prestamo/{{ datos_cliente.id_cliente }}" method="POST" enctype="multipart/form-data" id="multi-step-form">
                     <div class="row step step-1">
                       <h3 class="mb-5 text-center">
                         Verificación de datos personales
@@ -333,8 +333,8 @@
                           <label>Tipo de cliente*</label>
                           <div class="select-position">
                             <select class="light-bg" required name="tipoCliente" id="tipoCliente">
-                              <option value="1">Normal</option>
-                              <option value="2">Especial</option>
+                              <option value="2">Normal</option>
+                              <option value="3">Especial</option>
                             </select>
                           </div>
                         </div>
@@ -355,8 +355,10 @@
                           <div class="select-position">
                             <select class="light-bg" required name="tipoMonedaMontoSolicitado"
                               id="tipoMonedaMontoSolicitado">
-                              <option value="1">Dólares</option>
-                              <option value="2">Córdobas</option>
+                              {% for tipos_mone in tipos_monedas %}
+                              <option value="{{tipos_mone.id_moneda}}" >
+                                {{tipos_mone.nombreMoneda}}</option>
+                              {% endfor %}
                             </select>
                           </div>
                         </div>
@@ -399,18 +401,7 @@
                         </div>
                       </div>
 
-                      <div class="row">
-
-                        <div class="col-sm-4">
-                          <div class="input-style-3">
-                            <label>Plazo solicitado</label>
-                            <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                              name="plazoSolicitado" id="plazoSolicitado" required />
-                            <span class="icon"><i class="fa-regular fa-clock"></i></span>
-                          </div>
-                          <!-- end select -->
-                        </div>
-
+                      <!-- <div class="row">
                         <div class="col-sm-2">
                           <div class="select-style-1">
                             <label>‎</label>
@@ -422,33 +413,51 @@
                               </select>
                             </div>
                           </div>
-                          <!-- end select -->
                         </div>
 
-                        <div id="divIntervaloPago" class="col-sm-4" hidden>
-                          <div class="select-style-1">
-                            <label>Intervalo de pago</label>
-                            <div class="select-position">
-                              <select class="light-bg" required name="IntervaloPagoClienteEspecial"
-                                id="IntervaloPagoClienteEspecial">
-                                <option value="15">Quincenal</option>
-                                <option value="30">Mensual</option>
-                              </select>
-                            </div>
-                          </div>
-                          <!-- end select -->
-                        </div>
-                      </div>
+
+                      </div> -->
 
 
 
 
 
-                      <div class="col-12">
+                      <div class="col-sm-4">
                         <div class="input-style-1">
                           <label>Fecha del préstamo*</label>
                           <input type="date" required name="fechaPrestamo" id="fechaPrestamo" />
                         </div>
+                      </div>
+
+                      <div class="col-sm-4">
+                        <div class="input-style-1">
+                          <label>Fecha del pago*</label>
+                          <input type="date" required name="fechaPago" id="fechaPago" />
+                        </div>
+                      </div>
+
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Fecha del pago letras</label>
+                          <input style="font-size: small !important;" type="text"
+                            name="fechaPagoLetras" id="fechaPagoLetras" readonly/>
+                          <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div id="divIntervaloPago" class="col-sm-4" hidden>
+                        <div class="select-style-1">
+                          <label>Intervalo de pago</label>
+                          <div class="select-position">
+                            <select class="light-bg" required name="IntervaloPagoClienteEspecial"
+                              id="IntervaloPagoClienteEspecial">
+                              <option value="15">Quincenal</option>
+                              <option value="30">Mensual</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end select -->
                       </div>
 
                       <div class="col-sm-4">
@@ -738,8 +747,8 @@
                       <div class="col-12">
                         <div class="input-style-3">
                           <label>Fotocopia de colilla de INSS</label>
-                          <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
-                            id="fotoCopiaColillaInss" />
+                          <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInssFiador"
+                            id="fotoCopiaColillaInssFiador" />
                           <span class="icon"><i class="fa-regular fa-address-card"></i></span>
                         </div>
                       </div>
@@ -1206,7 +1215,7 @@
                         <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
                           Anterior
                         </button>
-                        <button type="button" id="btnGuardar" class="main-btn success-btn btn-hover m-2 next-step">
+                        <button type="POST" id="btnFinalizar" class="main-btn success-btn btn-hover m-2">
                           Finalizar
                         </button>
 
@@ -1252,7 +1261,6 @@
           <div class="content mb-30">
             <h2 class="mb-15">!Atención!</h2>
             <p id="pModalAlertaFecha" class="text-sm text-medium">
-
             </p>
           </div>
           <div class="action d-flex flex-wrap justify-content-center">
