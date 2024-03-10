@@ -16,6 +16,7 @@ from utils import *
 from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
+from models.pagos import *
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -28,7 +29,7 @@ def before_request():
         session["numero_seleccionado_ordenar_clientes"] = '1'
 
     if "numero_seleccionado_ordenar_prestamos" not in session:
-        session["numero_seleccionado_ordenar_prestamos"] = '0'
+        session["numero_seleccionado_ordenar_prestamos"] = '5'
 
     if "numero_seleccionado_ordenar_clientesPrestamos" not in session:
         session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
@@ -452,7 +453,18 @@ def anadir_prestamo(id_cliente):
 
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
 def listado_clientes_pagos():
-    return render_template('pagos/listado_clientes_pagos.html')
+
+    print(session.get("numero_seleccionado_ordenar_clientesPrestamos"))
+    # Obtenemos la lista de clientes 
+
+
+
+
+    formulario_clientes_pagos = {
+        "listado_clientes_pagos": listar_cliesntesPagos(db_session),
+    }
+
+    return render_template('pagos/listado_clientes_pagos.html', **formulario_clientes_pagos)
 
 
 

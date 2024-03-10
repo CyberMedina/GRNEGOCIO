@@ -85,9 +85,11 @@
                                     <!-- end table row-->
                                 </thead>
                                 <tbody>
+                                    {% for cliente in listado_clientes_pagos %}
+                                    {% if cliente.id_tipoCliente == 2 %}
                                     <tr>
                                         <td class="min-width">
-                                            <p>Ruben Doglas Garcia Chevara</p>
+                                            <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
                                             <span class="status-btn close-btn">No ha pagado</span>
                                         </td>
                                         <td class="min-width">
@@ -100,36 +102,8 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td class="min-width">
-                                            <p>Carlos Javier Soza Sanchez</p>
-                                            <span class="status-btn info-btn">Ya pagó</span>
-                                        </td>
-                                        <td class="min-width">
-                                            <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    Ver
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="min-width">
-                                            <p>Juan Obregon García Bustamante</p>
-                                            <span class="status-btn info-btn">Ya pagó</span>
-                                        </td>
-                                        <td class="min-width">
-                                            <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    Ver
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
                                 </tbody>
                             </table>
                             <!-- end table -->
@@ -150,8 +124,10 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        {% for cliente in listado_clientes_pagos %}
+                                        {% if cliente.id_tipoCliente == 3 %}
                                         <td class="min-width">
-                                            <p>Ruben Doglas Garcia Chevara</p>
+                                            <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
                                             <span class="status-btn close-btn">No ha pagado</span>
                                         </td>
                                         <td class="min-width">
@@ -164,36 +140,8 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td class="min-width">
-                                            <p>Carlos Javier Soza Sanchez</p>
-                                            <span class="status-btn info-btn">Ya pagó</span>
-                                        </td>
-                                        <td class="min-width">
-                                            <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    Ver
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="min-width">
-                                            <p>Juan Obregon García Bustamante</p>
-                                            <span class="status-btn close-btn">No ha pagado</span>
-                                        </td>
-                                        <td class="min-width">
-                                            <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    Ver
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
                                 </tbody>
                             </table>
                             <!-- end table -->
@@ -221,7 +169,7 @@
                     <h2 class="text-bold">Juan Ramón</h2>
                     <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
                         <i class="lni lni-cross-circle"></i>
-                      </button>
+                    </button>
                 </div>
                 <div class="modal-body px-0">
                     <div class="content mb-30">

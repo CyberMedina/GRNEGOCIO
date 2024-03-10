@@ -238,7 +238,7 @@ def actualizar_cliente(db_session, id_cliente, id_persona, id_tipoCliente, image
     try:
         query = text("""
         UPDATE cliente
-        SET id_persona = :id_persona, id_tipoCliente = :id_tipoCliente, imagenCliente = :imagenCliente, imagenCedula = :imagenCedula
+        SET id_persona = :id_persona, id_tipoCliente = :id_tipoCliente, imagenCliente = :imagenCliente, imagenCedula = :imagenCedula, estado = :estado
         WHERE id_cliente = :id_cliente;
         """)
 
@@ -269,7 +269,7 @@ JOIN direccion d ON d.id_direccion = pd.id_direccion
 JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
 JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
-WHERE
+WHERE                                     
 cl.estado = :estado;
                      """)
 
