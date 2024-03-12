@@ -35,6 +35,13 @@ def before_request():
         session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
     
 
+@app.route('/obtener_tasa_cambio', methods=['POST'])
+def obtener_tasa_cambio():
+
+    
+
+    tasa_cambio = obtener_tasa_cambio_local()
+    return jsonify({"tasa_cambio": tasa_cambio})
 
 @app.route('/')
 def index():
@@ -492,7 +499,7 @@ def listado_clientes_pagos():
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
 def prueba_extraer_plata():
 
-    dolar = obtener_tasa_cambio()
+    dolar = obtener_tasa_cambio_oficial()
     print(dolar)
 
 

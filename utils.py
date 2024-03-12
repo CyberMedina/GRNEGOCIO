@@ -39,7 +39,7 @@ def contar_resultados(db_session, tabla, estado):
 
 
 
-def obtener_tasa_cambio():
+def obtener_tasa_cambio_oficial():
 
     try:
 
@@ -65,3 +65,35 @@ def obtener_tasa_cambio():
    
 
     return tasa_cambio
+
+
+def obtener_tasa_cambio_local():
+    try:
+        query = text("""SELECT 
+    mc.id_moneda AS id_moneda_origen,
+    mc.nombreMoneda AS nombre_moneda_origen,
+    mc.codigoMoneda AS codigo_moneda_origen,
+    md.id_moneda AS id_moneda_destino,
+    md.nombreMoneda AS nombre_moneda_destino,
+    md.codigoMoneda AS codigo_moneda_destino,
+    tcm.cifraTasaCambio,
+    tcm.cifraTasaCambioAnterior,
+    tcm.fechaModificacion
+FROM 
+    tasaCambioMoneda tcm
+INNER JOIN 
+    moneda mc ON tcm.moneda_origen = mc.id_moneda
+INNER JOIN 
+    moneda md ON tcm.moneda_destino = md.id_moneda;""")
+        result = db_session.execute(query).fetchall()
+        tasa_cambio = result
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+
