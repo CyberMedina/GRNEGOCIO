@@ -449,6 +449,24 @@ def anadir_prestamo(id_cliente):
     return render_template('prestamos/anadir_prestamo.html', **datos_formulario_anadir_prestamo)
 
 
+@app.route('/datos_prestamoV1', methods=['POST'])
+def datos_prestamoV1():
+
+    data = request.get_json()
+    id_cliente = data.get("id_cliente")
+
+    print(id_cliente)
+
+    datos_pago = datos_pagov1(db_session, id_cliente)
+    print(datos_pago)
+
+
+
+    return jsonify({"datos_prestamo": datos_pago}), 200
+
+
+
+
 ########### Empieza el modulo de pagos ############
 
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])

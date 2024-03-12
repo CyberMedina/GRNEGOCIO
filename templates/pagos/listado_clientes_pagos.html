@@ -94,8 +94,7 @@
                                         </td>
                                         <td class="min-width">
                                             <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})" class="main-btn info-btn-light rounded-full btn-hover">
                                                     <i class="fa-solid fa-eye"></i>
                                                     Ver
                                                 </a>
@@ -132,8 +131,7 @@
                                         </td>
                                         <td class="min-width">
                                             <div class="action">
-                                                <a href="#0" class="main-btn info-btn-light rounded-full btn-hover"
-                                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})" class="main-btn info-btn-light rounded-full btn-hover">
                                                     <i class="fa-solid fa-eye"></i>
                                                     Ver
                                                 </a>
@@ -166,13 +164,120 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content card-style">
                 <div class="modal-header px-0 border-0">
-                    <h2 class="text-bold">Juan Ramón</h2>
+
+                    <h4  id="nombre_cliente" class="text-bold mb-2"></h4>
+
+
+
                     <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
                         <i class="lni lni-cross-circle"></i>
                     </button>
                 </div>
                 <div class="modal-body px-0">
                     <div class="content mb-30">
+                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                            <div class="row">
+
+                                <div class="col-12 mb-5">
+                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente"></span></p>
+                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago"></span></p>
+                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo"></span></p>
+                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde"></span></p>
+                                </div>
+
+
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Tasa de cambio</label>
+                                        <input type="text" value=""  pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="inputTasaCambio" id="inputTasaCambio"/>
+                                        <span class="icon" id=""
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+
+                                <h4 class="mb-3">Capital</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputCapitalDolares" id="inputCapitalDolares"
+                                            readonly />
+                                        <span class="icon" id="codigoMonedaCapitalDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                        <p><strong>Tasa de interes: </strong><span id="tasa_interes"></span></p>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputCapitalCordobas"
+                                            id="inputCapitalCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaCapitalCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                                <h4 class="mb-3">Pago mensual</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputPagoMensualDolares"
+                                            id="inputPagoMensualDolares" readonly />
+                                        <span class="icon" id="codigoMonedaPagoMensualDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputPagoMensualCordobas"
+                                            id="inputPagoMensualCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaPagoMensualCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+
+                                <h4 class="mb-3">Pago quincenal</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputPagoQuincenalDolares"
+                                            id="inputPagoQuincenalDolares" readonly />
+                                        <span class="icon" id="codigoMonedaPagoQuincenalDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <!-- end select -->
+
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputPagoQuincenalCordobas"
+                                            id="inputPagoQuincenalCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaPagoQuincenalCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                        </form>
                         <div class="container mb-3">
                             <div class="row">
                                 <a href="#0"
@@ -183,71 +288,6 @@
                                 </a>
                             </div>
                         </div>
-                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
-                            <div class="row">
-                                <h4 class="mb-3">Capital</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
-                                            readonly />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
-                                            id="apellidos" readonly required />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-
-                                <h4 class="mb-3">Pago mensual</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
-                                            readonly />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
-                                            id="apellidos" readonly required />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-
-
-                                <h4 class="mb-3">Pago quincenal</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="$300.00" name="nombres" id="nombres" required
-                                            readonly />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="C$5000.00" placeholder="Apellidos" name="apellidos"
-                                            id="apellidos" readonly required />
-                                        <span class="icon"><i class="lni lni-user"></i></span>
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-                            </div>
-
-                        </form>
                     </div>
                 </div>
             </div>
@@ -261,6 +301,7 @@
             {% block customJS %}
             <script src="{{ url_for('static', filename='assets/js/charts_home.js') }}"></script>
             <script src="{{ url_for('static', filename='assets/js/cloudinary.js') }}"></script>
+            <script src="{{ url_for('static', filename='assets/js/pagos/pagos.js') }}"></script>
 
             <script>
                 // Agregar un listener al evento change del input
