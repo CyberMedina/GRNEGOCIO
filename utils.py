@@ -95,5 +95,30 @@ INNER JOIN
     finally:
         db_session.close()
 
+def actualizar_tasa_cambio_oficial(db_session, crifra_nueva, cifra_anterior):
+
+    try:
+
+
+        query= (""" 
+UPDATE tasaCambioMoneda
+SET cifraTasaCambioAnterior = cifraTasaCambio,
+    cifraTasaCambio = :cifra_nueva,
+    fechaModificacion = NOW()
+WHERE id_tasaCambioMoneda = <id_de_la_tasa_a_actualizar>;
+
+
+
+""")
+        db_session.execute(query, {"cifra_nueva": crifra_nueva, "cifra_anterior": cifra_anterior})
+        db_session.commit()
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
 
 

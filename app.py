@@ -41,7 +41,33 @@ def obtener_tasa_cambio():
     
 
     tasa_cambio = obtener_tasa_cambio_local()
+
+
+
     return jsonify({"tasa_cambio": tasa_cambio})
+
+@app.route('/actualizar_tasa_cambio', methods=['POST'])
+def actualizar_tasa_cambio():
+
+    # Obtener la cifra nueva de la tasa de cambio desde el frontend
+    data = request.get_json()
+    crifra_nueva = data.get("cifra_nueva")
+
+    # Obtener la cifra actual de la tasa de cambio 
+    tabla_tasa_cambio = obtener_tasa_cambio_local()
+
+    # Obtenemos simplemente la cifra actua que hay en la bd y lo insertamos en una variable
+    cifra_actual = tabla_tasa_cambio[0][6]
+
+    # Mandamos a actualizar la tasa de cambio en la bd
+    actualizar_tasa_cambio_oficial(db_session, crifra_nueva, cifra_actual)
+
+
+
+    return jsonify({"message": "Tasa de cambio actualizada correctamente"})
+
+
+
 
 @app.route('/')
 def index():
