@@ -312,8 +312,7 @@
                     <a href="#0"> <i class="lni lni-cog"></i> Settings </a>
                   </li>
                   <li>
-                    <a href="" data-bs-toggle="modal" data-bs-target="#modalTasaCambio"> <i class="lni lni-dollar"></i>
-                      Tasa de cambio </a>
+                    <a href="#" onclick="conversionMoneda();"><i class="lni lni-dollar"></i>Tasa de cambio</a>
                   </li>
                   <li class="divider"></li>
                   <li>
@@ -408,8 +407,8 @@
                 <div class="col-sm-4">
                   <div class="input-style-3">
                     <label>Dólar estadounidense</label>
-                    <input type="text" value="1 " pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                      name="inputTasaCambio" id="inputTasaCambio" readonly />
+                    <input type="text" value="1 " pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="inputTasaCambio"
+                      id="inputTasaCambio" readonly />
                     <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">$</span>
                     <!-- Aquí se mostrará el porcentaje -->
                   </div>
@@ -428,8 +427,9 @@
                 <div class="col-sm-6">
                   <div class="input-style-3">
                     <label class="text-success">Córdobas Nicaraguenses</label>
-                    <input class="text-success" type="text" placeholder="Inserte tasa de cambio" value="" pattern="[0-9]*[.,]?[0-9]*"
-                      inputmode="decimal" name="inputTasaCambio" id="inputTasaCambio"/>
+                    <input class="text-success" type="text" placeholder="" value=""
+                      pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="inputTasaCambioCordobas"
+                      id="inputTasaCambioCordobas" />
                     <span class="icon text-success" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
                     <!-- Aquí se mostrará el porcentaje -->
                   </div>
@@ -442,7 +442,7 @@
                 <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
                   Cancelar
                 </button>
-                <button data-bs-dismiss="modal" class="main-btn btn-sm primary-btn btn-hover m-1">
+                <button onclick="actualizar_tasa_interes();" class="main-btn btn-sm primary-btn btn-hover m-1">
                   Guardar
                 </button>
               </div>
@@ -466,6 +466,11 @@
     <script src="{{ url_for('static', filename='assets/js/polyfill.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
     <script src="https://kit.fontawesome.com/9b8b75d2fb.js" crossorigin="anonymous"></script>
+
+    <script>
+
+
+    </script>
 
     {% block customJS %}{% endblock %}
 

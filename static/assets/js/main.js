@@ -134,3 +134,52 @@ themeSwitch.addEventListener('change', () => {
     (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
   )
 })();
+
+
+
+function conversionMoneda() {
+  console.log('debería entrar a la función conversionMoneda');
+
+  let inputTasaCambio = document.getElementById('inputTasaCambioCordobas');
+
+  // Crea una función asincrona que mediante fetch haga una peticion de una url de mi backend para luego de recibirla haga una cosa u otra
+
+  try {
+    async function obtenerTasaCambio() {
+      let response = await fetch('/obtener_tasa_cambio');
+      let data = await response.json();
+      return data;
+    }
+
+    obtenerTasaCambio().then(data => {
+      console.log('data:', data);
+      if (data.tasa_cambio.cifraTasaCambio === "0.00000") {
+        inputTasaCambio.placeholder = 'Inserte tasa de cambio por favor';
+        inputTasaCambio.value = '';
+      } else {
+        
+        inputTasaCambio.value = data.tasa_cambio.cifraTasaCambio;
+      }
+    }
+    );
+  }
+  catch (error) {
+    console.error('Error:', error.message);
+  }
+
+  let modalTasaCambio = new bootstrap.Modal(document.getElementById('modalTasaCambio'));
+  modalTasaCambio.show();
+
+
+
+}
+
+function inputTasaCambioCordobas()
+{
+  let inputTasaCambioCordobas = document.getElementById('inputTasaCambioCordobas');
+}
+
+
+
+
+

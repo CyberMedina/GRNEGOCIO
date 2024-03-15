@@ -35,37 +35,41 @@ def before_request():
         session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
     
 
-@app.route('/obtener_tasa_cambio', methods=['POST'])
+@app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
 def obtener_tasa_cambio():
 
     
 
     tasa_cambio = obtener_tasa_cambio_local()
 
-
-
     return jsonify({"tasa_cambio": tasa_cambio})
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 @app.route('/actualizar_tasa_cambio', methods=['POST'])
 def actualizar_tasa_cambio():
+    try:
+        data = request.get_json()
+        cifra_nueva = data.get("cifra_nueva")
 
-    # Obtener la cifra nueva de la tasa de cambio desde el frontend
-    data = request.get_json()
-    crifra_nueva = data.get("cifra_nueva")
+        if not isinstance(cifra_nueva, (int, float)):
+            return jsonify({"message": "cifra_nueva debe ser un número"}), 400
 
-    # Obtener la cifra actual de la tasa de cambio 
-    tabla_tasa_cambio = obtener_tasa_cambio_local()
+        tabla_tasa_cambio = obtener_tasa_cambio_local()
+        tasa_cambio = tabla_tasa_cambio[0]
+        id_tasa_cambio = tasa_cambio[0]
+        cifra_actual = tasa_cambio[7]
 
-    # Obtenemos simplemente la cifra actua que hay en la bd y lo insertamos en una variable
-    cifra_actual = tabla_tasa_cambio[0][6]
+        actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, cifra_nueva, cifra_actual)
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        return jsonify({"message": "Error en la base de datos"}), 500
+    finally:
+        db_session.close()
 
-    # Mandamos a actualizar la tasa de cambio en la bd
-    actualizar_tasa_cambio_oficial(db_session, crifra_nueva, cifra_actual)
-
-
-
-    return jsonify({"message": "Tasa de cambio actualizada correctamente"})
-
+    return jsonify({"message": "Tasa de cambio actualizada correctamente"}), 200
 
 
 
@@ -488,10 +492,21 @@ def datos_prestamoV1():
     data = request.get_json()
     id_cliente = data.get("id_cliente")
 
+
+
     print(id_cliente)
 
     datos_pago = datos_pagov1(db_session, id_cliente)
-    print(datos_pago)
+
+
+# Suponiendo que obtener_tasa_cambio_local() devuelve un diccionario directamente
+    tasa_cambioJSON = obtener_tasa_cambio_local()
+
+    # Asignar la tasa de cambio al diccionario de datos_pago
+    datos_pago.append(tasa_cambioJSON)
+
+    
+
 
 
 
