@@ -26,7 +26,21 @@ CREATE TABLE tasaCambioMoneda(
   FOREIGN KEY (moneda_destino) REFERENCES moneda(id_moneda)
 );
 
+INSERT INTO tasaCambioMoneda (id_tasaCambioMoneda, moneda_origen, moneda_destino, cifraTasaCambio, cifraTasaCambioAnterior, fechaModificacion)
+VALUES
+('1', '1', '2', '0.00', '0', NOW());
+
+
+UPDATE tasaCambioMoneda
+SET cifraTasaCambioAnterior = cifraTasaCambio,
+    cifraTasaCambio = <nuevo_valor_tasa_cambio>,
+    fechaModificacion = NOW()
+WHERE id_tasaCambioMoneda = <id_de_la_tasa_a_actualizar>;
+
+
+
 SELECT 
+		tcm.id_tasaCambioMoneda,
     mc.id_moneda AS id_moneda_origen,
     mc.nombreMoneda AS nombre_moneda_origen,
     mc.codigoMoneda AS codigo_moneda_origen,
@@ -42,6 +56,12 @@ INNER JOIN
     moneda mc ON tcm.moneda_origen = mc.id_moneda
 INNER JOIN 
     moneda md ON tcm.moneda_destino = md.id_moneda;
+    
+    
+ SELECT 
+    
+    
+ 
 
 CREATE TABLE companias_telefonicas(
 	id_compania INT PRIMARY KEY,
