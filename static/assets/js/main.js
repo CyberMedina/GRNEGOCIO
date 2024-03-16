@@ -134,3 +134,57 @@ themeSwitch.addEventListener('change', () => {
     (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl)
   )
 })();
+
+
+
+
+function inputTasaCambioCordobas()
+{
+  let inputTasaCambioCordobas = document.getElementById('inputTasaCambioCordobas');
+}
+
+
+
+
+
+function actualizar_tasa_interes(e){
+  e.preventDefault();
+
+  let inputTasaCambio = document.getElementById('inputTasaCambioCordobas');
+
+  let data = {
+    tasa_cambio: inputTasaCambio.value
+  }
+
+  // Haz un fetch con el metodo POST a la url de tu backend para enviar la tasa de cambio con async await y que envie un JSON
+  try {
+    async function enviarTasaCambio() {
+      let response = await fetch('/actualizar_tasa_cambio', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'content-type': 'application/json'
+        }
+      });
+      let responseData = await response.json();
+      return responseData;
+    }
+
+    enviarTasaCambio().then(data => {
+      console.log('data:', data);
+      if (data.status === 'success') {
+        window.location.reload();
+      }
+    }
+    );
+  }
+  catch (error) {
+    console.error('Error:', error.message);
+    alert('Error al enviar la tasa de cambio');
+  }
+
+
+
+
+}
+

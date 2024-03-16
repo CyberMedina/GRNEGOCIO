@@ -35,6 +35,47 @@ def before_request():
         session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
     
 
+@app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
+def obtener_tasa_cambio():
+
+    
+
+    tasa_cambio = obtener_tasa_cambio_local()
+
+    return jsonify({"tasa_cambio": tasa_cambio})
+
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+@cross_origin()
+@app.route('/actualizar_tasa_cambio', methods=['POST'])
+def actualizar_tasa_cambio():
+    try:
+        data = request.get_json()
+        print(data)
+        cifra_nueva = float(data.get("tasa_cambio"))
+        
+
+
+        if not isinstance(cifra_nueva, (int, float)):
+            return jsonify({"status": "cifra_nueva debe ser un número"}), 400
+
+        tabla_tasa_cambio = obtener_tasa_cambio_local()
+        print(tabla_tasa_cambio)
+        id_tasa_cambio = tabla_tasa_cambio["id_tasaCambioMoneda"]
+        cifra_actual = tabla_tasa_cambio["cifraTasaCambio"]
+
+        actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, cifra_nueva, cifra_actual)
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        return jsonify({"status": "Error en la base de datos"}), 500
+    finally:
+        db_session.close()
+
+    return jsonify({"status": "success"}), 200
+
+
 
 @app.route('/')
 def index():
@@ -455,10 +496,21 @@ def datos_prestamoV1():
     data = request.get_json()
     id_cliente = data.get("id_cliente")
 
+
+
     print(id_cliente)
 
     datos_pago = datos_pagov1(db_session, id_cliente)
-    print(datos_pago)
+
+
+# Suponiendo que obtener_tasa_cambio_local() devuelve un diccionario directamente
+    tasa_cambioJSON = obtener_tasa_cambio_local()
+
+    # Asignar la tasa de cambio al diccionario de datos_pago
+    datos_pago.append(tasa_cambioJSON)
+
+    
+
 
 
 
@@ -492,7 +544,7 @@ def listado_clientes_pagos():
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
 def prueba_extraer_plata():
 
-    dolar = obtener_tasa_cambio()
+    dolar = obtener_tasa_cambio_oficial()
     print(dolar)
 
 
