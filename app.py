@@ -48,28 +48,32 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+@cross_origin()
 @app.route('/actualizar_tasa_cambio', methods=['POST'])
 def actualizar_tasa_cambio():
     try:
         data = request.get_json()
-        cifra_nueva = data.get("cifra_nueva")
+        print(data)
+        cifra_nueva = float(data.get("tasa_cambio"))
+        
+
 
         if not isinstance(cifra_nueva, (int, float)):
-            return jsonify({"message": "cifra_nueva debe ser un número"}), 400
+            return jsonify({"status": "cifra_nueva debe ser un número"}), 400
 
         tabla_tasa_cambio = obtener_tasa_cambio_local()
-        tasa_cambio = tabla_tasa_cambio[0]
-        id_tasa_cambio = tasa_cambio[0]
-        cifra_actual = tasa_cambio[7]
+        print(tabla_tasa_cambio)
+        id_tasa_cambio = tabla_tasa_cambio["id_tasaCambioMoneda"]
+        cifra_actual = tabla_tasa_cambio["cifraTasaCambio"]
 
         actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, cifra_nueva, cifra_actual)
     except SQLAlchemyError as e:
         db_session.rollback()
-        return jsonify({"message": "Error en la base de datos"}), 500
+        return jsonify({"status": "Error en la base de datos"}), 500
     finally:
         db_session.close()
 
-    return jsonify({"message": "Tasa de cambio actualizada correctamente"}), 200
+    return jsonify({"status": "success"}), 200
 
 
 

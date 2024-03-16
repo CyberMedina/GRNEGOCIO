@@ -116,7 +116,7 @@ def actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, crifra_nueva, cif
     try:
 
 
-        query= (""" 
+        query= text(""" 
 UPDATE tasaCambioMoneda
 SET cifraTasaCambioAnterior = cifraTasaCambio,
     cifraTasaCambio = :cifra_nueva,

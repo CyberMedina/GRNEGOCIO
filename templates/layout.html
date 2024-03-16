@@ -442,7 +442,7 @@
                 <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
                   Cancelar
                 </button>
-                <button onclick="actualizar_tasa_interes();" class="main-btn btn-sm primary-btn btn-hover m-1">
+                <button onclick="actualizar_tasa_interes(event);" class="main-btn btn-sm primary-btn btn-hover m-1">
                   Guardar
                 </button>
               </div>
@@ -468,6 +468,44 @@
     <script src="https://kit.fontawesome.com/9b8b75d2fb.js" crossorigin="anonymous"></script>
 
     <script>
+
+      function conversionMoneda() {
+        console.log('debería entrar a la función conversionMoneda');
+      
+        let inputTasaCambio = document.getElementById('inputTasaCambioCordobas');
+      
+        // Crea una función asincrona que mediante fetch haga una peticion de una url de mi backend para luego de recibirla haga una cosa u otra
+      
+        try {
+          async function obtenerTasaCambio() {
+            let response = await fetch('/obtener_tasa_cambio');
+            let data = await response.json();
+            return data;
+          }
+      
+          obtenerTasaCambio().then(data => {
+            console.log('data:', data);
+            if (data.tasa_cambio.cifraTasaCambio === "0.00") {
+              inputTasaCambio.placeholder = 'Inserte tasa de cambio por favor';
+              inputTasaCambio.value = '';
+            } else {
+              
+              inputTasaCambio.value = data.tasa_cambio.cifraTasaCambio;
+            }
+          }
+          );
+        }
+        catch (error) {
+          console.error('Error:', error.message);
+        }
+      
+        let modalTasaCambio = new bootstrap.Modal(document.getElementById('modalTasaCambio'));
+        modalTasaCambio.show();
+      
+      
+      
+      }
+      
 
 
     </script>
