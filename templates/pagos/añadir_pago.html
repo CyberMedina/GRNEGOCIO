@@ -1,0 +1,294 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Blank{% endblock %}
+
+{% block customCSS %}{% endblock %}
+
+{% block body %}
+
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Pago de cliente</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="#0">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Pago de cliente
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <!-- ========== tables-wrapper start ========== -->
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div
+                            class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
+                            <div class="row">
+
+                                {% for dataCliente in datos_cliente %}
+
+                                <h3 class="mb-3">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
+
+                                <div class="col-12 mb-5">
+                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{ dataCliente.nombre_tipoCliente }}</span></p>
+                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{ dataCliente.tiempo_pago }}</span></p>
+                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{ dataCliente.fechaPrestamo }}</span></p>
+                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{ dataCliente.fecha_prestamo_desde }}</span></p>
+                                    <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.monto_solicitado }}</span> </strong></p>
+                                    <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes }}%</span></strong></p>
+                                    <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.pagoMensual }}</span></strong></p>
+                                    <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</span></strong></p>
+                                    <P><strong>Plazo</strong></P>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <h6>Año:</h6>
+                                    <div class="select-style-1 mb-0 ml-10">
+                                        <div class="select-position">
+                                            <select id="filtro-comboBox" class="p-0 pe-5 border-0">
+                                                <option value="5" selected>2024</option>
+                                                <option value="1">2023</option>
+                                                <option value="2">2022</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {% endfor %}
+
+                            <a href="#0"
+                                class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
+                                data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                <i class="lni lni-plus"></i>
+                                Añadir pago
+                            </a>
+                        </div>
+                        <div class="table-wrapper table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="lead-info">
+                                            <h6>Fecha del pago</h6>
+                                        </th>
+
+                                        <th class="lead-info">
+                                            <h6>Monto</h6>
+                                        </th>
+                                        <th class="lead-info">
+                                            <h6>Observación</h6>
+                                    </tr>
+                                    <!-- end table row-->
+                                </thead>
+                                <tbody>
+                                    {% for row in listar_clientes_data %}
+                                    <tr>
+                                        {% for value in row %}
+                                        {% if loop.index0 == index_estado and value == 5 %}
+                                        <td class="min-width">
+                                            <a href="/anadir_prestamo/{{ row.id_cliente }}"
+                                                class="main-btn primary-btn-light rounded-full btn-hover px-3 py-2">
+                                                <i class="lni lni-plus"></i>
+                                                Añadir préstamo
+                                            </a>
+                                        </td>
+                                        {% elif loop.index0 == index_estado and value == 1 %}
+                                        <td class="min-width">
+                                            <span class="status-btn success-btn">Cliente activo</span>
+                                        </td>
+                                        {% elif loop.index0 == index_estado and value == 2 %}
+                                        <td class="min-width">
+                                            <span class="status-btn danger-btn">Cliente inactivo</span>
+                                        </td>
+                                        {% else %}
+                                        {% if loop.index0 == index_id %}
+                                        <td class="min-width">
+                                            <div class="lead">
+                                                <div class="lead-image">
+                                                    <img src="assets/images/lead/lead-1.png" alt="" />
+                                                </div>
+                                                <div class="lead-text">
+                                                    <p><a href="{{ row.id_cliente }}">{{ row.Nombre }}</a></p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {% elif loop.index0 > 1 %}
+                                        <td class="min-width">
+                                            <p>{{ value }}</p>
+                                        </td>
+
+                                        {% endif %}
+
+                                        {% endif %}
+                                        {% endfor %}
+                                        <td>
+                                            <div class="action">
+                                                <button class="text-danger">
+                                                    <i class="lni lni-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- end table -->
+                        </div>
+                    </div>
+                    <!-- end card -->
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== tables-wrapper end ========== -->
+    </div>
+    <!-- end container -->
+</section>
+<!-- ========== table components end ========== -->
+
+<div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content card-style">
+            <div class="modal-header px-0 border-0">
+                <h2 class="text-bold">Realizar pago</h2>
+
+                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                    <i class="lni lni-cross-circle"></i>
+                </button>
+            </div>
+            <div class="modal-body px-0">
+                <div class="content mb-30">
+                    <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                        <div class="row">
+                            <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
+                                <div class="input-style-3">
+                                    <label>Tasa de cambio</label>
+                                    <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                        name="inputTasaCambioPago" id="inputTasaCambioPago" />
+                                    <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                    <!-- Aquí se mostrará el porcentaje -->
+                                </div>
+                                <!-- end select -->
+                            </div>
+
+
+                        </div>
+                        <div class="row">
+                            <div class="col-4 col-sm-2 col-md-2">
+                                <div class="select-style-1">
+                                    <label class="">Tipo moneda</label>
+                                    <div class="select-position">
+                                        <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
+                                            <option value="1">$</option selected>
+                                            <option value="2">C$</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!-- end select -->
+                            </div>
+                            <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
+                                <div class="input-style-3">
+                                    <label for="">Cantidad a pagar en C$</label>
+                                    <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                        name="cantidadPagoCordobas" id="cantidadPagoCordobas" required />
+                                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                </div>
+                                <!-- end select -->
+                            </div>
+
+                            <div class="col-6 col-sm-4">
+                                <div class="input-style-3">
+                                    <label for="">Cantidad a pagar en $</label>
+                                    <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                        name="montoSolicitado" id="montoSolicitado" required />
+                                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                    <p>Cifra a pagar: </p>
+                                </div>
+                                <!-- end select -->
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="col-12">
+                            <div class="input-style-1">
+                                <label class="text-bold">Fecha del pago*</label>
+                                <input type="date" required name="fechaPago" id="fechaPago" />
+                            </div>
+                        </div>
+
+
+                        <div class="input-style-3">
+                            <label>Observación</label>
+                            <textarea placeholder="Descripción de la observación" rows="5" name="observacionPago"
+                                id="observacionPago"></textarea>
+                            <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="input-style-3">
+                                <label>Evidencia del pago</label>
+                                <input type="file" placeholder="" accept="image/*" name="fotoCliente"
+                                    id="fotoCliente" />
+                                <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                            </div>
+                        </div>
+
+
+                        <!-- end col -->
+                        <div class="col-12">
+                            <div class="button-group d-flex justify-content-center flex-wrap">
+                                <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
+                                    Guardar
+                                </button>
+                                <button class="main-btn danger-btn-outline m-2">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <!-- end row -->
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- end col -->
+<!-- end input -->
+</div>
+</div>
+
+{% endblock %}
+
+{% block customJS %}
+<script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
+
+
+
+{% endblock %}

@@ -94,7 +94,8 @@
                                         </td>
                                         <td class="min-width">
                                             <div class="action">
-                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})" class="main-btn info-btn-light rounded-full btn-hover">
+                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})"
+                                                    class="main-btn info-btn-light rounded-full btn-hover">
                                                     <i class="fa-solid fa-eye"></i>
                                                     Ver
                                                 </a>
@@ -131,7 +132,8 @@
                                         </td>
                                         <td class="min-width">
                                             <div class="action">
-                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})" class="main-btn info-btn-light rounded-full btn-hover">
+                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})"
+                                                    class="main-btn info-btn-light rounded-full btn-hover">
                                                     <i class="fa-solid fa-eye"></i>
                                                     Ver
                                                 </a>
@@ -160,12 +162,12 @@
 
 
 <div class="warning-modal">
-    <div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="ModalDetalleCliente" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content card-style">
                 <div class="modal-header px-0 border-0">
 
-                    <h4  id="nombre_cliente" class="text-bold mb-2"></h4>
+                    <h4 id="nombre_cliente" class="text-bold mb-2"></h4>
 
 
 
@@ -189,9 +191,9 @@
                                 <div class="col-6">
                                     <div class="input-style-3">
                                         <label>Tasa de cambio</label>
-                                        <input type="text" value=""  pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" name="inputTasaCambio" id="inputTasaCambio"/>
-                                        <span class="icon" id=""
-                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                            name="inputTasaCambio" id="inputTasaCambio" />
+                                        <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
                                         <!-- Aquí se mostrará el porcentaje -->
                                     </div>
                                     <!-- end select -->
@@ -264,7 +266,6 @@
                                     <!-- end select -->
                                 </div>
                                 <!-- end select -->
-
                                 <div class="col-6">
                                     <div class="input-style-3">
                                         <label>Córdobas</label>
@@ -280,12 +281,13 @@
                         </form>
                         <div class="container mb-3">
                             <div class="row">
-                                <a href="#0"
-                                    class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
-                                    data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                {% for cliente in listado_clientes_pagos %}
+                                <a onclick="gestionarPago({{ cliente.id_cliente }});" href="#0"
+                                    class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
                                     <i class="lni lni-plus"></i>
                                     Gestionar pago
                                 </a>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -302,96 +304,5 @@
             <script src="{{ url_for('static', filename='assets/js/charts_home.js') }}"></script>
             <script src="{{ url_for('static', filename='assets/js/cloudinary.js') }}"></script>
             <script src="{{ url_for('static', filename='assets/js/pagos/pagos.js') }}"></script>
-
-            <script>
-                // Agregar un listener al evento change del input
-
-                document.getElementById("filtro-comboBox").addEventListener("change", function () {
-                    const selectedValue = this.value; // Valor seleccionado en el combobox
-                    // Enviar una solicitud POST al servidor con el valor seleccionado
-                    // Puedes usar fetch o axios para hacer la solicitud
-                    // Ejemplo:
-                    console.log('Valor seleccionado:', selectedValue)
-                    fetch("/guardar_en_sesion_ordenar_clientesPrestamos", {
-                        method: "POST",
-                        body: JSON.stringify({ selectedValue }), // Convertir a JSON
-                        headers: {
-                            "Content-Type": "application/json"
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Valor guardado en sesión:", data);
-                            location.reload();
-                        })
-                        .catch(error => {
-                            console.error("Error al guardar en sesión:", error);
-                        });
-                });
-
-                const fileInput = document.querySelector('input[type="file"]');
-
-                fileInput.addEventListener('change', function (event) {
-
-                    // Definiendo los tipos de imagenes permitidos
-                    var types = ['image/png', 'image/jpeg', 'image/gif'];
-
-                    // Obtener el archivo
-                    var file = fileInput.files[0];
-                    // Obtener el tamaño del archivo en bytes
-                    var size = file.size;
-
-                    var type = file.type;
-
-                    // Definir el límite en bytes (5 MB = 5 * 1024 * 1024)
-                    var limit = 5 * 1024 * 1024;
-                    // Comparar el tamaño con el límite
-
-
-                    if (!types.includes(type)) {
-                        // Mostrar un mensaje de error
-                        alert("El archivo no es una imagen.");
-                        // Limpiar el valor del input
-                        fileInput.value = "";
-                    }
-
-                    else if (size > limit) {
-                        // Mostrar un mensaje de error
-                        alert("El archivo es demasiado grande. El tamaño máximo es 5 MB.");
-                        // Limpiar el valor del input
-                        fileInput.value = "";
-                    }
-
-
-                    else if (fileInput.files.length === 0) {
-
-                        // Mostrar un mensaje de error
-                        alert("No se seleccionó ningún archivo.");
-                        // Limpiar el valor del input
-                        fileInput.value = "";
-                    }
-
-
-                    // Obtén los elementos del formulario
-                    const formulario = document.getElementById("anadirClientes");
-                    const btnGuardar = document.getElementById("btnGuardar");
-
-                    // Escucha el evento "input" en los campos requeridos
-                    formulario.addEventListener("input", () => {
-                        // Verifica si todos los campos requeridos están completados
-                        const camposCompletados = Array.from(formulario.elements).every(
-                            (elemento) => elemento.required ? elemento.value.trim() !== "" : true
-                        );
-
-                        // Habilita o deshabilita el botón según los campos completados
-                        btnGuardar.disabled = !camposCompletados;
-                    });
-
-
-
-
-
-                });
-
-            </script>
+            
             {% endblock %}

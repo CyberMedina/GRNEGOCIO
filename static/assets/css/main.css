@@ -3181,6 +3181,14 @@ h6,
   display: block;
   margin-bottom: 10px;
 }
+
+.custom-label{
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A2142;
+  display: block;
+  margin-bottom: 10px;
+}
 .input-style-3 input,
 .input-style-3 textarea {
   width: 100%;
@@ -3591,6 +3599,7 @@ h6,
 /* ========== Theme Change Css =========== */
 .darkTheme .input-style-1 label,
 .darkTheme .input-style-2 label,
+.darkTheme .custom-label,
 .darkTheme .input-style-3 label {
   color: #fff;
 }
@@ -9385,4 +9394,5 @@ h6,
 .w-8 {
   width: 2rem /* 32px */;
 }
+
 

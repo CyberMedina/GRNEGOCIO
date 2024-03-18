@@ -538,6 +538,18 @@ def listado_clientes_pagos():
 
 
 
+@app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
+def añadir_pago(id_cliente):
+
+    formulario_añadir_pago = {
+        "datos_cliente": datos_pagov2(id_cliente, db_session)
+    }
+
+
+    return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
+
+
+
 
 
 
