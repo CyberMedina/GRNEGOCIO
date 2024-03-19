@@ -180,11 +180,23 @@
                         <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
                             <div class="row">
 
-                                <div class="col-12 mb-5">
+                                <div class="col-12 mb-2">
                                     <p><strong>Tipo Cliente: </strong><span id="tipo_cliente"></span></p>
                                     <p><strong>Paga de manera: </strong><span id="tiempo_pago"></span></p>
                                     <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo"></span></p>
                                     <p><strong>Cliente desde hace: </strong><span id="cliente_desde"></span></p>
+                                </div>
+
+                                <div class="container mb-3">
+                                    <div class="row">
+                                        {% for cliente in listado_clientes_pagos %}
+                                        <a onclick="gestionarPago({{ cliente.id_cliente }});" href="#0"
+                                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
+                                            <i class="lni lni-plus"></i>
+                                            Gestionar pago
+                                        </a>
+                                        {% endfor %}
+                                    </div>
                                 </div>
 
 
@@ -279,17 +291,6 @@
                                 </div>
 
                         </form>
-                        <div class="container mb-3">
-                            <div class="row">
-                                {% for cliente in listado_clientes_pagos %}
-                                <a onclick="gestionarPago({{ cliente.id_cliente }});" href="#0"
-                                    class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
-                                    <i class="lni lni-plus"></i>
-                                    Gestionar pago
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

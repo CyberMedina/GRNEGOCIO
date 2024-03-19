@@ -53,14 +53,23 @@
                                 <h3 class="mb-3">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
 
                                 <div class="col-12 mb-5">
-                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{ dataCliente.nombre_tipoCliente }}</span></p>
-                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{ dataCliente.tiempo_pago }}</span></p>
-                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{ dataCliente.fechaPrestamo }}</span></p>
-                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{ dataCliente.fecha_prestamo_desde }}</span></p>
-                                    <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.monto_solicitado }}</span> </strong></p>
-                                    <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes }}%</span></strong></p>
-                                    <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.pagoMensual }}</span></strong></p>
-                                    <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</span></strong></p>
+                                    <span class="status-btn close-btn mb-2">No ha pagado</span>
+                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
+                                            dataCliente.nombre_tipoCliente }}</span></p>
+                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
+                                            dataCliente.tiempo_pago }}</span></p>
+                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
+                                            dataCliente.fechaPrestamo }}</span></p>
+                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
+                                            dataCliente.fecha_prestamo_desde }}</span></p>
+                                    <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                dataCliente.monto_solicitado }}</span> </strong></p>
+                                    <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes }}%</span></strong>
+                                    </p>
+                                    <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
+                                                dataCliente.pagoMensual }}</span></strong></p>
+                                    <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
+                                                dataCliente.pagoQuincenal }}</span></strong></p>
                                     <P><strong>Plazo</strong></P>
                                 </div>
                                 <div class="d-flex align-items-center">
@@ -176,6 +185,7 @@
             <div class="modal-header px-0 border-0">
                 <h2 class="text-bold">Realizar pago</h2>
 
+
                 <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
                     <i class="lni lni-cross-circle"></i>
                 </button>
@@ -183,7 +193,13 @@
             <div class="modal-body px-0">
                 <div class="content mb-30">
                     <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                        
+                        <a id="pagoCompleto" href="#0"
+                        class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
+                        Pago completo
+                    </a>
                         <div class="row">
+
                             <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
                                 <div class="input-style-3">
                                     <label>Tasa de cambio</label>
@@ -210,26 +226,41 @@
                                 </div>
                                 <!-- end select -->
                             </div>
-                            <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
+                            <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en C$</label>
                                     <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
                                         name="cantidadPagoCordobas" id="cantidadPagoCordobas" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                    <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
+                                    </p>
+                                    <input id="cantidadPagarVerificarC$" type="text" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
 
-                            <div class="col-6 col-sm-4">
+
+
+
+
+
+                            {% for dataCliente in datos_cliente %}
+                            <div class="col-8 col-sm-6">
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en $</label>
-                                    <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                                        name="montoSolicitado" id="montoSolicitado" required />
+                                    <input type="text" placeholder="0" pattern="\d*\.?\d*" inputmode="decimal"
+                                        name="cantidadPagar$" id="cantidadPagar$" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    <p>Cifra a pagar: </p>
+                                    <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
+                                        dataCliente.pagoQuincenal }}</p>
+                                    <input id="cantidadPagarVerificar$" type="text"
+                                        value="{{ dataCliente.pagoQuincenal }}" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
+
+
+                            {% endfor %}
 
                         </div>
 
@@ -239,6 +270,7 @@
                             <div class="input-style-1">
                                 <label class="text-bold">Fecha del pago*</label>
                                 <input type="date" required name="fechaPago" id="fechaPago" />
+                                <p id="tiempoPagoLetras"></p>
                             </div>
                         </div>
 
