@@ -1,3 +1,4 @@
+USE grnegocio;
 
 INSERT INTO companias_telefonicas(id_compania, nombre_compania, fecha_realizacion, estado) 
 VALUES
@@ -22,6 +23,10 @@ INSERT INTO moneda(id_moneda, nombreMoneda, codigoMoneda)
 VALUES
 (1, 'Dólares', '$'),
 (2, 'Córdobas', 'C$');
+
+INSERT INTO tasaCambioMoneda (id_tasaCambioMoneda, moneda_origen, moneda_destino, cifraTasaCambio, cifraTasaCambioAnterior, fechaModificacion)
+VALUES
+('1', '1', '2', '0.00', '0', NOW());
 
 
 

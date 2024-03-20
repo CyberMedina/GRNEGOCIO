@@ -1,5 +1,6 @@
 from db import *
 from utils import *
+from models.constantes import *
 
 def listar_cliesntesPagos(db_session):
     try:
@@ -179,3 +180,51 @@ WHERE
     finally:
         db_session.close()
         
+
+def obtener_IdContrato(db_session, id_cliente):
+    try:
+        query = text("""
+                     SELECT id_contrato FROM contrato WHERE id_cliente = :id_cliente AND estado = :estado;
+                     """
+                        )
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'estado': activo}).fetchone()
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+                     
+
+
+def comprobar_primerPago(db_session, id_contrato):
+    try:
+        query = text("""
+        SELECT COUNT (*) FROM historial_pagos WHERE id_contrato = :id_contrato AND estado = :estado;""")
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'estado': activo}).fetchall()
+        return result
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+def obtener_primerPago(db_session, id_contrato):
+    try:
+        query = text("""
+        SELECT montoPrimerPago FROM contrato WHERE id_contrato = :id_contrato;""")
+        result = db_session.execute(query, {'id_contrato': id_contrato}).fetchone()
+        return result
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()

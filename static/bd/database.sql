@@ -18,50 +18,14 @@ CREATE TABLE tasaCambioMoneda(
   id_tasaCambioMoneda INT PRIMARY KEY,
   moneda_origen INT,
   moneda_destino INT,
-  cifraTasaCambio DECIMAL(9,5), 
-  cifraTasaCambioAnterior DECIMAL(9,5),
+  cifraTasaCambio DECIMAL(4,2), 
+  cifraTasaCambioAnterior DECIMAL(4,2),
   fechaModificacion DATETIME,
   
   FOREIGN KEY (moneda_origen) REFERENCES moneda(id_moneda),
   FOREIGN KEY (moneda_destino) REFERENCES moneda(id_moneda)
 );
 
-INSERT INTO tasaCambioMoneda (id_tasaCambioMoneda, moneda_origen, moneda_destino, cifraTasaCambio, cifraTasaCambioAnterior, fechaModificacion)
-VALUES
-('1', '1', '2', '0.00', '0', NOW());
-
-
-UPDATE tasaCambioMoneda
-SET cifraTasaCambioAnterior = cifraTasaCambio,
-    cifraTasaCambio = <nuevo_valor_tasa_cambio>,
-    fechaModificacion = NOW()
-WHERE id_tasaCambioMoneda = <id_de_la_tasa_a_actualizar>;
-
-
-
-SELECT 
-		tcm.id_tasaCambioMoneda,
-    mc.id_moneda AS id_moneda_origen,
-    mc.nombreMoneda AS nombre_moneda_origen,
-    mc.codigoMoneda AS codigo_moneda_origen,
-    md.id_moneda AS id_moneda_destino,
-    md.nombreMoneda AS nombre_moneda_destino,
-    md.codigoMoneda AS codigo_moneda_destino,
-    tcm.cifraTasaCambio,
-    tcm.cifraTasaCambioAnterior,
-    tcm.fechaModificacion
-FROM 
-    tasaCambioMoneda tcm
-INNER JOIN 
-    moneda mc ON tcm.moneda_origen = mc.id_moneda
-INNER JOIN 
-    moneda md ON tcm.moneda_destino = md.id_moneda;
-    
-    
- SELECT 
-    
-    
- 
 
 CREATE TABLE companias_telefonicas(
 	id_compania INT PRIMARY KEY,
@@ -172,10 +136,14 @@ CREATE TABLE contrato(
  
 CREATE TABLE historial_pagos(
    id_historial_pagos INT PRIMARY KEY,
-   id_cliente INT NOT NULL,
+   id_contrato INT NOT NULL,
    fecha_pago DATETIME NOT NULL,
+  id_moneda INT NOT NULL,
+  cifraPago DECIMAL(10,2) NOT NULL,
+  tasa_conversion DECIMAL(10,2) NULL,
+  observacion VARCHAR(250) NULL,
+  evidencia_pago VARCHAR(280) NULL,
    estado INT NOT NULL,
-   FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+   FOREIGN KEY (id_contrato) REFERENCES contrato(id_contrato),
+  FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
 );
-
-

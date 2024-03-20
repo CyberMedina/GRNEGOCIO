@@ -541,8 +541,25 @@ def listado_clientes_pagos():
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
 def añadir_pago(id_cliente):
 
+    monto_a_pagar = 0
+
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+    if num_pagos[0] == 0:
+
+        monto_a_pagar = obtener_primerPago(db_session, id_contrato)
+        
+    else:
+        primer_pago = False
+    
+    
+
+
     formulario_añadir_pago = {
-        "datos_cliente": datos_pagov2(id_cliente, db_session)
+        "datos_cliente": datos_pagov2(id_cliente, db_session),
+        "monto_a_pagar": monto_a_pagar,
     }
 
 
