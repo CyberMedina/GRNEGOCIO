@@ -1,3 +1,5 @@
+from decimal import Decimal
+import re
 from db import *
 from bs4 import BeautifulSoup
 import requests
@@ -138,3 +140,21 @@ WHERE id_tasaCambioMoneda = :id_tasa_cambio;
         db_session.close()
 
 
+
+
+
+
+def convertir_string_a_decimal(input_str):
+    # Encontrar el índice del primer carácter numérico
+    indice_inicio = next((i for i, c in enumerate(input_str) if c.isdigit()), None)
+    
+    # Eliminar cualquier carácter no numérico antes del índice del primer carácter numérico
+    input_str = input_str[indice_inicio:]
+    
+    # Eliminar comas del string
+    input_str = input_str.replace(',', '')
+    
+    # Convertir a decimal
+    decimal_value = float(input_str)
+    
+    return decimal_value

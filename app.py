@@ -1,3 +1,4 @@
+from logging import getLogger
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect
@@ -22,7 +23,9 @@ app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
 CORS(app)
 
-# Si no hay un número seleccionado en sesión, simplemente se asigna 1 
+# Si no hay un número seleccionado en sesión, simplemente se asigna 1
+
+
 @app.before_request
 def before_request():
     if "numero_seleccionado_ordenar_clientes" not in session:
@@ -33,20 +36,18 @@ def before_request():
 
     if "numero_seleccionado_ordenar_clientesPrestamos" not in session:
         session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
-    
+
 
 @app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
 def obtener_tasa_cambio():
-
-    
 
     tasa_cambio = obtener_tasa_cambio_local()
 
     return jsonify({"tasa_cambio": tasa_cambio})
 
-from logging import getLogger
 
 logger = getLogger(__name__)
+
 
 @cross_origin()
 @app.route('/actualizar_tasa_cambio', methods=['POST'])
@@ -55,8 +56,6 @@ def actualizar_tasa_cambio():
         data = request.get_json()
         print(data)
         cifra_nueva = float(data.get("tasa_cambio"))
-        
-
 
         if not isinstance(cifra_nueva, (int, float)):
             return jsonify({"status": "cifra_nueva debe ser un número"}), 400
@@ -66,7 +65,8 @@ def actualizar_tasa_cambio():
         id_tasa_cambio = tabla_tasa_cambio["id_tasaCambioMoneda"]
         cifra_actual = tabla_tasa_cambio["cifraTasaCambio"]
 
-        actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, cifra_nueva, cifra_actual)
+        actualizar_tasa_cambio_oficial(
+            db_session, id_tasa_cambio, cifra_nueva, cifra_actual)
     except SQLAlchemyError as e:
         db_session.rollback()
         return jsonify({"status": "Error en la base de datos"}), 500
@@ -76,18 +76,19 @@ def actualizar_tasa_cambio():
     return jsonify({"status": "success"}), 200
 
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 ######## Rutas para guardar en sesión el número seleccionado en diferentes templates ########
 ##### Clientes#########
+
+
 @app.route("/guardar_en_sesion_ordenar_clientes", methods=["POST"])
 def guardar_en_sesion_ordenar_clientes():
     data = request.get_json()  # Obtener datos enviados desde el frontend
     selected_value = data.get("selectedValue")
-    
+
     # Guardar el valor en la sesión
     session["numero_seleccionado_ordenar_clientes"] = selected_value
     print(session)
@@ -103,15 +104,15 @@ def convertir_numeros_a_letras():
     monto_letras = num2words(monto, lang='es')
     return jsonify({"monto_letras": monto_letras})
 
+
 @app.route("/convertir_fechas_a_letras", methods=["POST"])
 def convertir_fechas_a_letras():
     data = request.get_json()
     fecha_str = data.get("fecha")  # Obtener la fecha como cadena de texto
 
     # Convertir la cadena de texto a un objeto de fecha
-    fecha = datetime.strptime(fecha_str, "%Y-%m-%d")  # Suponiendo que la cadena de texto está en formato 'YYYY-MM-DD'
-
-
+    # Suponiendo que la cadena de texto está en formato 'YYYY-MM-DD'
+    fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
 
     dia = num2words(fecha.day, lang='es')
     mes = format_date(fecha, format='MMMM', locale='es_ES')
@@ -120,10 +121,7 @@ def convertir_fechas_a_letras():
     texto_fecha = f"a los {dia} días del mes de {mes} del año {año}"
     print(texto_fecha)  # 'nueve de febrero del año dosmil veinticuatro'
 
-
-
     return jsonify({"fecha_letras": texto_fecha})
-
 
 
 ##### Prestamos ########
@@ -131,7 +129,7 @@ def convertir_fechas_a_letras():
 def guardar_en_sesion_ordenar_prestamos():
     data = request.get_json()  # Obtener datos enviados desde el frontend
     selected_value = data.get("selectedValue")
-    
+
     # Guardar el valor en la sesión
     session["numero_seleccionado_ordenar_prestamos"] = selected_value
     print(session)
@@ -153,19 +151,19 @@ def guardar_en_sesion_ordenar_clientesPrestamos():
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
 ########### Empieza el modulo de clientes ###########
+
+
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
 
     print(session.get("numero_seleccionado_ordenar_clientes"))
     # Obtenemos la lista de clientes cruda sin procesar
 
-    
-    cursor = listar_clientes(db_session, [session.get("numero_seleccionado_ordenar_clientes")])
-    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado_ordenar_clientes")])
+    cursor = listar_clientes(
+        db_session, [session.get("numero_seleccionado_ordenar_clientes")])
+    cantidad_clientes = contar_resultados(
+        db_session, "cliente", [session.get("numero_seleccionado_ordenar_clientes")])
     print(cursor)
-
-    
-
 
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
@@ -197,12 +195,18 @@ def clientes():
         db_session.begin()
 
         try:
-            id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
-            id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
-            id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
-            id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
-            id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_insertar_cliente = insertar_cliente(db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, cliente_en_proceso)
+            id_persona = insertar_persona(
+                db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
+            id_direccion = insertar_direccion(
+                db_session, nombreDireccion, direccion, direccionMaps, activo)
+            id_telefono = insertar_telefono(
+                db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            id_persona_direccion = insertar_persona_direccion(
+                db_session, id_persona, id_direccion, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(
+                db_session, id_direccion, id_telefono, activo)
+            id_insertar_cliente = insertar_cliente(
+                db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, cliente_en_proceso)
 
             db_session.commit()
 
@@ -210,21 +214,16 @@ def clientes():
             db_session.rollback()
             print(f"Error: {str(e)}")
             return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
-        
+
         except Exception as e:
             db_session.rollback()
             print(f"Unexpected error: {str(e)}")
             return render_template('error.html', error="Unexpected error occurred"), 500
-        
+
         finally:
             db_session.close()
 
-
-
-
         return redirect(url_for('clientes'))
-
-
 
     return render_template('clientes/clientes.html', **formulario_clientes)
 
@@ -232,7 +231,6 @@ def clientes():
 @app.route('/datos_cliente', methods=['GET', 'POST'])
 def datos_cliente():
     return render_template('datos_cliente.html')
-
 
 
 ########### Empieza el modulo de prestamos ###########
@@ -243,13 +241,11 @@ def prestamos():
     print(session.get("numero_seleccionado_ordenar_prestamos"))
     # Obtenemos la lista de clientes cruda sin procesar
 
-    
-    cursor = listar_prestamos(db_session, [session.get("numero_seleccionado_ordenar_prestamos")])
-    cantidad_clientes = contar_resultados(db_session, "cliente", [session.get("numero_seleccionado_ordenar_prestamos")])
+    cursor = listar_prestamos(
+        db_session, [session.get("numero_seleccionado_ordenar_prestamos")])
+    cantidad_clientes = contar_resultados(
+        db_session, "cliente", [session.get("numero_seleccionado_ordenar_prestamos")])
     print(cursor)
-
-    
-
 
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
@@ -281,12 +277,18 @@ def prestamos():
         db_session.begin()
 
         try:
-            id_persona = insertar_persona(db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
-            id_direccion = insertar_direccion(db_session, nombreDireccion, direccion, direccionMaps, activo)
-            id_telefono = insertar_telefono(db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
-            id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
-            id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-            id_insertar_cliente = insertar_cliente(db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, inactivo)
+            id_persona = insertar_persona(
+                db_session, nombres, apellidos, genero, cedula, fechaNac, activo)
+            id_direccion = insertar_direccion(
+                db_session, nombreDireccion, direccion, direccionMaps, activo)
+            id_telefono = insertar_telefono(
+                db_session, idCompaniTelefonica, nombreTelefono, telefono, activo)
+            id_persona_direccion = insertar_persona_direccion(
+                db_session, id_persona, id_direccion, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(
+                db_session, id_direccion, id_telefono, activo)
+            id_insertar_cliente = insertar_cliente(
+                db_session, id_persona, cliente_en_proceso, fotoCliente, foto_cedula, inactivo)
 
             db_session.commit()
 
@@ -294,12 +296,12 @@ def prestamos():
             db_session.rollback()
             print(f"Error: {str(e)}")
             return render_template('clientes/clientes.html', **formulario_clientes, error="Error en la base de datos")
-        
+
         except Exception as e:
             db_session.rollback()
             print(f"Unexpected error: {str(e)}")
             return render_template('error.html', error="Unexpected error occurred"), 500
-        
+
         finally:
             db_session.close()
 
@@ -312,13 +314,11 @@ def anadir_prestamo(id_cliente):
 
     datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
 
-
-
     print(datos_cliente)
 
     datos_formulario_anadir_prestamo = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
-        "tipos_monedas" : obtener_tipos_monedas(db_session),
+        "tipos_monedas": obtener_tipos_monedas(db_session),
         "datos_cliente": datos_cliente
     }
 
@@ -353,13 +353,9 @@ def anadir_prestamo(id_cliente):
         pagoQuincenal = request.form['pagoQuincenal']
         fechaPrestamo = request.form['fechaPrestamo']
         fechaPago = request.form['fechaPago']
-        intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial'] # Solo para clientes especiales
+        # Solo para clientes especiales
+        intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial']
         montoPrimerPago = request.form['montoPrimerPago']
-        
-
-
-
-
 
         #### Step-3 form ####
         nombresFiador = request.form['nombresFiador']
@@ -387,52 +383,66 @@ def anadir_prestamo(id_cliente):
             ## Step-1 form ###
 
             #### Actualizar datos del cliente ####
-            actualizar_persona(db_session, datos_cliente.id_persona, nombres, apellidos, genero, cedula, fechaNac, activo) #Actualizar datos del cliente y cambiar activo
+            actualizar_persona(db_session, datos_cliente.id_persona, nombres, apellidos, genero,
+                               cedula, fechaNac, activo)  # Actualizar datos del cliente y cambiar activo
 
-            id_direccionYtelefono = obtenerID_direccionYtelefono(db_session, datos_cliente.id_persona)
-            actualizar_direccion(db_session, id_direccionYtelefono.id_direccion, nombreDireccion, direccion, direccionMaps, activo)
-            actualizar_telefono(db_session, id_direccionYtelefono.id_telefono, idCompaniTelefonica, nombreTelefono, telefono, activo)
-            actualizar_cliente(db_session, id_cliente, datos_cliente.id_persona, tipoCliente, fotoCliente, foto_cedula, activo) #Actualizar datos del cliente y cambiar activo
+            id_direccionYtelefono = obtenerID_direccionYtelefono(
+                db_session, datos_cliente.id_persona)
+            actualizar_direccion(db_session, id_direccionYtelefono.id_direccion,
+                                 nombreDireccion, direccion, direccionMaps, activo)
+            actualizar_telefono(db_session, id_direccionYtelefono.id_telefono,
+                                idCompaniTelefonica, nombreTelefono, telefono, activo)
+            actualizar_cliente(db_session, id_cliente, datos_cliente.id_persona, tipoCliente,
+                               fotoCliente, foto_cedula, activo)  # Actualizar datos del cliente y cambiar activo
 
             #### Terminar de actualizar datos del cliente ####
 
             ## Step-2 form ###
 
-            
             #### Insertamos al fiador ####
 
             # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
             if 'chckbxNoDeudor' in request.form:
-                id_persona = insertar_persona(db_session, sin_especificar, sin_especificar, sin_especificar, sin_especificar, sin_especificar, activo)
-                id_direccion = insertar_direccion(db_session, sin_especificar, sin_especificar, sin_especificar, activo)
-                id_telefono = insertar_telefono(db_session, sin_especificar, sin_especificar, sin_especificar, activo)
-                id_persona_direccion = insertar_persona_direccion(db_session, sin_especificar, sin_especificar, activo)
-                id_direccion_telefono = insertar_direccion_telelfono(db_session, sin_especificar, sin_especificar, activo)
-                id_insertar_clienteFiador = insertar_cliente(db_session, id_persona, fiador, sin_especificar, sin_especificar, activo)
+                id_persona = insertar_persona(
+                    db_session, sin_especificar, sin_especificar, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_direccion = insertar_direccion(
+                    db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_telefono = insertar_telefono(
+                    db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+                id_persona_direccion = insertar_persona_direccion(
+                    db_session, sin_especificar, sin_especificar, activo)
+                id_direccion_telefono = insertar_direccion_telelfono(
+                    db_session, sin_especificar, sin_especificar, activo)
+                id_insertar_clienteFiador = insertar_cliente(
+                    db_session, id_persona, fiador, sin_especificar, sin_especificar, activo)
             else:
-                id_persona = insertar_persona(db_session, nombresFiador, apellidosFiador, generoFiador, cedulaFiador, fechaNacFiador, activo)
-                id_direccion = insertar_direccion(db_session, nombreDireccionFiador, direccionFiador, direccionMapsFiador, activo)
-                id_telefono = insertar_telefono(db_session, idCompaniTelefonicaFiador, nombreTelefonoFiador, telefonoFiador, activo)
-                id_persona_direccion = insertar_persona_direccion(db_session, id_persona, id_direccion, activo)
-                id_direccion_telefono = insertar_direccion_telelfono(db_session, id_direccion, id_telefono, activo)
-                id_insertar_clienteFiador = insertar_cliente(db_session, id_persona, fiador, fotoFiador, foto_cedulaFiador, activo)
-
-
-
+                id_persona = insertar_persona(
+                    db_session, nombresFiador, apellidosFiador, generoFiador, cedulaFiador, fechaNacFiador, activo)
+                id_direccion = insertar_direccion(
+                    db_session, nombreDireccionFiador, direccionFiador, direccionMapsFiador, activo)
+                id_telefono = insertar_telefono(
+                    db_session, idCompaniTelefonicaFiador, nombreTelefonoFiador, telefonoFiador, activo)
+                id_persona_direccion = insertar_persona_direccion(
+                    db_session, id_persona, id_direccion, activo)
+                id_direccion_telefono = insertar_direccion_telelfono(
+                    db_session, id_direccion, id_telefono, activo)
+                id_insertar_clienteFiador = insertar_cliente(
+                    db_session, id_persona, fiador, fotoFiador, foto_cedulaFiador, activo)
 
             #### Terminamos de insertar al fiador ####
-
 
             ##### Insertamos el contrato especificamente datos del fiador #######
 
             # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
             if 'chckbxNoDeudor' in request.form:
-                checkbox_no_deudor = request.form['chckbxNoDeudor'] ## Revisar si el fiador es no deudor se recibirá un valor de 5 en el checkbox
-                id_contrato_fiador = insertar_contrato_fiador(db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador,fotoCopiaColillaInssFiador , no_fiador)
-            
-            else:
-                id_contrato_fiador = insertar_contrato_fiador(db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
+                # Revisar si el fiador es no deudor se recibirá un valor de 5 en el checkbox
+                checkbox_no_deudor = request.form['chckbxNoDeudor']
+                id_contrato_fiador = insertar_contrato_fiador(
+                    db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, no_fiador)
 
+            else:
+                id_contrato_fiador = insertar_contrato_fiador(
+                    db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
 
             print(tipoCliente)
             print("debería haber validaciones aquí")
@@ -440,52 +450,38 @@ def anadir_prestamo(id_cliente):
 
                 print("Cliente normal")
 
-                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS, 
-                      montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo, 
-                      fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
-                
+                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
+                                                montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
+                                                fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
+
                 print(id_contrato)
 
             elif tipoCliente == cliente_especial:
 
                 print("Cliente especial")
-                
-                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS, 
-                      montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo, 
-                      fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
-                
-                print(id_contrato)
 
+                id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
+                                                montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
+                                                fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
+
+                print(id_contrato)
 
             db_session.commit()
 
-
-            
-            
-            
-            
-            
-
-        
         except SQLAlchemyError as e:
             db_session.rollback()
             print(f"Error: {str(e)}")
             return redirect(url_for('prestamos', error="Error en la base de datos"))
-        
+
         except Exception as e:
             db_session.rollback()
             print(f"Unexpected error: {str(e)}")
             return render_template('error.html', error="Unexpected error occurred"), 500
-        
+
         finally:
             db_session.close()
 
-
-
-
-
         return redirect(url_for('prestamos'))
-
 
     return render_template('prestamos/anadir_prestamo.html', **datos_formulario_anadir_prestamo)
 
@@ -495,8 +491,6 @@ def datos_prestamoV1():
 
     data = request.get_json()
     id_cliente = data.get("id_cliente")
-
-
 
     print(id_cliente)
 
@@ -509,14 +503,7 @@ def datos_prestamoV1():
     # Asignar la tasa de cambio al diccionario de datos_pago
     datos_pago.append(tasa_cambioJSON)
 
-    
-
-
-
-
     return jsonify({"datos_prestamo": datos_pago}), 200
-
-
 
 
 ########### Empieza el modulo de pagos ############
@@ -525,10 +512,7 @@ def datos_prestamoV1():
 def listado_clientes_pagos():
 
     print(session.get("numero_seleccionado_ordenar_clientesPrestamos"))
-    # Obtenemos la lista de clientes 
-
-
-
+    # Obtenemos la lista de clientes
 
     formulario_clientes_pagos = {
         "listado_clientes_pagos": listar_cliesntesPagos(db_session),
@@ -537,37 +521,89 @@ def listado_clientes_pagos():
     return render_template('pagos/listado_clientes_pagos.html', **formulario_clientes_pagos)
 
 
-
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
 def añadir_pago(id_cliente):
 
-    monto_a_pagar = 0
+    if request.method == 'POST':
+
+        id_moneda = request.form['tipoMonedaPago']
+        cantidadPagarDolares = request.form['cantidadPagar$']
+        cantidadPagarCordobas = request.form.get('cantidadPagoCordobas')
+        inputTasaCambioPago = request.form['inputTasaCambioPago']
+        fechaPago = request.form['fechaPago']
+        observacionPago = request.form['observacionPago']
+        evidenciaPago = request.files['evidenciaPago']
+
+        cantidadPagarDolares =  convertir_string_a_decimal(cantidadPagarDolares)
+
+        print(f'cifra cantidad pagar cordobas' + cantidadPagarCordobas)
+
+        id_moneda = int(id_moneda)
+
+        if cantidadPagarCordobas:
+            cantidadPagarCordobas_conversion = convertir_string_a_decimal(cantidadPagarCordobas)
+            
+        else:
+            cantidadPagarCordobas_conversion = 0.00
+            
+
+        print(f'cifra cantidad pagar cordobas NUEVA' + cantidadPagarCordobas)
+
+        print(id_moneda)
+
+        db_session.begin()
+
+        try:
+            id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+            num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+
+
+            id_pagos = insertarPago(
+                db_session, id_contrato, observacionPago, evidenciaPago, fechaPago, activo)
+            insertar_detalle_pagos(
+                db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
+
+            if id_moneda is not dolares:
+                print("HAY UNA CONVERSION")
+                insertar_detalle_pagos(db_session, id_pagos, id_moneda,
+                                       cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
+
+            db_session.commit()
+
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
+
+        except Exception as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
+
+        return redirect(url_for('añadir_pago', id_cliente=id_cliente))
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
     num_pagos = comprobar_primerPago(db_session, id_contrato)
 
     if num_pagos[0] == 0:
+        print("Obteniendo el primer pago")
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_primerPago = monto_primerPago_consulta[0]
 
-        monto_a_pagar = obtener_primerPago(db_session, id_contrato)
-        
     else:
-        primer_pago = False
-    
-    
+        monto_primerPago = None
 
+    print(monto_primerPago)
 
     formulario_añadir_pago = {
         "datos_cliente": datos_pagov2(id_cliente, db_session),
-        "monto_a_pagar": monto_a_pagar,
+        "monto_primerPago": monto_primerPago,
     }
 
-
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
-
-
-
-
 
 
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
@@ -576,16 +612,14 @@ def prueba_extraer_plata():
     dolar = obtener_tasa_cambio_oficial()
     print(dolar)
 
-
     return 'Si entró!'
 
 ########### Empieza el modulo de capital ###########
 
+
 @app.route('/modals', methods=['GET', 'POST'])
 def modals():
     return render_template('modals.html')
-
-
 
 
 def busqueda_capital(nombres):
@@ -611,11 +645,11 @@ def obtener_capital():
         print(data)
         nombres = data['person']
         print(nombres)
-        
+
         try:
             result = busqueda_capital(nombres)
             if result:
-                montoCapital_Texto = f"{num2words(result.monto_capital, lang='es')} cordobas" 
+                montoCapital_Texto = f"{num2words(result.monto_capital, lang='es')} cordobas"
                 return jsonify({"nombres": result.nombres, "monto_capital": montoCapital_Texto}), 200
             else:
                 return jsonify({"message": "No se encontro el nombre"}), 404
@@ -625,6 +659,7 @@ def obtener_capital():
             return jsonify({"message": "Error en la base de datos"}), 500
     else:
         return jsonify({"message": "Metodo no permitido"}), 400
+
 
 @app.route('/pruebita', methods=['GET', 'POST'])
 @cross_origin()

@@ -70,7 +70,9 @@
                                                 dataCliente.pagoMensual }}</span></strong></p>
                                     <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
                                                 dataCliente.pagoQuincenal }}</span></strong></p>
-                                    <P><strong>Plazo</strong></P>
+
+                                    <P><strong>Plazo: <span></span></strong></P>
+
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <h6>Año:</h6>
@@ -163,6 +165,7 @@
                                     </tr>
                                     {% endfor %}
                                 </tbody>
+                                <!-- <iframe src="https://drive.google.com/embeddedfolderview?id=1k8js1ekmHBSZQJ1oHW8v1nP2FpHjoSGt&resourcekey=RESOURCE-KEY#grid" style="width:100%; height:600px; border:0;"></iframe> -->
                             </table>
                             <!-- end table -->
                         </div>
@@ -192,12 +195,14 @@
             </div>
             <div class="modal-body px-0">
                 <div class="content mb-30">
-                    <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
-                        
+                    {% for dataCliente in datos_cliente %}
+                    <form action="/añadir_pago/{{ dataCliente.id_cliente }}" method="POST"
+                        enctype="multipart/form-data" id="anadirClientes">
+
                         <a id="pagoCompleto" href="#0"
-                        class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
-                        Pago completo
-                    </a>
+                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
+                            Pago completo
+                        </a>
                         <div class="row">
 
                             <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
@@ -229,8 +234,8 @@
                             <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en C$</label>
-                                    <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                                        name="cantidadPagoCordobas" id="cantidadPagoCordobas" required />
+                                    <input type="text" placeholder="0" inputmode="decimal"
+                                        name="cantidadPagoCordobas" id="cantidadPagoCordobas" />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
                                     <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
                                     </p>
@@ -239,22 +244,23 @@
                                 <!-- end select -->
                             </div>
 
-
-
-
-
-
-                            {% for dataCliente in datos_cliente %}
                             <div class="col-8 col-sm-6">
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en $</label>
-                                    <input type="text" placeholder="0" pattern="\d*\.?\d*" inputmode="decimal"
+                                    <input type="text" placeholder="0" inputmode="decimal"
                                         name="cantidadPagar$" id="cantidadPagar$" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                    {% if monto_primerPago %}
+                                    <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
+                                        monto_primerPago }}</p>
+                                    <input id="cantidadPagarVerificar$" type="text" value="{{ monto_primerPago }}"
+                                        hidden>
+                                    {% else %}
                                     <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
                                         dataCliente.pagoQuincenal }}</p>
                                     <input id="cantidadPagarVerificar$" type="text"
                                         value="{{ dataCliente.pagoQuincenal }}" hidden>
+                                    {% endif %}
                                 </div>
                                 <!-- end select -->
                             </div>
@@ -285,8 +291,8 @@
                         <div class="col-12">
                             <div class="input-style-3">
                                 <label>Evidencia del pago</label>
-                                <input type="file" placeholder="" accept="image/*" name="fotoCliente"
-                                    id="fotoCliente" />
+                                <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
+                                    id="evidenciaPago" />
                                 <span class="icon"><i class="fa-solid fa-receipt"></i></span>
                             </div>
                         </div>
@@ -295,10 +301,10 @@
                         <!-- end col -->
                         <div class="col-12">
                             <div class="button-group d-flex justify-content-center flex-wrap">
-                                <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
+                                <button type="POST" id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
                                     Guardar
                                 </button>
-                                <button class="main-btn danger-btn-outline m-2">
+                                <button class="main-btn danger-btn-outline m-2" data-bs-dismiss="modal">
                                     Cancelar
                                 </button>
                             </div>

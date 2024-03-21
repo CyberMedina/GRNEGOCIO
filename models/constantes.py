@@ -21,4 +21,10 @@ no_fiador = 5
 # Constantes para campos sin especificar
 sin_especificar = "Sin especificar"
 
+# Constantes para monedas
+dolares = 1
+cordobas = 2
+monedaOriginal = 1
+monedaConversion = 2
+
 
