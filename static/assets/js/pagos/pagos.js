@@ -50,6 +50,8 @@ async function ver_datosClientes(id_cliente) {
 
         inputTasaCambio.value = tasa_interes.cifraTasaCambio;
 
+        gestionarPago.href = '/añadir_pago/' + cliente.id_cliente;
+
 
         conversionMoneda();
 
@@ -84,7 +86,7 @@ var tipo_cliente = document.getElementById('tipo_cliente');
 var tiempo_pago = document.getElementById('tiempo_pago');
 var fecha_prestamo = document.getElementById('fecha_prestamo');
 var cliente_desde = document.getElementById('cliente_desde');
-
+var gestionarPago = document.getElementById('gestionarPago');
 
 
 var inputCapitalDolares = document.getElementById('inputCapitalDolares');
@@ -210,13 +212,6 @@ fileInput.addEventListener('change', function (event) {
 
 
 
-
-function gestionarPago(id_cliente) {
-
-    window.location.href = '/añadir_pago/' + id_cliente;
-
-
-}
 
 
 

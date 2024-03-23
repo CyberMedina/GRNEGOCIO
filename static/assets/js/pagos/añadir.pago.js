@@ -234,6 +234,30 @@ pagoCompleto.addEventListener('click', function () {
 });
 
 
+document.getElementById("filtro-comboBox").addEventListener("change", function () {
+  const selectedValue = this.value; // Valor seleccionado en el combobox
+  // Enviar una solicitud POST al servidor con el valor seleccionado
+  // Puedes usar fetch o axios para hacer la solicitud
+  // Ejemplo:
+  console.log('Valor seleccionado:', selectedValue)
+  fetch("/guardar_año_seleccionado", {
+      method: "POST",
+      body: JSON.stringify({ selectedValue }), // Convertir a JSON
+      headers: {
+          "Content-Type": "application/json"
+      }
+  })
+      .then(response => response.json())
+      .then(data => {
+          console.log("Valor guardado en sesión:", data);
+          location.reload();
+      })
+      .catch(error => {
+          console.error("Error al guardar en sesión:", error);
+      });
+});
+
+
 
 
 

@@ -79,9 +79,13 @@
                                     <div class="select-style-1 mb-0 ml-10">
                                         <div class="select-position">
                                             <select id="filtro-comboBox" class="p-0 pe-5 border-0">
-                                                <option value="5" selected>2024</option>
-                                                <option value="1">2023</option>
-                                                <option value="2">2022</option>
+                                                {% for año in años_pagos %}
+                                                    {% if año[0] == session['año_seleccionado']  %}
+                                                        <option value="{{ año[0] }}" selected>{{ año[0] }}</option>
+                                                    {% else %}
+                                                        <option value="{{ año[0] }}">{{ año[0] }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
                                             </select>
                                         </div>
                                     </div>
@@ -115,55 +119,28 @@
                                     <!-- end table row-->
                                 </thead>
                                 <tbody>
-                                    {% for row in listar_clientes_data %}
+                                    {% for dataPago in pagos %}
+                                    {% if dataPago. estado == 1 %}
                                     <tr>
-                                        {% for value in row %}
-                                        {% if loop.index0 == index_estado and value == 5 %}
                                         <td class="min-width">
-                                            <a href="/anadir_prestamo/{{ row.id_cliente }}"
-                                                class="main-btn primary-btn-light rounded-full btn-hover px-3 py-2">
-                                                <i class="lni lni-plus"></i>
-                                                Añadir préstamo
-                                            </a>
+                                            <p>{{ dataPago.descripcion_quincena }} ({{ dataPago.fecha_pago }})</p>
                                         </td>
-                                        {% elif loop.index0 == index_estado and value == 1 %}
                                         <td class="min-width">
-                                            <span class="status-btn success-btn">Cliente activo</span>
+                                            <p>{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</p>
                                         </td>
-                                        {% elif loop.index0 == index_estado and value == 2 %}
+                                        {% if dataPago.observacion %}
                                         <td class="min-width">
-                                            <span class="status-btn danger-btn">Cliente inactivo</span>
+                                            <p>{{ dataPago.observacion }}</p>
                                         </td>
                                         {% else %}
-                                        {% if loop.index0 == index_id %}
                                         <td class="min-width">
-                                            <div class="lead">
-                                                <div class="lead-image">
-                                                    <img src="assets/images/lead/lead-1.png" alt="" />
-                                                </div>
-                                                <div class="lead-text">
-                                                    <p><a href="{{ row.id_cliente }}">{{ row.Nombre }}</a></p>
-                                                </div>
-                                            </div>
+                                            <p>Sin observación</p>
                                         </td>
-                                        {% elif loop.index0 > 1 %}
-                                        <td class="min-width">
-                                            <p>{{ value }}</p>
-                                        </td>
-
                                         {% endif %}
-
-                                        {% endif %}
-                                        {% endfor %}
-                                        <td>
-                                            <div class="action">
-                                                <button class="text-danger">
-                                                    <i class="lni lni-trash-can"></i>
-                                                </button>
-                                            </div>
-                                        </td>
                                     </tr>
+                                    {% endif %}
                                     {% endfor %}
+
                                 </tbody>
                                 <!-- <iframe src="https://drive.google.com/embeddedfolderview?id=1k8js1ekmHBSZQJ1oHW8v1nP2FpHjoSGt&resourcekey=RESOURCE-KEY#grid" style="width:100%; height:600px; border:0;"></iframe> -->
                             </table>
@@ -196,8 +173,8 @@
             <div class="modal-body px-0">
                 <div class="content mb-30">
                     {% for dataCliente in datos_cliente %}
-                    <form action="/añadir_pago/{{ dataCliente.id_cliente }}" method="POST"
-                        enctype="multipart/form-data" id="anadirClientes">
+                    <form action="/añadir_pago/{{ dataCliente.id_cliente }}" method="POST" enctype="multipart/form-data"
+                        id="anadirClientes">
 
                         <a id="pagoCompleto" href="#0"
                             class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
@@ -234,8 +211,8 @@
                             <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en C$</label>
-                                    <input type="text" placeholder="0" inputmode="decimal"
-                                        name="cantidadPagoCordobas" id="cantidadPagoCordobas" />
+                                    <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
+                                        id="cantidadPagoCordobas" />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
                                     <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
                                     </p>
@@ -247,8 +224,8 @@
                             <div class="col-8 col-sm-6">
                                 <div class="input-style-3">
                                     <label for="">Cantidad a pagar en $</label>
-                                    <input type="text" placeholder="0" inputmode="decimal"
-                                        name="cantidadPagar$" id="cantidadPagar$" required />
+                                    <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
+                                        id="cantidadPagar$" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
                                     {% if monto_primerPago %}
                                     <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{

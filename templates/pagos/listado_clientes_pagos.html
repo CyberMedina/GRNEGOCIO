@@ -189,13 +189,11 @@
 
                                 <div class="container mb-3">
                                     <div class="row">
-                                        {% for cliente in listado_clientes_pagos %}
-                                        <a onclick="gestionarPago({{ cliente.id_cliente }});" href="#0"
+                                        <a id="gestionarPago" href=""
                                             class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
                                             <i class="lni lni-plus"></i>
                                             Gestionar pago
                                         </a>
-                                        {% endfor %}
                                     </div>
                                 </div>
 

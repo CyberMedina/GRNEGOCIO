@@ -18,6 +18,7 @@ from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -26,16 +27,19 @@ CORS(app)
 # Si no hay un número seleccionado en sesión, simplemente se asigna 1
 
 
+def initialize_session_variable(key, default_value):
+    if key not in session:
+        session[key] = default_value
+
+
 @app.before_request
 def before_request():
-    if "numero_seleccionado_ordenar_clientes" not in session:
-        session["numero_seleccionado_ordenar_clientes"] = '1'
+    initialize_session_variable("numero_seleccionado_ordenar_clientes", '1')
+    initialize_session_variable("numero_seleccionado_ordenar_prestamos", '5')
+    initialize_session_variable("numero_seleccionado_ordenar_clientesPrestamos", '0')
+    initialize_session_variable("año_seleccionado", datetime.now().year)
 
-    if "numero_seleccionado_ordenar_prestamos" not in session:
-        session["numero_seleccionado_ordenar_prestamos"] = '5'
-
-    if "numero_seleccionado_ordenar_clientesPrestamos" not in session:
-        session["numero_seleccionado_ordenar_clientesPrestamos"] = '0'
+    
 
 
 @app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
@@ -54,14 +58,12 @@ logger = getLogger(__name__)
 def actualizar_tasa_cambio():
     try:
         data = request.get_json()
-        print(data)
         cifra_nueva = float(data.get("tasa_cambio"))
 
         if not isinstance(cifra_nueva, (int, float)):
             return jsonify({"status": "cifra_nueva debe ser un número"}), 400
 
         tabla_tasa_cambio = obtener_tasa_cambio_local()
-        print(tabla_tasa_cambio)
         id_tasa_cambio = tabla_tasa_cambio["id_tasaCambioMoneda"]
         cifra_actual = tabla_tasa_cambio["cifraTasaCambio"]
 
@@ -78,6 +80,8 @@ def actualizar_tasa_cambio():
 
 @app.route('/')
 def index():
+
+
     return render_template('index.html')
 
 ######## Rutas para guardar en sesión el número seleccionado en diferentes templates ########
@@ -95,6 +99,22 @@ def guardar_en_sesion_ordenar_clientes():
     print(session.get("numero_seleccionado_ordenar_clientes"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
+
+@app.route("/guardar_año_seleccionado", methods=["POST"])
+def guardar_año_seleccionado():
+    data = request.get_json()
+    selected_value = int(data.get("selectedValue"))
+
+    session["año_seleccionado"] = selected_value
+    print(session)
+    print(session.get("año_seleccionado"))
+
+    return jsonify({"message": "Año guardado en sesión correctamente"})
+
+
+
+
+
 
 
 @app.route("/convertir_numeros_a_letras", methods=["POST"])
@@ -119,7 +139,6 @@ def convertir_fechas_a_letras():
     año = num2words(fecha.year, lang='es')
 
     texto_fecha = f"a los {dia} días del mes de {mes} del año {año}"
-    print(texto_fecha)  # 'nueve de febrero del año dosmil veinticuatro'
 
     return jsonify({"fecha_letras": texto_fecha})
 
@@ -163,7 +182,7 @@ def clientes():
         db_session, [session.get("numero_seleccionado_ordenar_clientes")])
     cantidad_clientes = contar_resultados(
         db_session, "cliente", [session.get("numero_seleccionado_ordenar_clientes")])
-    print(cursor)
+
 
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
@@ -175,7 +194,6 @@ def clientes():
         "index_id": obtener_index_columna(cursor, "id_cliente")
     }
 
-    print(formulario_clientes)
 
     if request.method == 'POST':
         nombres = request.form['nombres']
@@ -237,7 +255,6 @@ def datos_cliente():
 @app.route('/prestamos', methods=['GET', 'POST'])
 def prestamos():
 
-    print("PRESTMOAS")
     print(session.get("numero_seleccionado_ordenar_prestamos"))
     # Obtenemos la lista de clientes cruda sin procesar
 
@@ -245,7 +262,7 @@ def prestamos():
         db_session, [session.get("numero_seleccionado_ordenar_prestamos")])
     cantidad_clientes = contar_resultados(
         db_session, "cliente", [session.get("numero_seleccionado_ordenar_prestamos")])
-    print(cursor)
+
 
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
@@ -257,7 +274,6 @@ def prestamos():
         "index_id": obtener_index_columna(cursor, "id_cliente")
     }
 
-    print(formulario_clientes)
 
     if request.method == 'POST':
         nombres = request.form['nombres']
@@ -310,11 +326,11 @@ def prestamos():
 
 @app.route('/anadir_prestamo/<int:id_cliente>', methods=['GET', 'POST'])
 def anadir_prestamo(id_cliente):
-    print(id_cliente)
+
 
     datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
 
-    print(datos_cliente)
+
 
     datos_formulario_anadir_prestamo = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
@@ -444,27 +460,25 @@ def anadir_prestamo(id_cliente):
                 id_contrato_fiador = insertar_contrato_fiador(
                     db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
 
-            print(tipoCliente)
-            print("debería haber validaciones aquí")
+
             if tipoCliente == cliente_normal:
 
-                print("Cliente normal")
+
 
                 id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
                                                 montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
                                                 fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
 
-                print(id_contrato)
 
             elif tipoCliente == cliente_especial:
 
-                print("Cliente especial")
+
 
                 id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
                                                 montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
                                                 fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
 
-                print(id_contrato)
+           
 
             db_session.commit()
 
@@ -492,7 +506,7 @@ def datos_prestamoV1():
     data = request.get_json()
     id_cliente = data.get("id_cliente")
 
-    print(id_cliente)
+  
 
     datos_pago = datos_pagov1(db_session, id_cliente)
 
@@ -524,6 +538,8 @@ def listado_clientes_pagos():
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
 def añadir_pago(id_cliente):
 
+    print(session.get("año_seleccionado"))
+
     if request.method == 'POST':
 
         id_moneda = request.form['tipoMonedaPago']
@@ -536,7 +552,7 @@ def añadir_pago(id_cliente):
 
         cantidadPagarDolares =  convertir_string_a_decimal(cantidadPagarDolares)
 
-        print(f'cifra cantidad pagar cordobas' + cantidadPagarCordobas)
+
 
         id_moneda = int(id_moneda)
 
@@ -546,10 +562,6 @@ def añadir_pago(id_cliente):
         else:
             cantidadPagarCordobas_conversion = 0.00
             
-
-        print(f'cifra cantidad pagar cordobas NUEVA' + cantidadPagarCordobas)
-
-        print(id_moneda)
 
         db_session.begin()
 
@@ -561,12 +573,12 @@ def añadir_pago(id_cliente):
 
 
             id_pagos = insertarPago(
-                db_session, id_contrato, observacionPago, evidenciaPago, fechaPago, activo)
+                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, activo)
             insertar_detalle_pagos(
                 db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 
             if id_moneda is not dolares:
-                print("HAY UNA CONVERSION")
+              
                 insertar_detalle_pagos(db_session, id_pagos, id_moneda,
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
 
@@ -589,18 +601,42 @@ def añadir_pago(id_cliente):
     num_pagos = comprobar_primerPago(db_session, id_contrato)
 
     if num_pagos[0] == 0:
-        print("Obteniendo el primer pago")
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_primerPago = monto_primerPago_consulta[0]
 
     else:
         monto_primerPago = None
 
-    print(monto_primerPago)
+
+    # Procesos para las sesiones de los filtros de los pagos
+    años_pagos = obtener_años_pagos(db_session, id_cliente, activo)
+
+    print(type(años_pagos))
+
+    pagos = []
+
+    if años_pagos:
+        # Convertir los elementos de años_pagos a enteros
+        años_pagos_verificar = [int(año[0]) for año in años_pagos]
+
+            # Luego validamos si está en sesión el año de los pagos de ese contrato
+        if session["año_seleccionado"] in años_pagos_verificar:
+            print("Si está en la lista")
+            pagos = pagos_por_contrato(db_session, id_cliente, año=session.get("año_seleccionado"), estado=activo)
+            print(pagos)
+        else:
+            print(f'No está en la lista {session["año_seleccionado"]}')
+            pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado=activo)
+    else:
+        pagos = []
+
+
 
     formulario_añadir_pago = {
         "datos_cliente": datos_pagov2(id_cliente, db_session),
         "monto_primerPago": monto_primerPago,
+        "pagos" : pagos,
+        "años_pagos": años_pagos
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
@@ -610,7 +646,7 @@ def añadir_pago(id_cliente):
 def prueba_extraer_plata():
 
     dolar = obtener_tasa_cambio_oficial()
-    print(dolar)
+
 
     return 'Si entró!'
 
@@ -623,7 +659,7 @@ def modals():
 
 
 def busqueda_capital(nombres):
-    print(nombres)
+
     query = text("""
     SELECT p.nombres, c.monto_capital
     FROM persona p
@@ -632,7 +668,7 @@ def busqueda_capital(nombres):
     """)
 
     result = db_session.execute(query, {"nombres": nombres}).fetchone()
-    print(result)
+
 
     return result
 
@@ -642,9 +678,9 @@ def busqueda_capital(nombres):
 def obtener_capital():
     if request.method == 'POST':
         data = request.json
-        print(data)
+    
         nombres = data['person']
-        print(nombres)
+    
 
         try:
             result = busqueda_capital(nombres)

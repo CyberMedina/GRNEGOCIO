@@ -233,18 +233,18 @@ def obtener_primerPago(db_session, id_contrato):
         db_session.close()
 
 
-def insertarPago(db_session, id_contrato, observacion, evidencia_pago, fecha_pago, estado):
+def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, estado):
     try:
         # Obtener el ID de la tabla persona
         id_pagos = ObtenerIDTabla(db_session, "id_pagos", "pagos")
 
         # Insertar el pago
         query = text("""
-                     INSERT INTO pagos (id_pagos, id_contrato, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado)
-                        VALUES (:id_pagos, :id_contrato, :observacion, :evidencia_pago, :fecha_pago, NOW(), :estado);
+                     INSERT INTO pagos (id_pagos, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado)
+                        VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, NOW(), :estado);
                         """
                         )
-        db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'estado': estado})
+        db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'id_cliente':id_cliente, 'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'estado': estado})
         db_session.commit()
         return id_pagos
 
@@ -281,3 +281,73 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
 
 
 
+def pagos_por_contrato(db_session, id_cliente, año, estado):
+    try:
+        print(f'El año a preguntar es: {año}')
+        query = text(""" SELECT 
+    p.id_pagos,
+    p.observacion, 
+    p.evidencia_pago, 
+    p.fecha_pago, 
+    p.fecha_realizacion_pago, 
+    m.codigoMoneda, 
+    m.nombreMoneda, 
+    dp.cifraPago, 
+    dp.tasa_conversion, 
+    dp.estado,
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    c.estado
+FROM 
+    pagos p
+JOIN 
+    detalle_pagos dp ON p.id_pagos = dp.id_pagos
+JOIN 
+    moneda m ON dp.id_moneda = m.id_moneda
+JOIN 
+    contrato c ON p.id_contrato = c.id_contrato
+WHERE 
+    p.id_cliente = :id_cliente AND YEAR(p.fecha_pago) = :año AND c.estado = :estado 
+ORDER BY 
+    p.fecha_pago, p.id_pagos ASC;""")
+        
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año, 'estado':estado}).fetchall()
+        print(result)
+
+        return result
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+def obtener_años_pagos(db_session, id_cliente, estado):
+    try:
+        query = text("""SELECT YEAR(p.fecha_pago) AS años 
+                     FROM pagos p
+                     JOIN contrato c ON p.id_contrato = c.id_contrato 
+                     WHERE p.id_cliente = :id_cliente AND c.estado = :estado
+GROUP BY YEAR(fecha_pago)
+ORDER BY YEAR(fecha_pago) DESC;""")
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'estado':estado}).fetchall()
+
+        for años in result:
+            print(años[0])
+
+        return result
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+
+        
