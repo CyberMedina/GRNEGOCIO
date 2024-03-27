@@ -1,6 +1,7 @@
 from db import *
 from utils import *
 from models.constantes import *
+from datetime import datetime, timedelta
 
 
 def listar_cliesntesPagos(db_session):
@@ -200,12 +201,12 @@ def obtener_IdContrato(db_session, id_cliente):
         db_session.close()
 
 
-def comprobar_primerPago(db_session, id_contrato):
+def comprobar_primerPago(db_session, id_contrato, estado):
     try:
         query = text("""
         SELECT COUNT(*) FROM pagos WHERE id_contrato = :id_contrato AND estado = :estado;""")
         result = db_session.execute(
-            query, {'id_contrato': id_contrato, 'estado': activo}).fetchall()
+            query, {'id_contrato': id_contrato, 'estado': estado}).fetchall()
         return result[0]
 
     except SQLAlchemyError as e:
@@ -281,9 +282,8 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
 
 
 
-def pagos_por_contrato(db_session, id_cliente, año, estado):
+def pagos_por_contrato(db_session, id_cliente, año, estado_contrato, estado_detalle_pago):
     try:
-        print(f'El año a preguntar es: {año}')
         query = text(""" SELECT 
     p.id_pagos,
     p.observacion, 
@@ -309,11 +309,11 @@ JOIN
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
-    p.id_cliente = :id_cliente AND YEAR(p.fecha_pago) = :año AND c.estado = :estado 
+    p.id_cliente = :id_cliente AND YEAR(p.fecha_pago) = :año AND c.estado = :estado_contrato AND dp.estado = :estado_detalle_pago
 ORDER BY 
     p.fecha_pago, p.id_pagos ASC;""")
         
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año, 'estado':estado}).fetchall()
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año, 'estado_contrato':estado_contrato, "estado_detalle_pago": estado_detalle_pago}).fetchall()
         print(result)
 
         return result
@@ -349,5 +349,49 @@ ORDER BY YEAR(fecha_pago) DESC;""")
         db_session.close()
 
 
+
+def obtener_quincena_actual(fecha_actual, dia_mes):
+
+    # Si el día del mes es menor o igual a 15, es la primera quincena
+    if dia_mes <= 15:
+        inicio_quincena = fecha_actual.replace(day=1)
+        fin_quincena = fecha_actual.replace(day=15)
+    else: # Si el día del mes es mayor que 15, es la segunda quincena
+        # Obtener el último día del mes
+        ultimo_dia_mes = fecha_actual.replace(day=30)
+        inicio_quincena = fecha_actual.replace(day=16)
+        fin_quincena = ultimo_dia_mes
+
+    inicio_quincena_str = inicio_quincena.strftime('%Y-%m-%d')
+    fin_quincena_str = fin_quincena.strftime('%Y-%m-%d')
+
+    return inicio_quincena_str, fin_quincena_str
+
+def validacion_fechaPago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estado):
+    try:
+        query = text("""
+                     SELECT SUM(cifraPago) 
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = :id_contrato 
+AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
+AND dp.estado = :estado;""")
+        
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio, 'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estado': estado}).fetchone()
+        return result[0]
+        
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+def determinar_quincena(date):
+    if date.day <= 15:
+        return 1
+    else:
+        return 2
 
         

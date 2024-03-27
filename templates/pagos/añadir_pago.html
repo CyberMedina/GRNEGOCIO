@@ -227,10 +227,10 @@
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                         id="cantidadPagar$" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    {% if monto_primerPago %}
+                                    {% if monto_pagoEspecial %}
                                     <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                        monto_primerPago }}</p>
-                                    <input id="cantidadPagarVerificar$" type="text" value="{{ monto_primerPago }}"
+                                        monto_pagoEspecial }}</p>
+                                    <input id="cantidadPagarVerificar$" type="text" value="{{ monto_pagoEspecial }}"
                                         hidden>
                                     {% else %}
                                     <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{

@@ -568,7 +568,7 @@ def añadir_pago(id_cliente):
         try:
             id_contrato = obtener_IdContrato(db_session, id_cliente)
 
-            num_pagos = comprobar_primerPago(db_session, id_contrato)
+            num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
 
 
 
@@ -598,14 +598,45 @@ def añadir_pago(id_cliente):
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
-    num_pagos = comprobar_primerPago(db_session, id_contrato)
+    num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    print(f'El número de pagos es: {num_pagos[0]}')
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
-        monto_primerPago = monto_primerPago_consulta[0]
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+        print("Es el primer pago y es especial")
+    
+    else: 
+        if num_pagos[0] > 1:
+            print('hay más de un pago')
+            # Obtener la fecha actual
+            fecha_actual = datetime.now()
 
-    else:
-        monto_primerPago = None
+            # Obtener el día del mes
+            dia_mes = fecha_actual.day
+
+            inicio_quincena, fin_quincena = obtener_quincena_actual(fecha_actual, dia_mes)
+
+            sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+            print(f'Del {inicio_quincena} y {fin_quincena} se ha pagado: {sumPagosQuincena}')
+
+            if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                monto_pagoEspecial = None
+            else:
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+                print(f'lo que debe pagar es: {monto_pagoEspecial}')
+        
+        else:
+            monto_pagoEspecial = None
+        
+
+
+
+
 
 
     # Procesos para las sesiones de los filtros de los pagos
@@ -622,19 +653,19 @@ def añadir_pago(id_cliente):
             # Luego validamos si está en sesión el año de los pagos de ese contrato
         if session["año_seleccionado"] in años_pagos_verificar:
             print("Si está en la lista")
-            pagos = pagos_por_contrato(db_session, id_cliente, año=session.get("año_seleccionado"), estado=activo)
+            pagos = pagos_por_contrato(db_session, id_cliente, año=session.get("año_seleccionado"), estado_contrato=activo, estado_detalle_pago=monedaOriginal)
             print(pagos)
         else:
             print(f'No está en la lista {session["año_seleccionado"]}')
-            pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado=activo)
+            pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado_contrato=activo, estado_detalle_pago=monedaOriginal)
     else:
         pagos = []
 
 
 
     formulario_añadir_pago = {
-        "datos_cliente": datos_pagov2(id_cliente, db_session),
-        "monto_primerPago": monto_primerPago,
+        "datos_cliente": pagos_cliente,
+        "monto_pagoEspecial": monto_pagoEspecial,
         "pagos" : pagos,
         "años_pagos": años_pagos
     }
