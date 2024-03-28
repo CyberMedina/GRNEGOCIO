@@ -207,7 +207,7 @@ fechaPago.addEventListener('input', function (event) {
 
   fechaLetras(event);
 
-  
+
 });
 
 
@@ -228,7 +228,7 @@ pagoCompleto.addEventListener('click', function () {
   let fechaFormateada = anio + '-' + mes + '-' + dia;
 
   fechaPago.value = fechaFormateada;
-    // llama a validacionDolares manualmente
+  // llama a validacionDolares manualmente
   fechaLetras({ target: fechaPago });
 
 });
@@ -241,28 +241,119 @@ document.getElementById("filtro-comboBox").addEventListener("change", function (
   // Ejemplo:
   console.log('Valor seleccionado:', selectedValue)
   fetch("/guardar_año_seleccionado", {
-      method: "POST",
-      body: JSON.stringify({ selectedValue }), // Convertir a JSON
-      headers: {
-          "Content-Type": "application/json"
-      }
+    method: "POST",
+    body: JSON.stringify({ selectedValue }), // Convertir a JSON
+    headers: {
+      "Content-Type": "application/json"
+    }
   })
-      .then(response => response.json())
-      .then(data => {
-          console.log("Valor guardado en sesión:", data);
-          location.reload();
-      })
-      .catch(error => {
-          console.error("Error al guardar en sesión:", error);
-      });
+    .then(response => response.json())
+    .then(data => {
+      console.log("Valor guardado en sesión:", data);
+      location.reload();
+    })
+    .catch(error => {
+      console.error("Error al guardar en sesión:", error);
+    });
 });
 
+function eliminar_pago(id_pago) {
+  fetch("/eliminar_pago", {
+    method: "POST",
+    body: JSON.stringify({ id_pago }), // Convertir a JSON
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      console.log("Pago eliminado:", data);
+      location.reload();
+    })
+    .catch(error => {
+      console.error("Error al eliminar el pago:", error);
+    });
+}
 
 
 
+function obtenerInformacionPagoEspecifico(id_pago) {
+
+  let modalInformacionPago = document.getElementById('modalInformacionPago');
+  let btnBorrarPago = document.getElementById('btnBorrarPago');
+
+  fetch('/informacion_pagoEspecifico', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id_pagos: id_pago }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      console.log('Pago especifico:', data);
+      let pago = data.pago;
+
+      // Filtrar los pagos con estado 1
+      let pagosDolares = pago.filter(p => p.estado === 1);
+
+      console.log('Pagos con estado 1:', pagosDolares);
+
+      modalInformacionPago.innerHTML = pagosDolares.map(pago => `
+      <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
+      <br>
+      <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
+      <br>
+      <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
+    `).join('');
+
+      pagosDolares.map(pago =>{
+        btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
+      })
+      
+
+      let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
 
 
 
+      modalBorrarPago.show();
+
+    })
+    .catch(error => {
+      console.error('Error al obtener la información del pago:', error);
+    });
+
+  pagosDolares.forEach(pago => {
+    console.log('Pago:', pago);
+  }
+  );
+
+}
+
+// Función para formatear la fecha
+function formatoFecha(fecha) {
+  let fechaObjeto = new Date(fecha);
+  let dia = fechaObjeto.getDate();
+  let mes = fechaObjeto.getMonth() + 1; // Los meses en JavaScript van de 0 a 11
+  let año = fechaObjeto.getFullYear();
+  return `${dia < 10 ? '0' : ''}${dia}-${mes < 10 ? '0' : ''}${mes}-${año}`;
+}
 
 
 

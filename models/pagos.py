@@ -299,6 +299,7 @@ def pagos_por_contrato(db_session, id_cliente, año, estado_contrato, estado_det
         WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
         ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
     END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
     c.estado
 FROM 
     pagos p
@@ -311,7 +312,8 @@ JOIN
 WHERE 
     p.id_cliente = :id_cliente AND YEAR(p.fecha_pago) = :año AND c.estado = :estado_contrato AND dp.estado = :estado_detalle_pago
 ORDER BY 
-    p.fecha_pago, p.id_pagos ASC;""")
+    p.fecha_pago, p.id_pagos ASC;
+""")
         
         result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año, 'estado_contrato':estado_contrato, "estado_detalle_pago": estado_detalle_pago}).fetchall()
         print(result)
@@ -393,5 +395,92 @@ def determinar_quincena(date):
         return 1
     else:
         return 2
+    
 
+def buscar_detalle_pago_idPagos(db_session, id_pagos):
+    try:
+        query = text("""SELECT 
+    p.id_pagos,
+    p.observacion, 
+    p.evidencia_pago, 
+    p.fecha_pago, 
+    p.fecha_realizacion_pago, 
+    m.codigoMoneda, 
+    m.nombreMoneda, 
+    dp.cifraPago, 
+    dp.tasa_conversion, 
+    dp.estado,
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+    c.estado
+FROM 
+    pagos p
+JOIN 
+    detalle_pagos dp ON p.id_pagos = dp.id_pagos
+JOIN 
+    moneda m ON dp.id_moneda = m.id_moneda
+JOIN 
+    contrato c ON p.id_contrato = c.id_contrato
+WHERE 
+    p.id_pagos = :id_pagos""")
         
+        result = db_session.execute(query, {'id_pagos': id_pagos}).fetchall()
+
+        result_list = []
+
+        for row in result:
+            result_dict = {
+                'id_pagos': row[0],
+                'observacion': row[1],
+                'evidencia_pago': row[2],
+                'fecha_pago': row[3],
+                'fecha_realizacion_pago': row[4],
+                'codigoMoneda': row[5],
+                'nombreMoneda': row[6],
+                'cifraPago': row[7],
+                'tasa_conversion': row[8],
+                'estado': row[9],
+                'descripcion_quincena': row[10],
+                'id_mes': row[11],
+                'estado_contrato': row[12]
+            }
+            result_list.append(result_dict)
+
+        return result_list
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+                     
+
+def eliminar_pago_idPagos(db_session, id_pagos):
+    try:
+        # Eliminar primero los registros de la tabla detalle_pagos relacionados con el pago
+        query_detalle = text("""
+                            DELETE FROM detalle_pagos WHERE id_pagos = :id_pagos;
+                            """
+                            )
+        db_session.execute(query_detalle, {'id_pagos': id_pagos})
+        
+        # Luego, eliminar el registro principal de la tabla pagos
+        query_pago = text("""
+                         DELETE FROM pagos WHERE id_pagos = :id_pagos;
+                         """
+                         )
+        db_session.execute(query_pago, {'id_pagos': id_pagos})
+        
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()

@@ -532,7 +532,7 @@ def listado_clientes_pagos():
         "listado_clientes_pagos": listar_cliesntesPagos(db_session),
     }
 
-    return render_template('pagos/listado_clientes_pagos.html', **formulario_clientes_pagos)
+    return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
 
 
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
@@ -624,11 +624,14 @@ def añadir_pago(id_cliente):
 
             print(f'Del {inicio_quincena} y {fin_quincena} se ha pagado: {sumPagosQuincena}')
 
-            if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
-                monto_pagoEspecial = None
+            if sumPagosQuincena:
+                if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                    monto_pagoEspecial = None
+                else:
+                    monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+                    print(f'lo que debe pagar es: {monto_pagoEspecial}')
             else:
-                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
-                print(f'lo que debe pagar es: {monto_pagoEspecial}')
+                monto_pagoEspecial = None
         
         else:
             monto_pagoEspecial = None
@@ -671,6 +674,60 @@ def añadir_pago(id_cliente):
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
+
+
+from flask import jsonify
+
+@app.route('/eliminar_pago', methods=['POST'])
+def eliminar_pago():
+    data = request.get_json()
+    id_pagos = data.get('id_pago')
+
+    db_session.begin()
+
+    try:
+        eliminar_pago_idPagos(db_session, id_pagos)
+        db_session.commit()
+        return jsonify({'message': 'Pago eliminado'}), 200
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({'error': f'Error en la base de datos: {str(e)}'}), 500
+
+    except Exception as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({'error': f'Error desconocido: {str(e)}'}), 500
+
+    finally:
+        db_session.close()
+
+@app.route('/informacion_pagoEspecifico', methods=['POST'])
+def informacion_pagoEspecifico():
+    try:
+        data = request.get_json()
+        id_pagos = data.get('id_pagos')
+
+        print(data)
+
+        pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
+
+        return jsonify({"pago": pago}), 200
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({'error': f'Error en la base de datos: {str(e)}'}), 500
+    
+    except Exception as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({'error': f'Error desconocido: {str(e)}'}), 500
+    
+    finally:
+        db_session.close()
+
+
 
 
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])

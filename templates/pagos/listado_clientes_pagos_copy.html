@@ -1,0 +1,289 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Clientes{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
+
+{% endblock %}
+{% block body %}
+
+
+
+
+
+<!-- ======== main-wrapper end =========== -->
+
+<!-- ========== table components start ========== -->
+<section class="table-components">
+    <div class="container-fluid">
+        <!-- ========== title-wrapper start ========== -->
+        <div class="title-wrapper pt-30">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="title">
+                        <h2>Listado de clientes</h2>
+                    </div>
+                </div>
+                <!-- end col -->
+                <div class="col-md-6">
+                    <div class="breadcrumb-wrapper">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="/">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    Listado de clientes
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== title-wrapper end ========== -->
+
+        <!-- ========== tables-wrapper start ========== -->
+        <div class="tables-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card-style mb-30">
+                        <div class="table-responsive">
+                            <table id="tableNormal" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <h6>Nombre</h6>
+                                        </th>
+                                        <th>
+                                            <h6>Tipo cliente</h6>
+                                        </th>
+                                        <th>
+                                            <h6>Acción</h6>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cliente in listado_clientes_pagos %}
+                                    <tr>
+                                        <td>
+                                            <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
+                                            <span class="text-danger">No ha pagado</span>
+                                        </td>
+                                        <td>
+                                            {% if cliente.id_tipoCliente == 2 %}
+                                            <p>Normal</p>
+                                            {% else %}
+                                            <p>Especial</p>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action">
+                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})"
+                                                    class="main-btn info-btn-light rounded-full btn-hover btn-sm">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+
+
+
+                    </div>
+                    <!-- end card -->
+                </div>
+                <!-- end col -->
+            </div>
+            <!-- end row -->
+        </div>
+        <!-- ========== tables-wrapper end ========== -->
+    </div>
+    <!-- end container -->
+</section>
+<!-- ========== table components end ========== -->
+
+<div class="warning-modal">
+    <div class="modal fade" id="ModalDetalleCliente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+
+                    <h4 id="nombre_cliente" class="text-bold mb-2"></h4>
+
+
+
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                            <div class="row">
+
+                                <div class="col-12 mb-2">
+                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente"></span></p>
+                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago"></span></p>
+                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo"></span></p>
+                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde"></span></p>
+                                </div>
+
+                                <div class="container mb-3">
+                                    <div class="row">
+                                        <a id="gestionarPago" href=""
+                                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
+                                            <i class="lni lni-plus"></i>
+                                            Gestionar pago
+                                        </a>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Tasa de cambio</label>
+                                        <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                            name="inputTasaCambio" id="inputTasaCambio" />
+                                        <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+
+                                <h4 class="mb-3">Capital</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputCapitalDolares" id="inputCapitalDolares"
+                                            readonly />
+                                        <span class="icon" id="codigoMonedaCapitalDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                        <p><strong>Tasa de interes: </strong><span id="tasa_interes"></span></p>
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputCapitalCordobas"
+                                            id="inputCapitalCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaCapitalCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                                <h4 class="mb-3">Pago mensual</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputPagoMensualDolares"
+                                            id="inputPagoMensualDolares" readonly />
+                                        <span class="icon" id="codigoMonedaPagoMensualDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputPagoMensualCordobas"
+                                            id="inputPagoMensualCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaPagoMensualCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+
+                                <h4 class="mb-3">Pago quincenal</h4>
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Dólares</label>
+                                        <input type="text" value="" name="inputPagoQuincenalDolares"
+                                            id="inputPagoQuincenalDolares" readonly />
+                                        <span class="icon" id="codigoMonedaPagoQuincenalDolares"
+                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+                                <!-- end select -->
+                                <div class="col-6">
+                                    <div class="input-style-3">
+                                        <label>Córdobas</label>
+                                        <input type="text" value="" name="inputPagoQuincenalCordobas"
+                                            id="inputPagoQuincenalCordobas" readonly />
+                                        <span class="icon" id="codigoMonedaPagoQuincenalCordobas"
+                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block customJS %}
+
+<script src="{{ url_for('static', filename='assets/js/charts_home.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdn.datatables.net/2.0.3/js/dataTables.js"></script>
+<!-- <script src="{{ url_for('static', filename='assets/js/datatable.js') }}"></script> -->
+<script src="{{ url_for('static', filename='assets/js/cloudinary.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/pagos/pagos.js') }}"></script>
+
+<script>
+    /*
+    const dataTable = new simpleDatatables.DataTable("#tableNormal", {
+        searchable: true,
+        order: [[1, 'desc']]
+
+      });
+*/
+      new DataTable('#tableNormal', {
+        order: [[1, 'desc']],
+        language: {
+            search: 'Buscar:',
+            searchPlaceholder: 'Escriba para buscar',
+            lengthMenu: 'Mostrar _MENU_ registros por página',
+            info: 'Mostrando página _PAGE_ de _PAGES_',
+            infoEmpty: 'No hay resultados disponibles',
+            infoFiltered: '',
+            zeroRecords: 'No se encontraron resultados'
+        }
+        
+    });
+
+    
+
+</script>
+
+
+{% endblock %}
