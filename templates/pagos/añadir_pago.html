@@ -97,7 +97,7 @@
 
                             <a href="#0"
                                 class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
-                                data-bs-toggle="modal" data-bs-target="#ModalFive">
+                                data-bs-toggle="modal" data-bs-target="#modalAñadirPago">
                                 <i class="lni lni-plus"></i>
                                 Añadir pago
                             </a>
@@ -139,7 +139,7 @@
                                             <p>({{ pago.fecha_pago }})</p>
                                             {% if pago.observacion %}
 
-                                            <a href="" data-bs-toggle="modal" data-bs-target="#ModalFive"><span
+                                            <a href="#" onclick=""><span
                                                     class="main-badge danger-badge rounded-full">Observación</span></a>
 
                                             {% endif %}
@@ -156,7 +156,7 @@
                                                 </li>
                                                 <li class="dropdown-item">
                                                     <a href="#0"
-                                                        onclick="obtenerInformacionPagoEspecifico({{pago.id_pagos}})"
+                                                        onclick="obtenerInformacionPagoBorrar({{pago.id_pagos}})"
                                                         class="text-gray">Eliminar</a>
                                                 </li>
                                             </ul>
@@ -200,7 +200,7 @@
 </section>
 <!-- ========== table components end ========== -->
 
-<div class="modal fade" id="ModalFive" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalAñadirPago" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content card-style">
             <div class="modal-header px-0 border-0">
@@ -327,6 +327,122 @@
                                 </button>
                             </div>
                         </div>
+                </div>
+            </div>
+            <!-- end row -->
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalVisualizarPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content card-style">
+            <div class="modal-header px-0 border-0">
+                <h2 class="text-bold">Visualizar pago</h2>
+
+
+                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                    <i class="lni lni-cross-circle"></i>
+                </button>
+            </div>
+            <div class="modal-body px-0">
+                <div class="content mb-30">
+                    {% for dataCliente in datos_cliente %}
+
+                    <div class="row">
+
+                        <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
+                            <div class="input-style-3">
+                                <label>Tasa de cambio</label>
+                                <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                    name="inputTasaCambioPago" id="inputTasaCambioPago" />
+                                <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                <!-- Aquí se mostrará el porcentaje -->
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+
+                    </div>
+                    <div class="row">
+                        <div class="col-4 col-sm-2 col-md-2">
+                            <div class="select-style-1">
+                                <label class="">Tipo moneda</label>
+                                <div class="select-position">
+                                    <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
+                                        <option value="1">$</option selected>
+                                        <option value="2">C$</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- end select -->
+                        </div>
+                        <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
+                            <div class="input-style-3">
+                                <label for="">Cantidad a pagar en C$</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
+                                    id="cantidadPagoCordobas" />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
+                                </p>
+                                <input id="cantidadPagarVerificarC$" type="text" hidden>
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+                        <div class="col-8 col-sm-6">
+                            <div class="input-style-3">
+                                <label for="">Cantidad a pagar en $</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
+                                    id="cantidadPagar$" required />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                {% if monto_pagoEspecial %}
+                                <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
+                                    monto_pagoEspecial }}</p>
+                                <input id="cantidadPagarVerificar$" type="text" value="{{ monto_pagoEspecial }}" hidden>
+                                {% else %}
+                                <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
+                                    dataCliente.pagoQuincenal }}</p>
+                                <input id="cantidadPagarVerificar$" type="text" value="{{ dataCliente.pagoQuincenal }}"
+                                    hidden>
+                                {% endif %}
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+
+                        {% endfor %}
+
+                    </div>
+
+
+
+                    <div class="col-12">
+                        <div class="input-style-1">
+                            <label class="text-bold">Fecha del pago*</label>
+                            <input type="date" required name="fechaPago" id="fechaPago" />
+                            <p id="tiempoPagoLetras"></p>
+                        </div>
+                    </div>
+
+
+                    <div class="input-style-3">
+                        <label>Observación</label>
+                        <textarea placeholder="Descripción de la observación" rows="5" name="observacionPago"
+                            id="observacionPago"></textarea>
+                        <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="input-style-3">
+                            <label>Evidencia del pago</label>
+                            <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
+                                id="evidenciaPago" />
+                            <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- end row -->

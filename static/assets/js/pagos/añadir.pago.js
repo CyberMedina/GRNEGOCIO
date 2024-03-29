@@ -283,6 +283,62 @@ function eliminar_pago(id_pago) {
     });
 }
 
+function fetchInformacionPago(id_pago) {
+  return fetch('/informacion_pagoEspecifico', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id_pagos: id_pago }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      return data.pago;
+    });
+}
+
+
+function obtenerInformacionPagoBorrar(id_pago) {
+  fetchInformacionPago(id_pago)
+    .then(pago => {
+      // Filtrar los pagos con estado 1
+      let pagosDolares = pago.filter(p => p.estado === 1);
+
+      console.log('Pagos con estado 1:', pagosDolares);
+
+      modalInformacionPago.innerHTML = pagosDolares.map(pago => `
+      <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
+      <br>
+      <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
+      <br>
+      <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
+    `).join('');
+
+      pagosDolares.map(pago =>{
+        btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
+      })
+      
+
+      let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
+
+
+
+      modalBorrarPago.show();
+    })
+    .catch(error => {
+      console.error('Error al obtener la información del pago:', error);
+    });
+}
+
+
 
 
 function obtenerInformacionPagoEspecifico(id_pago) {
@@ -310,29 +366,7 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       console.log('Pago especifico:', data);
       let pago = data.pago;
 
-      // Filtrar los pagos con estado 1
-      let pagosDolares = pago.filter(p => p.estado === 1);
-
-      console.log('Pagos con estado 1:', pagosDolares);
-
-      modalInformacionPago.innerHTML = pagosDolares.map(pago => `
-      <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
-      <br>
-      <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
-      <br>
-      <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
-    `).join('');
-
-      pagosDolares.map(pago =>{
-        btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
-      })
       
-
-      let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
-
-
-
-      modalBorrarPago.show();
 
     })
     .catch(error => {
