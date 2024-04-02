@@ -93,7 +93,7 @@
 
                             </div>
 
-                            {% endfor %}
+
 
                             <a href="#0"
                                 class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
@@ -102,7 +102,7 @@
                                 Añadir pago
                             </a>
                         </div>
-                        <div class="table-wrapper table-responsive">
+                        <div class="table-wrapper table-responsive" style="overflow-x: hidden !important;">
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -113,11 +113,6 @@
                                         <th class="lead-info">
                                             <h6>Monto</h6>
                                         </th>
-                                        <!-- <th class="lead-info">
-                                            <h6>Observación</h6>
-                                        </th> -->
-                                    </tr>
-                                    <!-- end table row-->
                                 </thead>
                                 <tbody>
                                     {% set meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
@@ -131,10 +126,10 @@
                                     {% set pagos_mes = pagos | selectattr('id_mes', 'equalto', i) | list %}
                                     {% if pagos_mes %}
                                     {% for pago in pagos_mes %}
-                                    {% if pago.estado == 1 %}
+
                                     <!-- Insertar aquí la estructura de la fila con los detalles del pago -->
                                     <tr>
-                                        <td>
+                                        <td class="min-width">
                                             <p>{{ pago.descripcion_quincena }}</p>
                                             <p>({{ pago.fecha_pago }})</p>
                                             {% if pago.observacion %}
@@ -144,12 +139,20 @@
 
                                             {% endif %}
                                         </td>
-                                        <td>
-                                            <p>{{ pago.codigoMoneda }} {{ pago.cifraPago }}</p>
+                                        <td class="min-width">
+                                            <span class="tooltip-icon {% if pago.estado_pago == 0 %}text-warning
+                                            {% elif pago.estado_pago == 1 %}text-success
+                                            {% elif pago.estado_pago == 2 %}text-danger
+                                            {% endif %}" {% if pago.estado_pago == 2 %}data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Pago quincenal: {{ dataCliente.codigoMoneda }}{{
+                                                dataCliente.pagoQuincenal }}" {% endif %}>
+                                                {{ pago.codigoMoneda }} {{ pago.cifraPago }}</span>
+
                                             <button class="more-btn ml-10 dropdown-toggle" id="moreAction1"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="lni lni-more-alt"></i>
-                                            </button>
+                                            </button
+                                            >
                                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1">
                                                 <li class="dropdown-item">
                                                     <a href="#0" class="text-gray">Ver</a>
@@ -161,22 +164,20 @@
                                                 </li>
                                             </ul>
                                         </td>
-
-                                        <td>
-
-                                        </td>
                                     </tr>
-                                    {% endif %}
+
                                     {% endfor %}
                                     {% else %}
                                     <tr>
-                                        <td colspan="4">
+                                        <td class="min-width" colspan="4">
                                             <p>No hay pagos realizados</p>
                                         </td>
                                     </tr>
                                     {% endif %}
                                     {% endfor %}
                                 </tbody>
+
+                                {% endfor %}
 
 
 
@@ -216,30 +217,56 @@
                     {% for dataCliente in datos_cliente %}
                     <form action="/añadir_pago/{{ dataCliente.id_cliente }}" method="POST" enctype="multipart/form-data"
                         id="anadirClientes">
+                        <input type="text" id="formId_cliente" value="{{ dataCliente.id_cliente }}" hidden>
 
                         <a id="pagoCompleto" href="#0"
                             class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
                             Pago completo
                         </a>
+
                         <div class="row">
 
-                            <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
-                                <div class="input-style-3">
-                                    <label>Tasa de cambio</label>
-                                    <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                                        name="inputTasaCambioPago" id="inputTasaCambioPago" />
-                                    <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
-                                    <!-- Aquí se mostrará el porcentaje -->
+                            <div class="col-12">
+                                <div class="col-8 col-sm-4 col-md-4">
+                                    <div class="select-style-1">
+                                        <label class="">Sugerencia pago</label>
+                                        <div class="select-position">
+                                            <select class="light-bg" required name="comboSugerenciaPago"
+                                                id="comboSugerenciaPago">
+                                                <option value="1">Restante a pagar</option selected>
+                                                <option value="2">Quincenal completo</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- end select -->
                                 </div>
-                                <!-- end select -->
+                                <div class="input-style-1">
+                                    <label class="text-bold">Fecha del pago*</label>
+                                    <input type="date" required name="fechaPago" id="fechaPago" />
+                                    <p id="tiempoPagoLetras"></p>
+                                </div>
                             </div>
 
+                            <div class="row">
 
-                        </div>
-                        <div class="row">
+                                <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
+                                    <div class="input-style-3">
+                                        <label>Tasa de cambio</label>
+                                        <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                            name="inputTasaCambioPago" id="inputTasaCambioPago" />
+                                        <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                        <!-- Aquí se mostrará el porcentaje -->
+                                    </div>
+                                    <!-- end select -->
+                                </div>
+
+
+                            </div>
+
                             <div class="col-4 col-sm-2 col-md-2">
                                 <div class="select-style-1">
-                                    <label class="">Tipo moneda</label>
+                                    <label class="">Moneda</label>
                                     <div class="select-position">
                                         <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
                                             <option value="1">$</option selected>
@@ -249,39 +276,34 @@
                                 </div>
                                 <!-- end select -->
                             </div>
-                            <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
+                            <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
                                 <div class="input-style-3">
-                                    <label for="">Cantidad a pagar en C$</label>
+                                    <label for="">Pago en C$</label>
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
                                         id="cantidadPagoCordobas" />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
+                                    <p style="font-size: small;">C$<span id="lblCantidadPagarC$"></span>
                                     </p>
                                     <input id="cantidadPagarVerificarC$" type="text" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
+                            {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
+                            dataCliente.pagoQuincenal %}
 
-                            <div class="col-8 col-sm-6">
+                            <div class="col-6 col-sm-4">
                                 <div class="input-style-3">
-                                    <label for="">Cantidad a pagar en $</label>
+                                    <label for="">Pago en $</label>
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                         id="cantidadPagar$" required />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    {% if monto_pagoEspecial %}
-                                    <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                        monto_pagoEspecial }}</p>
-                                    <input id="cantidadPagarVerificar$" type="text" value="{{ monto_pagoEspecial }}"
-                                        hidden>
-                                    {% else %}
-                                    <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                        dataCliente.pagoQuincenal }}</p>
-                                    <input id="cantidadPagarVerificar$" type="text"
-                                        value="{{ dataCliente.pagoQuincenal }}" hidden>
-                                    {% endif %}
+                                    <p id="pCantidadPagarVerificar$" style="font-size: small;">{{
+                                        dataCliente.codigoMoneda }} {{ cantidad_pagar }}</p>
+                                    <input id="cantidadPagarVerificar$" type="text" value="{{ cantidad_pagar }}" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
+
 
 
                             {% endfor %}
@@ -290,14 +312,20 @@
 
 
 
-                        <div class="col-12">
-                            <div class="input-style-1">
-                                <label class="text-bold">Fecha del pago*</label>
-                                <input type="date" required name="fechaPago" id="fechaPago" />
-                                <p id="tiempoPagoLetras"></p>
-                            </div>
-                        </div>
 
+                        <div class="col-8 col-sm-4 col-md-4">
+                            <div class="select-style-1">
+                                <label class="">PAGO COMPLETO O INCOMPLETO</label>
+                                <div class="select-position">
+                                    <select class="light-bg" name="tipoPagoCompleto" id="tipoPagoCompleto">
+                                        <option value="0">NO HAY PAGO</option>
+                                        <option value="1">COMPLETO</option>
+                                        <option value="2">INCOMPLETO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- end select -->
+                        </div>
 
                         <div class="input-style-3">
                             <label>Observación</label>
@@ -369,7 +397,7 @@
                     <div class="row">
                         <div class="col-4 col-sm-2 col-md-2">
                             <div class="select-style-1">
-                                <label class="">Tipo moneda</label>
+                                <label class="">Moneda</label>
                                 <div class="select-position">
                                     <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
                                         <option value="1">$</option selected>
@@ -381,7 +409,7 @@
                         </div>
                         <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
                             <div class="input-style-3">
-                                <label for="">Cantidad a pagar en C$</label>
+                                <label for="">Pago en C$</label>
                                 <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
                                     id="cantidadPagoCordobas" />
                                 <span class="icon"><i class="fa-solid fa-coins"></i></span>
@@ -394,20 +422,17 @@
 
                         <div class="col-8 col-sm-6">
                             <div class="input-style-3">
-                                <label for="">Cantidad a pagar en $</label>
+                                <label for="">Pago en $</label>
                                 <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                     id="cantidadPagar$" required />
                                 <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                {% if monto_pagoEspecial %}
+                                {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
+                                dataCliente.pagoQuincenal %}
+
                                 <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                    monto_pagoEspecial }}</p>
-                                <input id="cantidadPagarVerificar$" type="text" value="{{ monto_pagoEspecial }}" hidden>
-                                {% else %}
-                                <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                    dataCliente.pagoQuincenal }}</p>
-                                <input id="cantidadPagarVerificar$" type="text" value="{{ dataCliente.pagoQuincenal }}"
-                                    hidden>
-                                {% endif %}
+                                    cantidad_pagar }}</p>
+                                <input id="cantidadPagarVerificar$" type="text" value="{{ cantidad_pagar }}" hidden>
+
                             </div>
                             <!-- end select -->
                         </div>

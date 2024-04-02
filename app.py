@@ -549,6 +549,8 @@ def añadir_pago(id_cliente):
         fechaPago = request.form['fechaPago']
         observacionPago = request.form['observacionPago']
         evidenciaPago = request.files['evidenciaPago']
+        tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
+
 
         cantidadPagarDolares =  convertir_string_a_decimal(cantidadPagarDolares)
 
@@ -573,7 +575,7 @@ def añadir_pago(id_cliente):
 
 
             id_pagos = insertarPago(
-                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, activo)
+                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, tipoPagoCompletoForm)
             insertar_detalle_pagos(
                 db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 
@@ -676,8 +678,6 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
-from flask import jsonify
-
 @app.route('/eliminar_pago', methods=['POST'])
 def eliminar_pago():
     data = request.get_json()
@@ -726,6 +726,59 @@ def informacion_pagoEspecifico():
     
     finally:
         db_session.close()
+
+
+@app.route('/verificar_pago_quincenal', methods=['POST'])
+def verificar_pago_quincenal():
+
+    data = request.get_json()
+    data_anadida = data.get('data')
+    id_cliente = data_anadida.get('id_cliente')
+    fecha_str = data_anadida.get('fecha_a_pagar')
+    fecha = datetime.strptime(fecha_str, '%Y-%m-%d')
+    print(data)
+    print(id_cliente)
+
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    print(f'El número de pagos es: {num_pagos[0]}')
+
+    if num_pagos[0] == 0:
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+        print("Es el primer pago y es especial")
+    
+    else: 
+        # si hay más de un pago
+        if num_pagos[0] > 1:
+            dia_mes = fecha.day
+
+            inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+            sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+            print(f'Del {inicio_quincena} y {fin_quincena} se ha pagado: {sumPagosQuincena}')
+
+            if sumPagosQuincena:
+                if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                    monto_pagoEspecial = '0.00'
+                else:
+                    monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+                    print(f'lo que debe pagar es: {monto_pagoEspecial}')
+            else:
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
+        
+        # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
+        else:
+            monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
+
+
+    return jsonify({"monto_pagoEspecial": monto_pagoEspecial}), 200
+
 
 
 

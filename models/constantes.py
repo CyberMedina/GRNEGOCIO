@@ -27,4 +27,9 @@ cordobas = 2
 monedaOriginal = 1
 monedaConversion = 2
 
+# Constantes para pagos completos o incompletos
+pago_completo = 1
+pago_incompleto = 2
+no_hay_pago = 0 
+
 

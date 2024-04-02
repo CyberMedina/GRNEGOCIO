@@ -82,14 +82,14 @@ CREATE TABLE direccion_telefono(
 
 CREATE TABLE tipo_cliente(
 	id_tipoCliente INT  PRIMARY KEY,
-  nombre_tipoCliente VARCHAR(50) NOT NULL, -- NO DEFINIDO 0, cliente_inactivo 1, Normal 2, especial 3 o fiador 4
+  nombre_tipoCliente VARCHAR(50) NOT NULL, -- inactivo 0, normal 2, especial 3, fiador 4
   estado INT NOT NULL
 );
 
 CREATE TABLE cliente (
 	id_cliente INT PRIMARY KEY,
   id_persona INT NOT NULL,
-  id_tipoCliente INT NOT NULL, -- Normal 1, especial 2 o fiador 3
+  id_tipoCliente INT NOT NULL,
   imagenCliente VARCHAR(500) NOT NULL,
   imagenCedula VARCHAR(500) NOT NULL,
   estado INT NOT NULL,
@@ -126,24 +126,50 @@ CREATE TABLE contrato(
   intervalo_tiempoPago INT NOT NULL,
   montoPrimerPago DECIMAL(10,2) NOT NULL,
   fechaCreacionContrato DATETIME NOT NULL,
-  estado INT NOT NULL,
+  estado INT NOT NULL, -- 1 activo: 0 inactivo
   FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
   FOREIGN KEY (id_contrato_fiador) REFERENCES contrato_fiador(id_contrato_fiador),
   FOREIGN KEY (tipo_monedaMonto_solicitado) REFERENCES moneda(id_moneda)
 );
 
 
- 
-CREATE TABLE historial_pagos(
-   id_historial_pagos INT PRIMARY KEY,
+
+CREATE TABLE pagos(
+   id_pagos INT PRIMARY KEY,
    id_contrato INT NOT NULL,
-   fecha_pago DATETIME NOT NULL,
+  id_cliente INT NOT NULL,
+  observacion VARCHAR(250) NULL,
+  evidencia_pago VARCHAR(280) NULL,
+   fecha_pago DATE NOT NULL,
+  fecha_realizacion_pago DATETIME NOT NULL,
+   estado INT NOT NULL, -- 0 NO HAY PAGO -- 1 completo, -- 2 incompleto
+   FOREIGN KEY (id_contrato) REFERENCES contrato(id_contrato),
+  FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+);
+
+-- estados en detalles pagos: 1 pago moneda original - 2 pago moneda conversion
+CREATE TABLE detalle_pagos(
+  id_detalle_pagos INT PRIMARY KEY,
+  id_pagos INT NOT NULL,
   id_moneda INT NOT NULL,
   cifraPago DECIMAL(10,2) NOT NULL,
   tasa_conversion DECIMAL(10,2) NULL,
-  observacion VARCHAR(250) NULL,
-  evidencia_pago VARCHAR(280) NULL,
-   estado INT NOT NULL,
-   FOREIGN KEY (id_contrato) REFERENCES contrato(id_contrato),
+  estado INT NOT NULL, 
+  
+  FOREIGN KEY (id_pagos) REFERENCES pagos(id_pagos),
   FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
 );
+
+CREATE TABLE saldos_pagos(
+	id_saldos_pagos INT PRIMARY KEY,
+  id_detalle_pagos INT NOT NULL,
+  cifraSaldo DECIMAL(10,2) NOT NULL,
+  
+  FOREIGN KEY (id_detalle_pagos) REFERENCES detalle_pagos(id_detalle_pagos)
+);
+
+
+
+
+
+

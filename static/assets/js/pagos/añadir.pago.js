@@ -4,11 +4,16 @@ var cantidadPagarVerificarC$ = document.getElementById('cantidadPagarVerificarC$
 
 
 let cantidadPagarVerificar$ = document.getElementById('cantidadPagarVerificar$');
+let pCantidadPagarVerificar$ = document.getElementById('pCantidadPagarVerificar$');
 let cantidadPagar$ = document.getElementById('cantidadPagar$');
 let cantidadPagoCordobas = document.getElementById('cantidadPagoCordobas');
 let fechaPago = document.getElementById('fechaPago');
 let tiempoPagoLetras = document.getElementById('tiempoPagoLetras');
 let pagoCompleto = document.getElementById('pagoCompleto');
+let comboSugerenciaPago = document.getElementById('comboSugerenciaPago');
+let formId_cliente = document.getElementById('formId_cliente');
+let tipoPagoCompleto = document.getElementById('tipoPagoCompleto');
+
 
 
 function calculoDolaresCordobas() {
@@ -32,7 +37,28 @@ function calculoCordobasDoalres() {
 
 }
 
+
+function obtenerFecha() {
+  let fechaActual = new Date();
+  let dia = String(fechaActual.getDate()).padStart(2, '0');
+  let mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Enero es 0
+  let anio = fechaActual.getFullYear();
+
+  let fechaFormateada = anio + '-' + mes + '-' + dia;
+
+  return fechaFormateada;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+
+  let fechaFormateada = obtenerFecha();
+
+  fechaPago.value = fechaFormateada;
+
+  // llama a validacionDolares manualmente
+  fechaLetras({ target: fechaPago });
+
+
   configuracionTasaCambio();
 
 
@@ -111,7 +137,34 @@ function configuracionTasaCambio() {
 
 
 }
+function verificar_pago_quincenal(data) {
 
+  return fetch("/verificar_pago_quincenal", {
+    method: "POST",
+    body: JSON.stringify({ data }), // Convertir a JSON
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      console.log("pago verificado", data);
+      return data;
+    })
+    .catch(error => {
+      console.error("Error al verificar el pago:", error);
+      throw error; // Propagar el error a los llamadores de la función
+    });
+
+}
 
 function fechaLetras(event) {
   var fechaPagoValue = document.getElementById('fechaPago').value;
@@ -154,6 +207,8 @@ function fechaLetras(event) {
 
 }
 
+
+
 function validacionDolares(event) {
   let value = event.target.value.replace(/\D/g, '');
   value = new Intl.NumberFormat('en-US', {
@@ -165,8 +220,11 @@ function validacionDolares(event) {
   // haz que el estilo de cantidadPagar$ sea en rojo si no menor al valor de cantidadPagarVerificar$ y en verde si es mayor
   if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) < parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))) {
     cantidadPagar$.style.color = 'red';
+    tipoPagoCompleto.selectedIndex = 2; // Indica que pagó imcompleto
+    
   } else {
     cantidadPagar$.style.color = 'green';
+    tipoPagoCompleto.selectedIndex = 1; // Indica que pagó completo
   }
 }
 
@@ -207,8 +265,32 @@ fechaPago.addEventListener('input', function (event) {
 
   fechaLetras(event);
 
+  if (comboSugerenciaPago.value === '1') {
+
+    data_enviar = {
+      fecha_a_pagar: fechaPago.value,
+      id_cliente: formId_cliente.value
+    }
+
+
+    verificar_pago_quincenal(data_enviar)
+      .then(data => {
+        window.alert(data.monto_pagoEspecial);
+        cantidadPagarVerificar$.value = data.monto_pagoEspecial;
+        pCantidadPagarVerificar$.textContent = data.monto_pagoEspecial;
+
+      })
+      .catch(error => {
+        // Manejar el error
+      });
+  }
+
+
+
 
 });
+
+
 
 
 pagoCompleto.addEventListener('click', function () {
@@ -220,12 +302,7 @@ pagoCompleto.addEventListener('click', function () {
   // llama a validacionDolares manualmente
   validacionDolares({ target: cantidadPagar$ });
 
-  let fechaActual = new Date();
-  let dia = String(fechaActual.getDate()).padStart(2, '0');
-  let mes = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Enero es 0
-  let anio = fechaActual.getFullYear();
-
-  let fechaFormateada = anio + '-' + mes + '-' + dia;
+  let fechaFormateada = obtenerFecha();
 
   fechaPago.value = fechaFormateada;
   // llama a validacionDolares manualmente
@@ -322,10 +399,10 @@ function obtenerInformacionPagoBorrar(id_pago) {
       <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
     `).join('');
 
-      pagosDolares.map(pago =>{
+      pagosDolares.map(pago => {
         btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
       })
-      
+
 
       let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
 
@@ -366,7 +443,7 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       console.log('Pago especifico:', data);
       let pago = data.pago;
 
-      
+
 
     })
     .catch(error => {

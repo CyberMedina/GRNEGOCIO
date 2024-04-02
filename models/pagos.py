@@ -289,12 +289,13 @@ def pagos_por_contrato(db_session, id_cliente, año, estado_contrato, estado_det
     p.observacion, 
     p.evidencia_pago, 
     p.fecha_pago, 
-    p.fecha_realizacion_pago, 
+    p.fecha_realizacion_pago,
+    p.estado AS estado_pago, 
     m.codigoMoneda, 
     m.nombreMoneda, 
     dp.cifraPago, 
-    dp.tasa_conversion, 
-    dp.estado,
+    dp.tasa_conversion,
+    dp.estado AS estado_detalle_pago,
     CASE 
         WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
         ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
@@ -360,7 +361,7 @@ def obtener_quincena_actual(fecha_actual, dia_mes):
         fin_quincena = fecha_actual.replace(day=15)
     else: # Si el día del mes es mayor que 15, es la segunda quincena
         # Obtener el último día del mes
-        ultimo_dia_mes = fecha_actual.replace(day=30)
+        ultimo_dia_mes = fecha_actual.replace(day=1, month=fecha_actual.month+1) - timedelta(days=1)
         inicio_quincena = fecha_actual.replace(day=16)
         fin_quincena = ultimo_dia_mes
 
