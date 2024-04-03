@@ -97,34 +97,45 @@
   // })
 
   // =========== theme change
-  // Seleccionamos el switch
+// Seleccionamos el switch y el enlace
 const themeSwitch = document.querySelector('#switch');
+const toggleCheckboxLink = document.querySelector('#toggleCheckboxLink');
 const logo = document.querySelector('.navbar-logo img');
+const modoLuz = document.getElementById('modoLuz');
 
 // Verificamos el tema guardado
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
   document.body.classList.add('darkTheme');
   themeSwitch.checked = true;
-  logo.src = 'assets/images/logo/logo-white.svg';
+  modoLuz.innerHTML = '‎ Claro';
 } else {
   document.body.classList.remove('darkTheme');
   themeSwitch.checked = false;
-  logo.src = 'assets/images/logo/logo.svg';
+  modoLuz.innerHTML = '‎ Oscuro';
 }
 
-// Cambiamos el tema cuando el estado del switch cambia
-themeSwitch.addEventListener('change', () => {
-  if (themeSwitch.checked) {
-    document.body.classList.add('darkTheme');
-    localStorage.setItem('theme', 'dark'); // Guardamos la preferencia del tema
-    logo.src = 'assets/images/logo/logo-white.svg';
-  } else {
+// Función para cambiar el tema
+function toggleTheme() {
+  if (document.body.classList.contains('darkTheme')) {
     document.body.classList.remove('darkTheme');
     localStorage.setItem('theme', 'light'); // Guardamos la preferencia del tema
-    logo.src = 'assets/images/logo/logo.svg';
+    modoLuz.innerHTML = '‎ Oscuro';
+    
+  } else {
+    document.body.classList.add('darkTheme');
+    localStorage.setItem('theme', 'dark'); // Guardamos la preferencia del tema
+    modoLuz.innerHTML = '‎ Claro';
   }
+}
+
+// Cambiamos el tema cuando se toca el enlace
+toggleCheckboxLink.addEventListener('click', (event) => {
+  event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
+  toggleTheme(); // Cambiar el tema
 });
+
+
 
   // Enabling bootstrap tooltips
   const tooltipTriggerList = document.querySelectorAll(
@@ -138,8 +149,7 @@ themeSwitch.addEventListener('change', () => {
 
 
 
-function inputTasaCambioCordobas()
-{
+function inputTasaCambioCordobas() {
   let inputTasaCambioCordobas = document.getElementById('inputTasaCambioCordobas');
 }
 
@@ -147,7 +157,7 @@ function inputTasaCambioCordobas()
 
 
 
-function actualizar_tasa_interes(e){
+function actualizar_tasa_interes(e) {
   e.preventDefault();
 
   let inputTasaCambio = document.getElementById('inputTasaCambioCordobas');
