@@ -160,13 +160,25 @@ CREATE TABLE detalle_pagos(
   FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
 );
 
+CREATE TABLE tipoSaldos_pagos(
+  id_tipoSaldos_pagos INT PRIMARY KEY,
+  nombreTipoSaldo_pago VARCHAR(50) NOT NULL,
+  simboloSaldos_pagos VARCHAR(20) NOT NULL, 
+  estado INT NOT NULL
+);
+
 CREATE TABLE saldos_pagos(
 	id_saldos_pagos INT PRIMARY KEY,
-  id_detalle_pagos INT NOT NULL,
+  id_pagos INT NOT NULL,
+  id_tipoSaldos_pagos INT NOT NULL,
   cifraSaldo DECIMAL(10,2) NOT NULL,
+  estado INT,
   
-  FOREIGN KEY (id_detalle_pagos) REFERENCES detalle_pagos(id_detalle_pagos)
+  FOREIGN KEY (id_pagos) REFERENCES detalle_pagos(id_pagos),
+  FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos)
 );
+
+
 
 
 

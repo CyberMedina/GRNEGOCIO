@@ -28,5 +28,11 @@ INSERT INTO tasaCambioMoneda (id_tasaCambioMoneda, moneda_origen, moneda_destino
 VALUES
 ('1', '1', '2', '0.00', '0', NOW());
 
+INSERT INTO tipoSaldos_pagos (id_tipoSaldos_pagos, nombreTipoSaldo_pago, simboloSaldos_pagos, estado)
+VALUES
+('1','A favor','+','1'),
+('2','En contra','-','1');
+
+
 
 
