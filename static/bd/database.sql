@@ -169,19 +169,23 @@ CREATE TABLE tipoSaldos_pagos(
 
 CREATE TABLE saldos_pagos(
 	id_saldos_pagos INT PRIMARY KEY,
-  id_pagos INT NOT NULL,
   id_tipoSaldos_pagos INT NOT NULL,
+  id_moneda INT NOT NULL,
   cifraSaldo DECIMAL(10,2) NOT NULL,
+  fecha_saldo DATETIME NOT NULL,
   estado INT,
   
-  FOREIGN KEY (id_pagos) REFERENCES detalle_pagos(id_pagos),
-  FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos)
+  FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos),
+  FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
+  
 );
 
 
-
-
-
-
-
-
+CREATE TABLE transacciones_saldos (
+    id_transaccion INT PRIMARY KEY,
+    id_saldo_pago INT NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    tipo_transaccion ENUM('Aumento', 'Disminucion') NOT NULL,
+    fecha_transaccion DATETIME NOT NULL,
+    FOREIGN KEY (id_saldo_pago) REFERENCES saldos_pagos(id_saldos_pagos)
+);

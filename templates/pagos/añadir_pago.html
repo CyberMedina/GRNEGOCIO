@@ -71,7 +71,7 @@
                                     <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
                                                 dataCliente.pagoQuincenal }}</span></strong></p>
 
-                                    <P><strong>Plazo: <span></span></strong></P>
+                                    <P><strong>Saldo pendiente: <span></span></strong></P>
 
                                 </div>
                                 <div class="d-flex align-items-center">
@@ -142,7 +142,8 @@
                                         <td class="min-width">
                                             <span class="tooltip-icon {% if pago.estado_pago == 0 %}text-warning
                                             {% elif pago.estado_pago == 1 %}text-success
-                                            {% elif pago.estado_pago == 2 %}text-danger
+                                            {% elif pago.estado_pago == 2 %}text-warning
+                                            {% elif pago.estado_pago == 0 %}text-danger
                                             {% endif %}" {% if pago.estado_pago == 2 %}data-bs-toggle="tooltip" data-bs-placement="top"
                                             title="Pago quincenal: {{ dataCliente.codigoMoneda }}{{
                                                 dataCliente.pagoQuincenal }}" {% endif %}>

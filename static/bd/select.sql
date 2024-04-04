@@ -355,12 +355,3 @@ JOIN persona p ON cl.id_persona = p.id_persona
 WHERE cl.estado = '1' AND
 cl.id_tipoCliente = '2' OR
 cl.id_tipoCliente = '3'
-
-
-
-
-
-
-
-
-

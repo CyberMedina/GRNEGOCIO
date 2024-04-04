@@ -32,7 +32,3 @@ INSERT INTO tipoSaldos_pagos (id_tipoSaldos_pagos, nombreTipoSaldo_pago, simbolo
 VALUES
 ('1','A favor','+','1'),
 ('2','En contra','-','1');
-
-
-
-

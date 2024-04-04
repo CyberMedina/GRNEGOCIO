@@ -485,3 +485,25 @@ def eliminar_pago_idPagos(db_session, id_pagos):
         return False
     finally:
         db_session.close()
+
+def añadir_saldo_en_contra(db_session, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado):
+    try:
+        # Obtener el ID de la tabla persona
+        id_saldos_pagos = ObtenerIDTabla(db_session, "id_saldos_pagos", "saldos_pagos")
+
+        # Insertar el pago
+        query = text("""
+                     INSERT INTO saldos_pagos (id_saldos_pagos, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
+                        VALUES (:id_saldos_pagos, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, :fecha_saldo, :estado);
+                        """
+                        )
+        db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos, 'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'fecha_saldo': fecha_saldo, 'estado': estado})
+        db_session.commit()
+        return id_saldos_pagos
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
