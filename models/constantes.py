@@ -33,3 +33,9 @@ pago_incompleto = 2
 no_hay_pago = 0 
 
 
+# Constantes para los tipos de saldos
+saldo_a_favor = 1
+saldo_en_contra = 2
+
+
+
