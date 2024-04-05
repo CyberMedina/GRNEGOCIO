@@ -554,7 +554,11 @@ def añadir_pago(id_cliente):
 
         cantidadPagarDolares =  convertir_string_a_decimal(cantidadPagarDolares)
 
-
+        # Verifica si el checkbox de no pago está marcado
+        if 'checkBoxNoPago' in request.form:
+            estadoPago = 0  # Establece el estado de pago como no pagado 
+        else:
+            estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
 
         id_moneda = int(id_moneda)
 
@@ -575,7 +579,7 @@ def añadir_pago(id_cliente):
 
 
             id_pagos = insertarPago(
-                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, tipoPagoCompletoForm)
+                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, estadoPago)
             insertar_detalle_pagos(
                 db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 
@@ -583,6 +587,11 @@ def añadir_pago(id_cliente):
               
                 insertar_detalle_pagos(db_session, id_pagos, id_moneda,
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
+                
+
+            if estadoPago == 0:
+                id_saldos_pagos = añadir_saldo_en_contra(db_session, saldo_en_contra, id_moneda, cantidadPagarDolares, activo)
+                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolares, Aumento)
 
             db_session.commit()
 
@@ -597,12 +606,16 @@ def añadir_pago(id_cliente):
             return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
 
         return redirect(url_for('añadir_pago', id_cliente=id_cliente))
+    
+    
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
     num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    saldo_pendiente = validar_saldo_pendiente(db_session)
 
     print(f'El número de pagos es: {num_pagos[0]}')
 
@@ -672,7 +685,8 @@ def añadir_pago(id_cliente):
         "datos_cliente": pagos_cliente,
         "monto_pagoEspecial": monto_pagoEspecial,
         "pagos" : pagos,
-        "años_pagos": años_pagos
+        "años_pagos": años_pagos,
+        "saldo_pendiente": saldo_pendiente
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)

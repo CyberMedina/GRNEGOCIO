@@ -275,7 +275,7 @@ fechaPago.addEventListener('input', function (event) {
 
     verificar_pago_quincenal(data_enviar)
       .then(data => {
-        window.alert(data.monto_pagoEspecial);
+        //window.alert(data.monto_pagoEspecial);
         cantidadPagarVerificar$.value = data.monto_pagoEspecial;
         pCantidadPagarVerificar$.textContent = data.monto_pagoEspecial;
 

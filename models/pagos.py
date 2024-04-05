@@ -2,6 +2,7 @@ from db import *
 from utils import *
 from models.constantes import *
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 
 def listar_cliesntesPagos(db_session):
@@ -244,8 +245,9 @@ def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pag
                      INSERT INTO pagos (id_pagos, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado)
                         VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, NOW(), :estado);
                         """
-                        )
-        db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'id_cliente':id_cliente, 'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'estado': estado})
+                     )
+        db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'id_cliente': id_cliente,
+                           'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'estado': estado})
         db_session.commit()
         return id_pagos
 
@@ -256,18 +258,21 @@ def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pag
     finally:
         db_session.close()
 
+
 def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conversion, estado):
     try:
         # Obtener el ID de la tabla persona
-        id_detalle_pagos = ObtenerIDTabla(db_session, "id_detalle_pagos", "detalle_pagos")
+        id_detalle_pagos = ObtenerIDTabla(
+            db_session, "id_detalle_pagos", "detalle_pagos")
 
         # Insertar el pago
         query = text("""
                      INSERT INTO detalle_pagos (id_detalle_pagos, id_pagos, id_moneda, cifraPago, tasa_conversion, estado)
                         VALUES (:id_detalle_pagos, :id_pagos, :id_moneda, :cifraPago, :tasa_conversion, :estado);
                         """
-                        )
-        db_session.execute(query, {'id_detalle_pagos': id_detalle_pagos, 'id_pagos': id_pagos, 'id_moneda': id_moneda, 'cifraPago': cifraPago, 'tasa_conversion': tasa_conversion, 'estado': estado})
+                     )
+        db_session.execute(query, {'id_detalle_pagos': id_detalle_pagos, 'id_pagos': id_pagos,
+                           'id_moneda': id_moneda, 'cifraPago': cifraPago, 'tasa_conversion': tasa_conversion, 'estado': estado})
         db_session.commit()
         return id_detalle_pagos
 
@@ -277,9 +282,6 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
         return None
     finally:
         db_session.close()
-
-
-
 
 
 def pagos_por_contrato(db_session, id_cliente, año, estado_contrato, estado_detalle_pago):
@@ -315,12 +317,13 @@ WHERE
 ORDER BY 
     p.fecha_pago, p.id_pagos ASC;
 """)
-        
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año, 'estado_contrato':estado_contrato, "estado_detalle_pago": estado_detalle_pago}).fetchall()
+
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año,
+                                    'estado_contrato': estado_contrato, "estado_detalle_pago": estado_detalle_pago}).fetchall()
         print(result)
 
         return result
-    
+
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -337,13 +340,14 @@ def obtener_años_pagos(db_session, id_cliente, estado):
                      WHERE p.id_cliente = :id_cliente AND c.estado = :estado
 GROUP BY YEAR(fecha_pago)
 ORDER BY YEAR(fecha_pago) DESC;""")
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'estado':estado}).fetchall()
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente, 'estado': estado}).fetchall()
 
         for años in result:
             print(años[0])
 
         return result
-    
+
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -352,16 +356,16 @@ ORDER BY YEAR(fecha_pago) DESC;""")
         db_session.close()
 
 
-
 def obtener_quincena_actual(fecha_actual, dia_mes):
 
     # Si el día del mes es menor o igual a 15, es la primera quincena
     if dia_mes <= 15:
         inicio_quincena = fecha_actual.replace(day=1)
         fin_quincena = fecha_actual.replace(day=15)
-    else: # Si el día del mes es mayor que 15, es la segunda quincena
+    else:  # Si el día del mes es mayor que 15, es la segunda quincena
         # Obtener el último día del mes
-        ultimo_dia_mes = fecha_actual.replace(day=1, month=fecha_actual.month+1) - timedelta(days=1)
+        ultimo_dia_mes = fecha_actual.replace(
+            day=1, month=fecha_actual.month+1) - timedelta(days=1)
         inicio_quincena = fecha_actual.replace(day=16)
         fin_quincena = ultimo_dia_mes
 
@@ -369,6 +373,7 @@ def obtener_quincena_actual(fecha_actual, dia_mes):
     fin_quincena_str = fin_quincena.strftime('%Y-%m-%d')
 
     return inicio_quincena_str, fin_quincena_str
+
 
 def validacion_fechaPago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estado):
     try:
@@ -379,10 +384,11 @@ JOIN pagos p ON dp.id_pagos = p.id_pagos
 WHERE id_contrato = :id_contrato 
 AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
 AND dp.estado = :estado;""")
-        
-        result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio, 'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estado': estado}).fetchone()
+
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estado': estado}).fetchone()
         return result[0]
-        
+
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -396,7 +402,7 @@ def determinar_quincena(date):
         return 1
     else:
         return 2
-    
+
 
 def buscar_detalle_pago_idPagos(db_session, id_pagos):
     try:
@@ -427,7 +433,7 @@ JOIN
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
     p.id_pagos = :id_pagos""")
-        
+
         result = db_session.execute(query, {'id_pagos': id_pagos}).fetchall()
 
         result_list = []
@@ -451,7 +457,7 @@ WHERE
             result_list.append(result_dict)
 
         return result_list
-    
+
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -459,7 +465,6 @@ WHERE
     finally:
         db_session.close()
 
-                     
 
 def eliminar_pago_idPagos(db_session, id_pagos):
     try:
@@ -467,16 +472,16 @@ def eliminar_pago_idPagos(db_session, id_pagos):
         query_detalle = text("""
                             DELETE FROM detalle_pagos WHERE id_pagos = :id_pagos;
                             """
-                            )
+                             )
         db_session.execute(query_detalle, {'id_pagos': id_pagos})
-        
+
         # Luego, eliminar el registro principal de la tabla pagos
         query_pago = text("""
                          DELETE FROM pagos WHERE id_pagos = :id_pagos;
                          """
-                         )
+                          )
         db_session.execute(query_pago, {'id_pagos': id_pagos})
-        
+
         db_session.commit()
         return True
     except SQLAlchemyError as e:
@@ -486,20 +491,108 @@ def eliminar_pago_idPagos(db_session, id_pagos):
     finally:
         db_session.close()
 
-def añadir_saldo_en_contra(db_session, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado):
+
+def validar_saldo_pendiente(db_sesssion):
+    try:
+        query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo 
+FROM saldos_pagos sp
+JOIN moneda m ON m.id_moneda = sp.id_moneda 
+WHERE id_tipoSaldos_pagos = 2;""")
+        result = db_sesssion.execute(query).fetchone()
+        if result is None:
+            return None
+        print(result)
+        return result
+    except SQLAlchemyError as e:
+        db_sesssion.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_sesssion.close()
+
+
+def actualizar_saldo_en_contra(db_session, id_tipoSaldos_pagos, cifraSaldo, estado):
+    try:
+        query = text(
+            """UPDATE saldos_pagos SET cifraSaldo = :cifraSaldo, fecha_saldo = NOW(), estado = :estado WHERE id_tipoSaldos_pagos = :id_tipoSaldos_pagos;""")
+        db_session.execute(query, {
+                           'cifraSaldo': cifraSaldo, 'estado': estado, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos, })
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+
+def añadir_saldo_en_contra(db_session, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
+
+    saldos_pagos = validar_saldo_pendiente(db_session)
+
+    if saldos_pagos is None:
+        print("No hay saldo en contra")
+        try:
+            # Obtener el ID de la tabla persona
+            id_saldos_pagos = ObtenerIDTabla(
+                db_session, "id_saldos_pagos", "saldos_pagos")
+
+            # Insertar el pago
+            query = text("""
+                        INSERT INTO saldos_pagos (id_saldos_pagos, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
+                            VALUES (:id_saldos_pagos, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
+                            """
+                         )
+            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
+                               'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'estado': estado})
+            db_session.commit()
+            return id_saldos_pagos
+
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return None
+        finally:
+            db_session.close()
+    else:
+        try:
+            cifraSaldo = Decimal(saldos_pagos[3])
+            cifraSaldo += Decimal(cifraSaldo)
+            actualizar_saldo_en_contra(db_session, id_tipoSaldos_pagos, cifraSaldo, estado)
+
+
+        
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return None
+        finally:
+            db_session.close()
+        
+
+        
+
+
+        return True
+
+
+def insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, monto, tipo_transaccion):
     try:
         # Obtener el ID de la tabla persona
-        id_saldos_pagos = ObtenerIDTabla(db_session, "id_saldos_pagos", "saldos_pagos")
+        id_transaccion_saldo = ObtenerIDTabla(
+            db_session, "id_transaccion", "transacciones_saldos")
 
         # Insertar el pago
         query = text("""
-                     INSERT INTO saldos_pagos (id_saldos_pagos, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
-                        VALUES (:id_saldos_pagos, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, :fecha_saldo, :estado);
+                     INSERT INTO transacciones_saldos (id_transaccion, id_saldos_pagos, id_pagos, id_moneda, monto, tipo_transaccion, fecha_transaccion)
+                        VALUES (:id_transaccion_saldo, :id_saldos_pagos, :id_pagos, :id_moneda, :monto, :tipo_transaccion, NOW());
                         """
-                        )
-        db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos, 'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'fecha_saldo': fecha_saldo, 'estado': estado})
+                     )
+        db_session.execute(query, {'id_transaccion_saldo': id_transaccion_saldo, 'id_saldos_pagos': id_saldos_pagos,
+                           'id_pagos': id_pagos, 'id_moneda': id_moneda, 'monto': monto, 'tipo_transaccion': tipo_transaccion})
         db_session.commit()
-        return id_saldos_pagos
+        return id_transaccion_saldo
 
     except SQLAlchemyError as e:
         db_session.rollback()
