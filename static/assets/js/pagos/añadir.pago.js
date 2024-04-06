@@ -14,6 +14,11 @@ let comboSugerenciaPago = document.getElementById('comboSugerenciaPago');
 let formId_cliente = document.getElementById('formId_cliente');
 let tipoPagoCompleto = document.getElementById('tipoPagoCompleto');
 
+// Sección para detalle cliente
+let detallesCliente = document.getElementById('detallesCliente');
+let btnMostrarDetallesCliente = document.getElementById('btnMostrarDetallesCliente');
+let btnOcultarDetallesCliente = document.getElementById('btnOcultarDetallesCliente');
+
 
 
 function calculoDolaresCordobas() {
@@ -465,6 +470,25 @@ function formatoFecha(fecha) {
   let año = fechaObjeto.getFullYear();
   return `${dia < 10 ? '0' : ''}${dia}-${mes < 10 ? '0' : ''}${mes}-${año}`;
 }
+
+
+// Funciones para mostrar y ocultar detalles del cliente
+btnMostrarDetallesCliente.addEventListener('click', function () {
+  btnMostrarDetallesCliente.hidden = true;
+  detallesCliente.hidden = false;
+
+  btnOcultarDetallesCliente.hidden = false;
+  
+
+});
+
+btnOcultarDetallesCliente.addEventListener('click', function () {
+
+  btnMostrarDetallesCliente.hidden = false;
+  detallesCliente.hidden = true;
+
+  btnOcultarDetallesCliente.hidden = true;
+});
 
 
 

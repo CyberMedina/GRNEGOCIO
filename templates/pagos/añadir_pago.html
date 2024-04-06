@@ -56,7 +56,9 @@
                                     <span class="status-btn close-btn mb-2">No ha pagado</span>
                                     <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                             dataCliente.nombre_tipoCliente }}</span></p>
-                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
+                                            <a id="btnMostrarDetallesCliente" href="#0" class="text-medium text-dark">[Leer más]</a>
+                                    <div class="detallesCliente" id="detallesCliente" hidden>
+                                        <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
                                             dataCliente.tiempo_pago }}</span></p>
                                     <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
                                             dataCliente.fechaPrestamo }}</span></p>
@@ -70,6 +72,11 @@
                                                 dataCliente.pagoMensual }}</span></strong></p>
                                     <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
                                                 dataCliente.pagoQuincenal }}</span></strong></p>
+                                    </div>
+
+                                    <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark" hidden>[Leer menos]</a>
+
+                                    
 
                                     {% if saldo_pendiente %}
                                     <p><strong class="text-danger">Saldo pendiente: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
