@@ -169,23 +169,39 @@ CREATE TABLE tipoSaldos_pagos(
 
 CREATE TABLE saldos_pagos(
 	id_saldos_pagos INT PRIMARY KEY,
+  id_cliente INT NOT NULL,
   id_tipoSaldos_pagos INT NOT NULL,
   id_moneda INT NOT NULL,
   cifraSaldo DECIMAL(10,2) NOT NULL,
   fecha_saldo DATETIME NOT NULL,
   estado INT,
   
+  FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
   FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos),
   FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
   
 );
 
+SELECT * from saldos_pagos WHERE id_cliente = '1';
+
 
 CREATE TABLE transacciones_saldos (
     id_transaccion INT PRIMARY KEY,
-    id_saldo_pago INT NOT NULL,
+    id_saldos_pagos INT NOT NULL,
+    id_pagos INT NULL,
+  	id_moneda INT NOT NULL,
     monto DECIMAL(10, 2) NOT NULL,
     tipo_transaccion ENUM('Aumento', 'Disminucion') NOT NULL,
     fecha_transaccion DATETIME NOT NULL,
-    FOREIGN KEY (id_saldo_pago) REFERENCES saldos_pagos(id_saldos_pagos)
+    FOREIGN KEY (id_saldos_pagos) REFERENCES saldos_pagos(id_saldos_pagos),
+  	FOREIGN KEY (id_pagos) REFERENCES pagos(id_pagos)
 );
+
+
+SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo 
+FROM saldos_pagos sp
+JOIN moneda m ON m.id_moneda = sp.id_moneda
+JOIN cliente c ON c.id_cliente = sp.id_cliente
+WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = '11'
+
+

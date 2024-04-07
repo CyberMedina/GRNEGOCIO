@@ -32,3 +32,16 @@ INSERT INTO tipoSaldos_pagos (id_tipoSaldos_pagos, nombreTipoSaldo_pago, simbolo
 VALUES
 ('1','A favor','+','1'),
 ('2','En contra','-','1');
+
+CREATE TABLE saldos_pagos(
+	id_saldos_pagos INT PRIMARY KEY,
+  id_tipoSaldos_pagos INT NOT NULL,
+  id_moneda INT NOT NULL,
+  cifraSaldo DECIMAL(10,2) NOT NULL,
+  fecha_saldo DATETIME NOT NULL,
+  estado INT,
+  
+  FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos),
+  FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
+  
+);

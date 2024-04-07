@@ -268,18 +268,18 @@ SELECT
     p.evidencia_pago, 
     p.fecha_pago, 
     p.fecha_realizacion_pago,
-    p.estado,
+    p.estado AS 'estado_pagos',
     m.codigoMoneda, 
     m.nombreMoneda, 
     dp.cifraPago, 
     dp.tasa_conversion, 
-    dp.estado,
+    dp.estado AS 'estado_detallePagos',
     CASE 
         WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
         ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
     END AS descripcion_quincena,
     MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
-    c.estado
+    c.estado AS 'estado_contrato'
 FROM 
     pagos p
 JOIN 
@@ -289,7 +289,7 @@ JOIN
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
-    p.id_pagos = '6'
+    p.id_pagos = '35'
 
     
 
@@ -355,3 +355,38 @@ JOIN persona p ON cl.id_persona = p.id_persona
 WHERE cl.estado = '1' AND
 cl.id_tipoCliente = '2' OR
 cl.id_tipoCliente = '3'
+
+
+SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo 
+FROM saldos_pagos sp
+JOIN moneda m ON m.id_moneda = sp.id_moneda
+JOIN cliente c ON c.id_cliente = sp.id_cliente
+WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = '1';
+
+
+SELECT id_saldos_pagos
+FROM saldos_pagos
+WHERE id_cliente = '11';
+
+
+SELECT ts.id_transaccion
+FROM saldos_pagos sp
+JOIN transacciones_saldos ts ON ts.id_saldos_pagos = sp.id_saldos_pagos
+WHERE sp.id_saldos_pagos = '2'
+
+
+
+
+
+DELETE FROM transacciones_saldos WHERE id_pagos = '4'
+
+
+SELECT ts.monto, ts.tipo_transaccion FROM transacciones_saldos ts
+JOIN saldos_pagos sp ON sp.id_saldos_pagos = ts.id_saldos_pagos
+JOIN pagos p ON p.id_cliente = sp.id_cliente
+WHERE p.id_pagos = '34'
+ORDER BY ts.fecha_transaccion DESC
+LIMIT 1;
+
+
+
