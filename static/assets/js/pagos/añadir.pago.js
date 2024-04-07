@@ -392,7 +392,7 @@ function obtenerInformacionPagoBorrar(id_pago) {
   fetchInformacionPago(id_pago)
     .then(pago => {
       // Filtrar los pagos con estado 1
-      let pagosDolares = pago.filter(p => p.estado === 1);
+      let pagosDolares = pago.filter(p => p.estado_detallePagos === 1);
 
       console.log('Pagos con estado 1:', pagosDolares);
 

@@ -95,8 +95,6 @@ def guardar_en_sesion_ordenar_clientes():
 
     # Guardar el valor en la sesión
     session["numero_seleccionado_ordenar_clientes"] = selected_value
-    print(session)
-    print(session.get("numero_seleccionado_ordenar_clientes"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
@@ -106,8 +104,6 @@ def guardar_año_seleccionado():
     selected_value = int(data.get("selectedValue"))
 
     session["año_seleccionado"] = selected_value
-    print(session)
-    print(session.get("año_seleccionado"))
 
     return jsonify({"message": "Año guardado en sesión correctamente"})
 
@@ -151,8 +147,6 @@ def guardar_en_sesion_ordenar_prestamos():
 
     # Guardar el valor en la sesión
     session["numero_seleccionado_ordenar_prestamos"] = selected_value
-    print(session)
-    print(session.get("numero_seleccionado_ordenar_prestamos"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
@@ -164,8 +158,6 @@ def guardar_en_sesion_ordenar_clientesPrestamos():
     selected_value = data.get("selectedValue")
 
     session["numero_seleccionado_ordenar_clientesPrestamos"] = selected_value
-    print(session)
-    print(session.get("numero_seleccionado_ordenar_clientesPrestamos"))
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
@@ -175,7 +167,6 @@ def guardar_en_sesion_ordenar_clientesPrestamos():
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
 
-    print(session.get("numero_seleccionado_ordenar_clientes"))
     # Obtenemos la lista de clientes cruda sin procesar
 
     cursor = listar_clientes(
@@ -255,7 +246,6 @@ def datos_cliente():
 @app.route('/prestamos', methods=['GET', 'POST'])
 def prestamos():
 
-    print(session.get("numero_seleccionado_ordenar_prestamos"))
     # Obtenemos la lista de clientes cruda sin procesar
 
     cursor = listar_prestamos(
@@ -525,7 +515,6 @@ def datos_prestamoV1():
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
 def listado_clientes_pagos():
 
-    print(session.get("numero_seleccionado_ordenar_clientesPrestamos"))
     # Obtenemos la lista de clientes
 
     formulario_clientes_pagos = {
@@ -538,7 +527,7 @@ def listado_clientes_pagos():
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
 def añadir_pago(id_cliente):
 
-    print(session.get("año_seleccionado"))
+
 
     if request.method == 'POST':
 
@@ -590,10 +579,10 @@ def añadir_pago(id_cliente):
                 
 
             if estadoPago == 0:
-                id_saldos_pagos = añadir_saldo_en_contra(db_session, saldo_en_contra, id_moneda, cantidadPagarDolares, activo)
+                id_saldos_pagos = añadir_saldo_en_contra(db_session, id_cliente, saldo_en_contra, id_moneda, cantidadPagarDolares, activo)
                 insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolares, Aumento)
 
-            db_session.commit()
+           
 
         except SQLAlchemyError as e:
             db_session.rollback()
@@ -604,6 +593,8 @@ def añadir_pago(id_cliente):
             db_session.rollback()
             print(f"Error: {e}")
             return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
+        
+        db_session.commit()
 
         return redirect(url_for('añadir_pago', id_cliente=id_cliente))
     
@@ -615,18 +606,15 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-    saldo_pendiente = validar_saldo_pendiente(db_session)
+    saldo_pendiente = validar_saldo_pendiente(db_session, id_cliente)
 
-    print(f'El número de pagos es: {num_pagos[0]}')
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
-        print("Es el primer pago y es especial")
     
     else: 
         if num_pagos[0] > 1:
-            print('hay más de un pago')
             # Obtener la fecha actual
             fecha_actual = datetime.now()
 
@@ -637,14 +625,12 @@ def añadir_pago(id_cliente):
 
             sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
 
-            print(f'Del {inicio_quincena} y {fin_quincena} se ha pagado: {sumPagosQuincena}')
 
             if sumPagosQuincena:
                 if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
                     monto_pagoEspecial = None
                 else:
                     monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
-                    print(f'lo que debe pagar es: {monto_pagoEspecial}')
             else:
                 monto_pagoEspecial = None
         
@@ -660,7 +646,6 @@ def añadir_pago(id_cliente):
     # Procesos para las sesiones de los filtros de los pagos
     años_pagos = obtener_años_pagos(db_session, id_cliente, activo)
 
-    print(type(años_pagos))
 
     pagos = []
 
@@ -670,11 +655,8 @@ def añadir_pago(id_cliente):
 
             # Luego validamos si está en sesión el año de los pagos de ese contrato
         if session["año_seleccionado"] in años_pagos_verificar:
-            print("Si está en la lista")
             pagos = pagos_por_contrato(db_session, id_cliente, año=session.get("año_seleccionado"), estado_contrato=activo, estado_detalle_pago=monedaOriginal)
-            print(pagos)
         else:
-            print(f'No está en la lista {session["año_seleccionado"]}')
             pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado_contrato=activo, estado_detalle_pago=monedaOriginal)
     else:
         pagos = []
@@ -692,6 +674,8 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
+
+
 @app.route('/eliminar_pago', methods=['POST'])
 def eliminar_pago():
     data = request.get_json()
@@ -700,7 +684,11 @@ def eliminar_pago():
     db_session.begin()
 
     try:
-        eliminar_pago_idPagos(db_session, id_pagos)
+        # Obtener el estado del pago para saber si el pago está pagado o no
+        estado_pago = int(obtener_estado_pago(db_session, id_pagos))
+
+        #Eliminamos el pago mediante un proceso de eliminación en la función
+        eliminar_pago_idPagos(db_session, id_pagos, estado_pago)
         db_session.commit()
         return jsonify({'message': 'Pago eliminado'}), 200
 
@@ -722,8 +710,6 @@ def informacion_pagoEspecifico():
     try:
         data = request.get_json()
         id_pagos = data.get('id_pagos')
-
-        print(data)
 
         pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
 
@@ -750,8 +736,7 @@ def verificar_pago_quincenal():
     id_cliente = data_anadida.get('id_cliente')
     fecha_str = data_anadida.get('fecha_a_pagar')
     fecha = datetime.strptime(fecha_str, '%Y-%m-%d')
-    print(data)
-    print(id_cliente)
+
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
@@ -759,13 +744,9 @@ def verificar_pago_quincenal():
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-    print(f'El número de pagos es: {num_pagos[0]}')
-
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
-        print("Es el primer pago y es especial")
-    
     else: 
         # si hay más de un pago
         if num_pagos[0] > 1:
@@ -775,14 +756,12 @@ def verificar_pago_quincenal():
 
             sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
 
-            print(f'Del {inicio_quincena} y {fin_quincena} se ha pagado: {sumPagosQuincena}')
 
             if sumPagosQuincena:
                 if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
                     monto_pagoEspecial = '0.00'
                 else:
                     monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
-                    print(f'lo que debe pagar es: {monto_pagoEspecial}')
             else:
                 monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
         
