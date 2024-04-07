@@ -282,7 +282,7 @@ fechaPago.addEventListener('input', function (event) {
       .then(data => {
         //window.alert(data.monto_pagoEspecial);
         cantidadPagarVerificar$.value = data.monto_pagoEspecial;
-        pCantidadPagarVerificar$.textContent = data.monto_pagoEspecial;
+        pCantidadPagarVerificar$.textContent = `$ ${data.monto_pagoEspecial}`;
 
       })
       .catch(error => {
