@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
   fechaLetras({ target: fechaPago });
 
 
-  configuracionTasaCambio();
+  obtenerTasaCambioConversion();
 
 
 
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-function configuracionTasaCambio() {
+function obtenerTasaCambioConversion() {
 
 
   let inputTasaCambio = document.getElementById('inputTasaCambioPago');

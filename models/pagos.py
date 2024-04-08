@@ -544,12 +544,21 @@ LIMIT 1;
 """)
         ultima_transaccion_saldo = db_session.execute(query, {'id_pagos': id_pagos}).fetchone()
 
-        saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente, saldo_en_contra)
+        if ultima_transaccion_saldo:
 
-        if "Aumento" in ultima_transaccion_saldo[1]:
-            monto_anterior = saldo_actual[3] - ultima_transaccion_saldo[0]
-        elif "Disminucion" in ultima_transaccion_saldo[1]:
-            monto_anterior = saldo_actual[3] + ultima_transaccion_saldo[0]
+            saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente, saldo_en_contra)
+
+            if "Aumento" in ultima_transaccion_saldo[1]:
+                monto_anterior = saldo_actual[3] - ultima_transaccion_saldo[0]
+            elif "Disminucion" in ultima_transaccion_saldo[1]:
+                monto_anterior = saldo_actual[3] + ultima_transaccion_saldo[0]
+
+            # Validando que no sean negativos los saldos
+            if monto_anterior < 0:
+                monto_anterior = 0.00
+        else:
+            print("No hay ninguna transacción de saldo registrada")
+            monto_anterior = 0.00
 
 
         return monto_anterior
@@ -582,11 +591,12 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
         if estado_pago == no_hay_pago:
 
             id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
+            print(id_cliente)
 
             cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente)
-
-            actualizar_saldo_en_contra(
-                db_session, saldo_en_contra, cifra_anterior, activo)
+            print(cifra_anterior)
+            
+            actualizar_saldo_en_contra(db_session, id_cliente, saldo_en_contra, cifra_anterior, activo)
 
             query = text(
                 """DELETE FROM transacciones_saldos WHERE id_pagos = :id_pagos;""")
@@ -637,12 +647,12 @@ WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = :id_cliente;""")
         db_sesssion.close()
 
 
-def actualizar_saldo_en_contra(db_session, id_tipoSaldos_pagos, cifraSaldo, estado):
+def actualizar_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldo, estado):
     try:
         query = text(
-            """UPDATE saldos_pagos SET cifraSaldo = :cifraSaldo, fecha_saldo = NOW(), estado = :estado WHERE id_tipoSaldos_pagos = :id_tipoSaldos_pagos;""")
+            """UPDATE saldos_pagos SET cifraSaldo = :cifraSaldo, fecha_saldo = NOW(), estado = :estado WHERE id_cliente = :id_cliente AND id_tipoSaldos_pagos = :id_tipoSaldos_pagos;""")
         db_session.execute(query, {
-                           'cifraSaldo': cifraSaldo, 'estado': estado, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos, })
+                           'cifraSaldo': cifraSaldo, 'estado': estado, 'id_cliente' : id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos })
         db_session.commit()
         return True
     except SQLAlchemyError as e:
@@ -684,9 +694,8 @@ def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_mone
     elif saldos_pagos[3] == 0.00:
         try:
 
-
             actualizar_saldo_en_contra(
-                db_session, id_tipoSaldos_pagos, cifraSaldo, estado)
+                db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldo, estado)
 
             return saldos_pagos[0]
         except SQLAlchemyError as e:
@@ -701,7 +710,7 @@ def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_mone
             cifraSaldoAnterior = Decimal(saldos_pagos[3])
             cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
             actualizar_saldo_en_contra(
-                db_session, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
+                db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
             return saldos_pagos[0]
 
         except SQLAlchemyError as e:

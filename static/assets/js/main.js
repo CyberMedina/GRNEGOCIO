@@ -97,43 +97,43 @@
   // })
 
   // =========== theme change
-// Seleccionamos el switch y el enlace
-const themeSwitch = document.querySelector('#switch');
-const toggleCheckboxLink = document.querySelector('#toggleCheckboxLink');
-const logo = document.querySelector('.navbar-logo img');
-const modoLuz = document.getElementById('modoLuz');
+  // Seleccionamos el switch y el enlace
+  const themeSwitch = document.querySelector('#switch');
+  const toggleCheckboxLink = document.querySelector('#toggleCheckboxLink');
+  const logo = document.querySelector('.navbar-logo img');
+  const modoLuz = document.getElementById('modoLuz');
 
-// Verificamos el tema guardado
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-  document.body.classList.add('darkTheme');
-  themeSwitch.checked = true;
-  modoLuz.innerHTML = '‎ Claro';
-} else {
-  document.body.classList.remove('darkTheme');
-  themeSwitch.checked = false;
-  modoLuz.innerHTML = '‎ Oscuro';
-}
-
-// Función para cambiar el tema
-function toggleTheme() {
-  if (document.body.classList.contains('darkTheme')) {
-    document.body.classList.remove('darkTheme');
-    localStorage.setItem('theme', 'light'); // Guardamos la preferencia del tema
-    modoLuz.innerHTML = '‎ Oscuro';
-    
-  } else {
+  // Verificamos el tema guardado
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
     document.body.classList.add('darkTheme');
-    localStorage.setItem('theme', 'dark'); // Guardamos la preferencia del tema
+    themeSwitch.checked = true;
     modoLuz.innerHTML = '‎ Claro';
+  } else {
+    document.body.classList.remove('darkTheme');
+    themeSwitch.checked = false;
+    modoLuz.innerHTML = '‎ Oscuro';
   }
-}
 
-// Cambiamos el tema cuando se toca el enlace
-toggleCheckboxLink.addEventListener('click', (event) => {
-  event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
-  toggleTheme(); // Cambiar el tema
-});
+  // Función para cambiar el tema
+  function toggleTheme() {
+    if (document.body.classList.contains('darkTheme')) {
+      document.body.classList.remove('darkTheme');
+      localStorage.setItem('theme', 'light'); // Guardamos la preferencia del tema
+      modoLuz.innerHTML = '‎ Oscuro';
+
+    } else {
+      document.body.classList.add('darkTheme');
+      localStorage.setItem('theme', 'dark'); // Guardamos la preferencia del tema
+      modoLuz.innerHTML = '‎ Claro';
+    }
+  }
+
+  // Cambiamos el tema cuando se toca el enlace
+  toggleCheckboxLink.addEventListener('click', (event) => {
+    event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
+    toggleTheme(); // Cambiar el tema
+  });
 
 
 
@@ -197,4 +197,47 @@ function actualizar_tasa_interes(e) {
 
 
 }
+
+
+
+function configuracionTasaCambio() {
+  console.log('debería entrar a la función conversionMoneda');
+
+  let inputTasaCambio = document.getElementById('inputTasaCambioCordobas');
+
+  // Crea una función asincrona que mediante fetch haga una peticion de una url de mi backend para luego de recibirla haga una cosa u otra
+
+  try {
+    async function obtenerTasaCambio() {
+      let response = await fetch('/obtener_tasa_cambio');
+      let data = await response.json();
+      return data;
+    }
+
+    obtenerTasaCambio().then(data => {
+      console.log('data:', data);
+      if (data.tasa_cambio.cifraTasaCambio === "0.00") {
+        inputTasaCambio.placeholder = 'Inserte tasa de cambio por favor';
+        inputTasaCambio.value = '';
+      } else {
+
+        inputTasaCambio.value = data.tasa_cambio.cifraTasaCambio;
+      }
+    }
+    );
+  }
+  catch (error) {
+    console.error('Error:', error.message);
+  }
+
+  let modalTasaCambio = new bootstrap.Modal(document.getElementById('modalTasaCambio'));
+  modalTasaCambio.show();
+
+
+
+}
+
+
+
+
 
