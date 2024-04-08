@@ -744,3 +744,42 @@ def insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda,
         return None
     finally:
         db_session.close()
+
+
+def obtener_pagoEspecial(db_session, id_cliente, fecha):
+
+    if isinstance(fecha, str):
+        fecha = datetime.strptime(fecha, '%Y-%m-%d')
+
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    if num_pagos[0] == 0:
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+    else: 
+        # si hay más de un pago
+        if num_pagos[0] > 1:
+            dia_mes = fecha.day
+
+            inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+            sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+
+            if sumPagosQuincena:
+                if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                    monto_pagoEspecial = '0.00'
+                else:
+                    monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+            else:
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
+        
+        # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
+        else:
+            monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
+
+    return monto_pagoEspecial
