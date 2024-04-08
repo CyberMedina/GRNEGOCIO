@@ -6791,6 +6791,21 @@ h6,
   animation: rotate 2s infinite linear;
 }
 
+.btn-añadirPago  {
+  position: fixed;
+  bottom: 120px;
+  right: 50px;
+  width: 55px;
+  height: 55px;
+  font-size: 24px;
+  border: none;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
 .rightSidebar .option-btn {
   right: auto;
   left: 50px;

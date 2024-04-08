@@ -56,30 +56,34 @@
                                     <span class="status-btn close-btn mb-2">No ha pagado</span>
                                     <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                             dataCliente.nombre_tipoCliente }}</span></p>
-                                            <a id="btnMostrarDetallesCliente" href="#0" class="text-medium text-dark">[Leer más]</a>
+                                    <a id="btnMostrarDetallesCliente" href="#0" class="text-medium text-dark">[Leer
+                                        más]</a>
                                     <div class="detallesCliente" id="detallesCliente" hidden>
                                         <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
-                                            dataCliente.tiempo_pago }}</span></p>
-                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
-                                            dataCliente.fechaPrestamo }}</span></p>
-                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
-                                            dataCliente.fecha_prestamo_desde }}</span></p>
-                                    <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
-                                                dataCliente.monto_solicitado }}</span> </strong></p>
-                                    <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes }}%</span></strong>
-                                    </p>
-                                    <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
-                                                dataCliente.pagoMensual }}</span></strong></p>
-                                    <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
-                                                dataCliente.pagoQuincenal }}</span></strong></p>
+                                                dataCliente.tiempo_pago }}</span></p>
+                                        <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
+                                                dataCliente.fechaPrestamo }}</span></p>
+                                        <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
+                                                dataCliente.fecha_prestamo_desde }}</span></p>
+                                        <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                    dataCliente.monto_solicitado }}</span> </strong></p>
+                                        <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes
+                                                    }}%</span></strong>
+                                        </p>
+                                        <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
+                                                    dataCliente.pagoMensual }}</span></strong></p>
+                                        <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
+                                                    dataCliente.pagoQuincenal }}</span></strong></p>
                                     </div>
 
-                                    <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark" hidden>[Leer menos]</a>
+                                    <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark"
+                                        hidden>[Leer menos]</a>
 
-                                    
+
 
                                     {% if saldo_pendiente and saldo_pendiente.cifraSaldo > 0.00 %}
-                                    <p><strong class="text-danger">Saldo pendiente: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
+                                    <p><strong class="text-danger">Saldo pendiente: {{ saldo_pendiente.codigoMoneda }}
+                                            {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
                                     {% endif %}
 
                                 </div>
@@ -110,6 +114,15 @@
                                 <i class="lni lni-plus"></i>
                                 Añadir pago
                             </a>
+
+                            <div class="btn-añadirPago">
+                                <a href="#0"
+                                    class="main-btn primary-btn-light rounded-full btn-hover m-5 col-md-3 offset-md-8"
+                                    data-bs-toggle="modal" data-bs-target="#modalAñadirPago">
+                                    <i class="lni lni-plus"></i>
+                                </a>
+                            </div>
+
                         </div>
                         <div class="table-wrapper table-responsive" style="overflow-x: hidden !important;">
                             <table class="table">
@@ -152,18 +165,22 @@
                                             <span class="tooltip-icon {% if pago.estado_pago == 0 %}text-danger
                                             {% elif pago.estado_pago == 1 %}text-success
                                             {% elif pago.estado_pago == 2 %}text-warning
-                                            {% endif %}" {% if pago.estado_pago == 2 %}data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Pago incompleto, monto quincenal: {{ dataCliente.codigoMoneda }}{{
-                                                dataCliente.pagoQuincenal }}" {% elif pago.estado_pago == 0 %}data-bs-toggle="tooltip" data-bs-placement="top"
-                                                title="No hay pago"{% elif pago.estado_pago == 1 %}data-bs-toggle="tooltip" data-bs-placement="top"
-                                                title="Pago completo" {% endif %}>
-                                                {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }} {{ pago.cifraPago }} <br> (NO PAGÓ) {% else %} {{ pago.codigoMoneda }} {{ pago.cifraPago }} {% endif %}</span>
+                                            {% endif %}" {% if pago.estado_pago==2 %}data-bs-toggle="tooltip"
+                                                data-bs-placement="top" title="Pago incompleto, monto quincenal: {{ dataCliente.codigoMoneda }}{{
+                                                dataCliente.pagoQuincenal }}" {% elif pago.estado_pago==0
+                                                %}data-bs-toggle="tooltip" data-bs-placement="top" title="No hay pago"
+                                                {% elif pago.estado_pago==1 %}data-bs-toggle="tooltip"
+                                                data-bs-placement="top" title="Pago completo" {% endif %}>
+                                                {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }} {{ pago.cifraPago
+                                                }}
+                                                <br> (NO PAGÓ) {% else %} {{ pago.codigoMoneda }} {{ pago.cifraPago }}
+                                                {%
+                                                endif %}</span>
 
                                             <button class="more-btn ml-10 dropdown-toggle" id="moreAction1"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="lni lni-more-alt"></i>
-                                            </button
-                                            >
+                                            </button>
                                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1">
                                                 <li class="dropdown-item">
                                                     <a href="#0" class="text-gray">Ver</a>
@@ -322,64 +339,64 @@
                         </div>
 
                         <div class="form-check checkbox-style checkbox-danger mb-20">
-                            <input class="form-check-input" type="checkbox" value="0" id="checkBoxNoPago" name="checkBoxNoPago" />
+                            <input class="form-check-input" type="checkbox" value="0" id="checkBoxNoPago"
+                                name="checkBoxNoPago" />
                             <label class="form-check-label" for="checkBoxNoPago">
-                              No pagó</label>
-                          </div>
-                          <!-- end checkbox -->
+                                No pagó</label>
                         </div>
+                        <!-- end checkbox -->
+                </div>
 
 
 
 
-                        <div class="col-8 col-sm-4 col-md-4">
-                            <div class="select-style-1">
-                                <label class="">PAGO COMPLETO O INCOMPLETO</label>
-                                <div class="select-position">
-                                    <select class="light-bg" name="tipoPagoCompleto" id="tipoPagoCompleto">
-                                        <option value="0">NO HAY PAGO</option>
-                                        <option value="1">COMPLETO</option>
-                                        <option value="2">INCOMPLETO</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- end select -->
+                <div class="col-8 col-sm-4 col-md-4">
+                    <div class="select-style-1">
+                        <label class="">PAGO COMPLETO O INCOMPLETO</label>
+                        <div class="select-position">
+                            <select class="light-bg" name="tipoPagoCompleto" id="tipoPagoCompleto">
+                                <option value="0">NO HAY PAGO</option>
+                                <option value="1">COMPLETO</option>
+                                <option value="2">INCOMPLETO</option>
+                            </select>
                         </div>
+                    </div>
+                    <!-- end select -->
+                </div>
 
-                        <div class="input-style-3">
-                            <label>Observación</label>
-                            <textarea placeholder="Descripción de la observación" rows="5" name="observacionPago"
-                                id="observacionPago"></textarea>
-                            <span class="icon"><i class="fa-solid fa-eye"></i></span>
-                        </div>
+                <div class="input-style-3">
+                    <label>Observación</label>
+                    <textarea placeholder="Descripción de la observación" rows="5" name="observacionPago"
+                        id="observacionPago"></textarea>
+                    <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                </div>
 
-                        <div class="col-12">
-                            <div class="input-style-3">
-                                <label>Evidencia del pago</label>
-                                <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
-                                    id="evidenciaPago" />
-                                <span class="icon"><i class="fa-solid fa-receipt"></i></span>
-                            </div>
-                        </div>
+                <div class="col-12">
+                    <div class="input-style-3">
+                        <label>Evidencia del pago</label>
+                        <input type="file" placeholder="" accept="image/*" name="evidenciaPago" id="evidenciaPago" />
+                        <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                    </div>
+                </div>
 
 
-                        <!-- end col -->
-                        <div class="col-12">
-                            <div class="button-group d-flex justify-content-center flex-wrap">
-                                <button type="POST" id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
-                                    Guardar
-                                </button>
-                                <button class="main-btn danger-btn-outline m-2" data-bs-dismiss="modal">
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
+                <!-- end col -->
+                <div class="col-12">
+                    <div class="button-group d-flex justify-content-center flex-wrap">
+                        <button type="POST" id="btnGuardar" class="main-btn primary-btn btn-hover m-2">
+                            Guardar
+                        </button>
+                        <button class="main-btn danger-btn-outline m-2" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
-            <!-- end row -->
-            </form>
         </div>
+        <!-- end row -->
+        </form>
     </div>
+</div>
 </div>
 
 
