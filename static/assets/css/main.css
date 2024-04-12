@@ -893,6 +893,11 @@ h6,
   color: #365CF5;
 }
 
+.primary-btn-light-custom {
+  background: #24314d;
+  color: #365CF5;
+}
+
 .primary-btn-group {
   background: transparent;
   border: 1px solid transparent;
