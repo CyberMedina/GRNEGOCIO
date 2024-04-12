@@ -894,7 +894,7 @@ h6,
 }
 
 .primary-btn-light-custom {
-  background: #24314d;
+  background: #191d46;
   color: #365CF5;
 }
 
@@ -6797,6 +6797,7 @@ h6,
 }
 
 .btn-añadirPago  {
+  display: none !important;
   position: fixed;
   bottom: 120px;
   right: 50px;
@@ -6808,6 +6809,8 @@ h6,
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 
@@ -7334,12 +7337,24 @@ h6,
 .darkTheme .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item.active > a, .darkTheme .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item.active > a.collapsed, .darkTheme .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item:hover > a, .darkTheme .sidebar-nav-wrapper.style-2 .sidebar-nav ul .nav-item:hover > a.collapsed {
   color: #fff;
 }
+
+.darkTheme .label-añadirPago{
+  background-color: #191d46;
+}
+
+.darkTheme .label-añadirPago:hover{
+  background-color: #25294f;
+  color: #365CF5;
+}
+
 .darkTheme .promo-box {
   background: rgba(255, 255, 255, 0.07);
 }
 .darkTheme .promo-box .promo-icon {
   border: 5px solid #14142D;
 }
+
+
 
 /* ========== Layout Change ============ */
 .rightSidebar .sidebar-nav-wrapper {
@@ -9439,6 +9454,38 @@ h6,
   box-shadow: 0 0 50px 20px rgba(0, 0, 0, 0.1);
   line-height: 1;
 }
+
+.label-añadirPago {
+  background-color: #e7ebfe;
+  color: #365cf5;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 50px 20px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+.label-añadirPago:hover{
+
+  background-color: #e8ecfe;
+  color: #365CF5;
+
+}
+
+
+.show {
+  display: block !important;
+  opacity: 1;
+}
+
+
+
+
+
+
 
 .input {
   display: none;

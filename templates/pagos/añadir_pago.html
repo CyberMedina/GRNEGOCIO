@@ -114,14 +114,36 @@
                                 <i class="lni lni-plus"></i>
                                 Añadir pago
                             </a>
+                            
 
+                            <!-- ============ Theme Option Start ============= -->
                             <div class="btn-añadirPago">
-                                <a href="#0"
-                                    class="main-btn primary-btn-light-custom rounded-full btn-hover m-5 col-md-3 offset-md-8"
-                                    data-bs-toggle="modal" data-bs-target="#modalAñadirPago">
-                                    <i class="lni lni-plus"></i>
-                                </a>
+                                <div class="container">
+                                    <label class="label-añadirPago btn-hover" for="" data-bs-toggle="modal" data-bs-target="#modalAñadirPago">
+                                        <div class="icon">
+                                            <i class="lni lni-plus"></i>
+                                        </div>
+                                    </label>
+                                </div>
+
                             </div>
+
+                            <script>
+                                window.addEventListener('scroll', function() {
+                                    var tableWrapper = document.querySelector('.table-wrapper');
+                                    var rect = tableWrapper.getBoundingClientRect();
+                                    
+                                    // Si el valor top del rectángulo es menor o igual a cero, el elemento está visible en la parte superior de la pantalla
+                                    if (rect.top <= 160) {
+                                      document.querySelector('.btn-añadirPago').classList.add('show');
+                                    } else {
+                                      document.querySelector('.btn-añadirPago').classList.remove('show');
+                                    }
+                                  });
+                                  
+                                  
+                                  
+                            </script>
 
                         </div>
                         <div class="table-wrapper table-responsive" style="overflow-x: hidden !important;">
