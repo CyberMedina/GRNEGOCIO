@@ -8,7 +8,7 @@ html {
 
 /* Estilos para Webkit (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 10px; /* Ancho del scrollbar */
+  width: 6px; /* Ancho del scrollbar */
 }
 
 ::-webkit-scrollbar-thumb {
