@@ -782,4 +782,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
         else:
             monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
 
+    print("Empieza la depuración pago especial")
+    print(monto_pagoEspecial)
+
     return monto_pagoEspecial

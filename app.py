@@ -607,7 +607,8 @@ def añadir_pago(id_cliente):
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
     saldo_pendiente = validar_saldo_pendiente(db_session, id_cliente)
-
+    # Definimos la cifra pago especial
+    monto_pagoEspecial = 0.00
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
@@ -618,24 +619,8 @@ def añadir_pago(id_cliente):
             # Obtener la fecha actual
             fecha_actual = datetime.now()
 
-            # Obtener el día del mes
-            dia_mes = fecha_actual.day
-
-            inicio_quincena, fin_quincena = obtener_quincena_actual(fecha_actual, dia_mes)
-
-            sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
-
-
-            if sumPagosQuincena:
-                if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
-                    monto_pagoEspecial = None
-                else:
-                    monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
-            else:
-                monto_pagoEspecial = None
-        
-        else:
-            monto_pagoEspecial = None
+            monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, fecha_actual)
+    
         
 
 
