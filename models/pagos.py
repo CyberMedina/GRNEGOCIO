@@ -800,7 +800,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
         monto_pago = {
                         'cifra': monto_pagoEspecial,
                         'estado' : 0,
-                        'descripcion' : 'prueba'
+                        'descripcion' : 'Primer pago'
                     }
     else: 
         # si hay más de un pago

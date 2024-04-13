@@ -52,8 +52,10 @@
                                 {% for dataCliente in datos_cliente %}
 
                                 <h3 class="mb-3">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
-                                <input type="date" value="12-04-22" id="fechaPrestamoInput" name="fechaPrestamoInput" hidden>
-                                <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual" name="pagoMensual" hidden>
+                                <input type="date" value="12-04-22" id="fechaPrestamoInput" name="fechaPrestamoInput"
+                                    hidden>
+                                <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual"
+                                    name="pagoMensual" hidden>
                                 <!-- Se coloca acá el script para inicializar los datos al abrir el modal -->
                                 <script>
                                     function IniciarliazarcifrasInputsVisualizarPrimerPagoModal() {
@@ -343,24 +345,23 @@
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
                                         id="cantidadPagoCordobas" />
                                     <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    <p style="font-size: small;">C$<span id="lblCantidadPagarC$"></span>
-                                    </p>
+                                    <span>C$<span id="lblCantidadPagarC$"></span>
+                                    </span>
                                     <input id="cantidadPagarVerificarC$" type="text" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
                             {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
                             dataCliente.pagoQuincenal %}
-
                             <div class="col-6 col-sm-4">
                                 <div class="input-style-3">
                                     <label for="">Pago en $</label>
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                         id="cantidadPagar$" required />
-                                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    <p id="pCantidadPagarVerificar$" style="font-size: small;">{{
-                                        dataCliente.codigoMoneda }} {{ cantidad_pagar }}</p>
-                                    <input id="cantidadPagarVerificar$" type="text" value="{{ cantidad_pagar }}" hidden>
+                                    <span class="icon" style="z-index: 1 !important;"><i class="fa-solid fa-coins"></i></span>
+                                    <span id="pCantidadPagarVerificar$" style="position:relative; z-index: 5 !important;" class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="{{monto_pagoEspecial.descripcion }}"></span>
+                                    <input id="cantidadPagarVerificar$" type="text"
+                                        value="" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>

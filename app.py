@@ -641,7 +641,7 @@ def añadir_pago(id_cliente):
         pagos = []
 
 
-
+    print(monto_pagoEspecial)
     formulario_añadir_pago = {
         "datos_cliente": pagos_cliente,
         "monto_pagoEspecial": monto_pagoEspecial,

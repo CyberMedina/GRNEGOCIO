@@ -29,7 +29,6 @@ function calculoDolaresCordobas() {
 
   let cantidadPagarVerificar$ = document.getElementById('cantidadPagarVerificar$');
 
-  console.log('cantidadPagarVerificar$:', cantidadPagarVerificar$.value);
 
   let cantidadPagarCordobas = (cantidadPagarVerificar$.value * inputTasaCambioPago.value);
 
@@ -54,7 +53,7 @@ function obtenerFecha() {
   return fechaFormateada;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function (event) {
 
 
   calcularMontoPrimerPago();
@@ -67,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   obtenerTasaCambioConversion();
+
+
+
+  obtener_pago();
+
+  // llama a validacionDolares manualmente
+  fechaLetras(event);
 
 
 
@@ -138,8 +144,8 @@ function calcularMontoPrimerPago() {
   const [year, month, day] = fechaPrestamoValue.split('-');
 
   const meses = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
   const nombreMes = meses[parseInt(month, 10) - 1]; // Restamos 1 porque los índices de los arrays empiezan en 0
 
@@ -151,7 +157,7 @@ function calcularMontoPrimerPago() {
 
   // Función para obtener el número de días en un mes específico
   function daysInMonth(month, year) {
-      return new Date(year, month, 0).getDate();
+    return new Date(year, month, 0).getDate();
   }
 
   // Calcular el número de días en el mes actual
@@ -169,16 +175,15 @@ function calcularMontoPrimerPago() {
   let corteQuincena = 0;
 
   if (fechaPrestamo.getDate() <= 15) {
-      daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - firstFortnightDate);
-      corteQuincena = firstFortnightDate;
+    daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - firstFortnightDate);
+    corteQuincena = firstFortnightDate;
   }
   else {
-      daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - secondFortnightDate);
-      corteQuincena = secondFortnightDate;
+    daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - secondFortnightDate);
+    corteQuincena = secondFortnightDate;
   }
 
-  // Mostrar los días restantes hasta la próxima quincena
-  console.log('Días restantes hasta la próxima quincena: ' + daysUntilNextFortnight);
+
 
   diasHastaProximoCorte.value = daysUntilNextFortnight + 1;
 
@@ -191,17 +196,17 @@ function calcularMontoPrimerPago() {
 
   // Calcular el monto del primer pago según la fecha del préstamo
 
-  console.log(fechaPrestamo.getDate());
+
   // Verificar si la fecha es válida
   if (!fechaPrestamo || isNaN(fechaPrestamo.getTime())) {
-      // Si la fecha no es válida, establecer el valor del monto del primer pago en 0
-      montoPrimerPagoInput.value = 0;
-      montoPrimerPagoInputModal.value = 0;
-      return; // Salir de la función si la fecha no es válida
+    // Si la fecha no es válida, establecer el valor del monto del primer pago en 0
+    montoPrimerPagoInput.value = 0;
+    montoPrimerPagoInputModal.value = 0;
+    return; // Salir de la función si la fecha no es válida
   }
 
   else {
-      // linkProcdmtoModal.classList.remove('inactive');
+    // linkProcdmtoModal.classList.remove('inactive');
   }
 
   let montoPrimerPago = 0;
@@ -209,20 +214,19 @@ function calcularMontoPrimerPago() {
 
 
   const CopiaModalCalculoPrimerPago = modalCalculoPrimerPago.innerHTML;
-  console.log(CopiaModalCalculoPrimerPago);
   if (fechaPrestamo.getDate() === 1 || fechaPrestamo.getDate() === 15 || fechaPrestamo.getDate() === 30 || fechaPrestamo.getDate() === 31) {
-      document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
-      console.log("Es el primer día del mes");
-      montoPrimerPago = 0;
-      montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
-      montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
-      return
+    document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
+
+    montoPrimerPago = 0;
+    montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+    montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+    return
   }
 
 
   else {
-      // document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalCalculoPrimerPago");
-      montoPrimerPago = pagoDiario.toFixed(2) * (daysUntilNextFortnight + 1);
+    // document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalCalculoPrimerPago");
+    montoPrimerPago = pagoDiario.toFixed(2) * (daysUntilNextFortnight + 1);
   }
 
 
@@ -256,7 +260,7 @@ function obtenerTasaCambioConversion() {
     }
 
     obtenerTasaCambio().then(data => {
-      console.log('data:', data);
+
       if (data.tasa_cambio.cifraTasaCambio === "0.00") {
         inputTasaCambio.placeholder = 'Inserte tasa de cambio por favor';
         inputTasaCambio.value = '';
@@ -293,7 +297,6 @@ function verificar_pago_quincenal(data) {
       if (data.error) {
         throw new Error(data.error);
       }
-      console.log("pago verificado", data);
       return data;
     })
     .catch(error => {
@@ -334,7 +337,7 @@ function fechaLetras(event) {
     primeraSegundaQuincena = "Segunda quincena de " + nombreMes + " de " + year;
   }
 
-  console.log(primeraSegundaQuincena);
+
 
 
 
@@ -358,7 +361,7 @@ function validacionDolares(event) {
   if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) < parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))) {
     cantidadPagar$.style.color = 'red';
     tipoPagoCompleto.selectedIndex = 2; // Indica que pagó imcompleto
-    
+
   } else {
     cantidadPagar$.style.color = 'green';
     tipoPagoCompleto.selectedIndex = 1; // Indica que pagó completo
@@ -387,10 +390,8 @@ cantidadPagoCordobas.addEventListener('input', function () {
   }
 
   let valorNumerico = parseFloat(cantidadPagoCordobas.value.replace(/[^0-9.]/g, ''));
-  console.log('valorNumerico:', valorNumerico);
 
   conversionCordobasDolares = (valorNumerico / inputTasaCambioPago.value).toFixed(2);
-  console.log('conversionCordobasDolares:', conversionCordobasDolares);
   cantidadPagar$.value = conversionCordobasDolares;
 
   // llama a validacionDolares manualmente
@@ -398,9 +399,23 @@ cantidadPagoCordobas.addEventListener('input', function () {
 
 });
 
+
+
+
 fechaPago.addEventListener('input', function (event) {
 
+  obtener_pago();
+
+  // llama a validacionDolares manualmente
   fechaLetras(event);
+
+
+
+
+
+});
+
+function obtener_pago() {
 
   if (comboSugerenciaPago.value === '1') {
 
@@ -412,20 +427,40 @@ fechaPago.addEventListener('input', function (event) {
 
     verificar_pago_quincenal(data_enviar)
       .then(data => {
-        //window.alert(data.monto_pagoEspecial);
-        cantidadPagarVerificar$.value = data.monto_pagoEspecial;
-        pCantidadPagarVerificar$.textContent = `$ ${data.monto_pagoEspecial}`;
+        console.log(data)
+        //window.alert(data.monto_pagoEspecial.cifra);
+        cantidadPagarVerificar$.value = data.monto_pagoEspecial.cifra;
+        pCantidadPagarVerificar$.textContent = `$ ${data.monto_pagoEspecial.cifra}`;
+
+        // Selecciona el elemento span y cambia su atributo title
+        var spanElement = document.getElementById('pCantidadPagarVerificar$');
+        spanElement.setAttribute('title', data.monto_pagoEspecial.descripcion);
+
+        // Actualiza el tooltip de Bootstrap
+        var bootstrapTooltip = new bootstrap.Tooltip(spanElement);
+        // bootstrapTooltip.updateTitleContent(data.monto_pagoEspecial.descripcion);
+
+        // Verifica el estado y agrega los atributos necesarios
+        if (data.monto_pagoEspecial.estado == 0) {
+          console.log('Agregando atributos');
+          spanElement.setAttribute('href', '#');
+          spanElement.setAttribute('data-bs-toggle', 'modal');
+          spanElement.setAttribute('data-bs-target', '#modalCalculoPrimerPago');
+          spanElement.style.cursor = 'pointer';
+          spanElement.style.color = '#0728e8';
+        } else {
+          console.log('Eliminando atributos');
+          spanElement.removeAttribute('href');
+          spanElement.removeAttribute('data-bs-toggle');
+          spanElement.removeAttribute('data-bs-target');
+        }
 
       })
       .catch(error => {
         // Manejar el error
       });
   }
-
-
-
-
-});
+}
 
 
 
@@ -453,7 +488,6 @@ document.getElementById("filtro-comboBox").addEventListener("change", function (
   // Enviar una solicitud POST al servidor con el valor seleccionado
   // Puedes usar fetch o axios para hacer la solicitud
   // Ejemplo:
-  console.log('Valor seleccionado:', selectedValue)
   fetch("/guardar_año_seleccionado", {
     method: "POST",
     body: JSON.stringify({ selectedValue }), // Convertir a JSON
@@ -463,7 +497,6 @@ document.getElementById("filtro-comboBox").addEventListener("change", function (
   })
     .then(response => response.json())
     .then(data => {
-      console.log("Valor guardado en sesión:", data);
       location.reload();
     })
     .catch(error => {
@@ -489,7 +522,6 @@ function eliminar_pago(id_pago) {
       if (data.error) {
         throw new Error(data.error);
       }
-      console.log("Pago eliminado:", data);
       location.reload();
     })
     .catch(error => {
@@ -526,7 +558,6 @@ function obtenerInformacionPagoBorrar(id_pago) {
       // Filtrar los pagos con estado 1
       let pagosDolares = pago.filter(p => p.estado_detallePagos === 1);
 
-      console.log('Pagos con estado 1:', pagosDolares);
 
       modalInformacionPago.innerHTML = pagosDolares.map(pago => `
       <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
@@ -577,7 +608,6 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       if (data.error) {
         throw new Error(data.error);
       }
-      console.log('Pago especifico:', data);
       let pago = data.pago;
 
 
@@ -588,7 +618,6 @@ function obtenerInformacionPagoEspecifico(id_pago) {
     });
 
   pagosDolares.forEach(pago => {
-    console.log('Pago:', pago);
   }
   );
 
@@ -610,7 +639,7 @@ btnMostrarDetallesCliente.addEventListener('click', function () {
   detallesCliente.hidden = false;
 
   btnOcultarDetallesCliente.hidden = false;
-  
+
 
 });
 
