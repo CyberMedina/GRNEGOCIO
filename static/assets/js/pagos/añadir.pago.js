@@ -113,6 +113,8 @@ document.addEventListener('DOMContentLoaded', function () {
 // Función para calcular el monto del primer pago
 function calcularMontoPrimerPago() {
 
+  IniciarliazarcifrasInputsVisualizarPrimerPagoModal();
+
 
 
   // Obtener los inputs del formulario normal

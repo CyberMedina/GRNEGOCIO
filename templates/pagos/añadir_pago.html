@@ -52,10 +52,14 @@
                                 {% for dataCliente in datos_cliente %}
 
                                 <h3 class="mb-3">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
-                                <input type="date" value="12-04-22" id="fechaPrestamoInput" name="fechaPrestamoInput">
-                                <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual" name="pagoMensual">
+                                <input type="date" value="12-04-22" id="fechaPrestamoInput" name="fechaPrestamoInput" hidden>
+                                <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual" name="pagoMensual" hidden>
+                                <!-- Se coloca acá el script para inicializar los datos al abrir el modal -->
                                 <script>
-                                    document.getElementById("fechaPrestamoInput").value = "{{ dataCliente.fechaPrestamo }}";
+                                    function IniciarliazarcifrasInputsVisualizarPrimerPagoModal() {
+                                        document.getElementById("fechaPrestamoInput").value = "{{ dataCliente.fechaPrestamo }}";
+                                        document.getElementById("pagoMensualModal").value = "{{ dataCliente.pagoMensual }}";
+                                    }
                                 </script>
 
                                 <div class="col-12 mb-5">
