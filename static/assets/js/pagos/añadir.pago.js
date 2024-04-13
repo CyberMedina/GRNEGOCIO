@@ -56,6 +56,8 @@ function obtenerFecha() {
 
 document.addEventListener('DOMContentLoaded', function () {
 
+
+  calcularMontoPrimerPago();
   let fechaFormateada = obtenerFecha();
 
   fechaPago.value = fechaFormateada;
@@ -107,6 +109,134 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+// Función para calcular el monto del primer pago
+function calcularMontoPrimerPago() {
+
+
+
+  // Obtener los inputs del formulario normal
+  // EN ESTE INPUT SE DEBERÁ PASAR LA FECHA DEL PRÉSTAMO
+  const fechaPrestamoInput = document.getElementById('fechaPrestamoInput');
+  const diasHastaProximoCorte = document.getElementById('diasHastaProximoCorte');
+  const pagoMensualInput = document.getElementById('pagoMensual');
+  const resultadoPagoDiarioModal = document.getElementById('resultadoPagoDiarioModal');
+  const pagoDiario2Modal = document.getElementById('pagoDiario2Modal');
+
+
+  const montoPrimerPagoInput = document.getElementById('montoPrimerPago');
+  const montoPrimerPagoInputModal = document.getElementById('montoPrimerPagoModal');
+  const pagoQuincenalInput = document.getElementById('pagoQuincenal');
+
+
+
+  // Obtener el valor del input de fecha
+  const fechaPrestamoValue = fechaPrestamoInput.value;
+
+  const [year, month, day] = fechaPrestamoValue.split('-');
+
+  const meses = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  const nombreMes = meses[parseInt(month, 10) - 1]; // Restamos 1 porque los índices de los arrays empiezan en 0
+
+
+
+
+  // Crear un objeto Date con solo el año, mes y día
+  const fechaPrestamo = new Date(year, month - 1, day);
+
+  // Función para obtener el número de días en un mes específico
+  function daysInMonth(month, year) {
+      return new Date(year, month, 0).getDate();
+  }
+
+  // Calcular el número de días en el mes actual
+  const totalDaysInMonth = 30 /////////////// MES COMERCIAL ESTO PUEDE CAMBIAR ////////////
+
+
+  // Calcular la fecha de la primera quincena (siempre es el día 15)
+  const firstFortnightDate = 15
+
+  // Calcular la fecha de la segunda quincena (último día del mes)
+  const secondFortnightDate = 30
+
+  // Calcular los días restantes hasta la próxima quincena
+  let daysUntilNextFortnight;
+  let corteQuincena = 0;
+
+  if (fechaPrestamo.getDate() <= 15) {
+      daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - firstFortnightDate);
+      corteQuincena = firstFortnightDate;
+  }
+  else {
+      daysUntilNextFortnight = Math.abs(fechaPrestamo.getDate() - secondFortnightDate);
+      corteQuincena = secondFortnightDate;
+  }
+
+  // Mostrar los días restantes hasta la próxima quincena
+  console.log('Días restantes hasta la próxima quincena: ' + daysUntilNextFortnight);
+
+  diasHastaProximoCorte.value = daysUntilNextFortnight + 1;
+
+
+  // Obtener la cantidad de pago al día
+  const pagoDiario = parseFloat(pagoMensualInput.value) / totalDaysInMonth;
+  resultadoPagoDiarioModal.value = pagoDiario.toFixed(2);
+  pagoDiario2Modal.value = pagoDiario.toFixed(2);
+
+
+  // Calcular el monto del primer pago según la fecha del préstamo
+
+  console.log(fechaPrestamo.getDate());
+  // Verificar si la fecha es válida
+  if (!fechaPrestamo || isNaN(fechaPrestamo.getTime())) {
+      // Si la fecha no es válida, establecer el valor del monto del primer pago en 0
+      montoPrimerPagoInput.value = 0;
+      montoPrimerPagoInputModal.value = 0;
+      return; // Salir de la función si la fecha no es válida
+  }
+
+  else {
+      // linkProcdmtoModal.classList.remove('inactive');
+  }
+
+  let montoPrimerPago = 0;
+
+
+
+  const CopiaModalCalculoPrimerPago = modalCalculoPrimerPago.innerHTML;
+  console.log(CopiaModalCalculoPrimerPago);
+  if (fechaPrestamo.getDate() === 1 || fechaPrestamo.getDate() === 15 || fechaPrestamo.getDate() === 30 || fechaPrestamo.getDate() === 31) {
+      document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
+      console.log("Es el primer día del mes");
+      montoPrimerPago = 0;
+      montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+      montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+      return
+  }
+
+
+  else {
+      // document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalCalculoPrimerPago");
+      montoPrimerPago = pagoDiario.toFixed(2) * (daysUntilNextFortnight + 1);
+  }
+
+
+  // Establecer el valor en el campo montoPrimerPago
+  // montoPrimerPagoInput.value = montoPrimerPago.toFixed(2); // Redondear a 2 decimales
+  montoPrimerPagoInputModal.value = montoPrimerPago.toFixed(2); // Redondear a 2 decimales
+
+  mostrarDiasRestanteModal(fechaPrestamo, corteQuincena, nombreMes);
+
+
+}
+
+function mostrarDiasRestanteModal(fechaPrestamo, corteQuincena, nombreMes) {
+  diasRestantesCorteModal.textContent = "Cantidad de días desde el " + fechaPrestamo.getDate() + " de " + nombreMes + " hasta el " + corteQuincena + " de " + nombreMes;
+}
+
 
 
 function obtenerTasaCambioConversion() {

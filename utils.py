@@ -3,6 +3,10 @@ import re
 from db import *
 from bs4 import BeautifulSoup
 import requests
+import calendar
+import locale
+# Cambiar la configuración regional a español
+locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
 import time
 from selenium import webdriver
@@ -158,3 +162,19 @@ def convertir_string_a_decimal(input_str):
     decimal_value = float(input_str)
     
     return decimal_value
+
+
+def obtener_quincenaActual_letras(date):
+    # Obtener el mes y el año de la fecha
+    mes = calendar.month_name[date.month]
+    anio = date.year
+
+    # Obtener la quincena actual
+    if date.day <= 15:
+        quincena = "Primera"
+    else:
+        quincena = "Segunda"
+
+    # Retornar la quincena, el mes y el año como una tupla
+    return quincena, mes, anio
+

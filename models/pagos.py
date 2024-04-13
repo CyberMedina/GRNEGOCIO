@@ -185,6 +185,39 @@ WHERE
         db_session.close()
 
 
+def calcular_pago_diario(pago_mensual, cantidad_dias):
+    try:
+        pago_diario = pago_mensual / cantidad_dias
+        return pago_diario
+    except ZeroDivisionError as e:
+        print(f"Error: {e}")
+        return None
+
+def calcular_cifra_pago_quincenal(pago_diario, fecha_prestamo):
+    try:
+        if fecha_prestamo.day <= 15:
+            cantidad_días = 15 - fecha_prestamo.day
+            primer_pago = pago_diario * cantidad_días
+        else:
+            cantidad_días = mes_comercial - fecha_prestamo.day
+            primer_pago = pago_diario * cantidad_días
+
+        return primer_pago
+    
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+def calcular_primerPago_quincenal(pago_mensual, fecha_prestamo):
+    try:
+        pago_diario = calcular_pago_diario(pago_mensual, mes_comercial)
+        primer_pago = calcular_cifra_pago_quincenal(pago_diario, fecha_prestamo)
+        return primer_pago
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
 def obtener_IdContrato(db_session, id_cliente):
     try:
         query = text("""
@@ -756,33 +789,59 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
     num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
+    print(pagos_cliente)
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
+        
+
+        # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
+        monto_pago = {
+                        'cifra': monto_pagoEspecial,
+                        'estado' : 0,
+                        'descripcion' : 'prueba'
+                    }
     else: 
         # si hay más de un pago
-        if num_pagos[0] > 1:
-            dia_mes = fecha.day
+        print("Hay más de un pago")
 
-            inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+        dia_mes = fecha.day
 
-            sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+        inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+        sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(fecha)
 
 
-            if sumPagosQuincena:
-                if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
-                    monto_pagoEspecial = '0.00'
-                else:
-                    monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+        if sumPagosQuincena:
+            print(f'sumataria de pagos: {sumPagosQuincena} y pago quincenal: {pagos_cliente[0]["pagoQuincenal"]}') 
+            if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                monto_pagoEspecial = '0.00'
+                monto_pago = {
+                        'cifra': monto_pagoEspecial,
+                        'estado' : 3,
+                        'descripcion' : 'Ya se ha pagado el monto total de la quincena'
+                    }
             else:
-                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
-        
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+                monto_pago = {
+                        'cifra': monto_pagoEspecial,
+                        'estado' : 1,
+                        'descripcion' : f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
+                    }
         # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
         else:
             monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
-
+            monto_pago = {
+                    'cifra': monto_pagoEspecial,
+                    'estado' : 2,
+                    'descripcion' : 'Pago quincenal'
+                }
+        
+    
     print("Empieza la depuración pago especial")
     print(monto_pagoEspecial)
 
-    return monto_pagoEspecial
+    return monto_pago

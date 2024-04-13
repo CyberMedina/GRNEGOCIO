@@ -1,3 +1,9 @@
+# Constantes
+mes_comercial = 30
+quincenal = 15
+mensual = 30
+
+
 # Constantes para los estados
 activo = 1
 inactivo = 0

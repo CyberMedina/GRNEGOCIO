@@ -610,16 +610,10 @@ def añadir_pago(id_cliente):
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
-    if num_pagos[0] == 0:
-        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
-        monto_pagoEspecial = monto_primerPago_consulta[0]
-    
-    else: 
-        if num_pagos[0] > 1:
-            # Obtener la fecha actual
-            fecha_actual = datetime.now()
 
-            monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, fecha_actual)
+    fecha_actual = datetime.now()
+
+    monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, fecha_actual)
     
         
 
@@ -657,6 +651,9 @@ def añadir_pago(id_cliente):
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
+
+
+
 
 
 

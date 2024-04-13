@@ -59,7 +59,7 @@ async function ver_datosClientes(id_cliente) {
 
         modal = new bootstrap.Modal(document.getElementById('ModalDetalleCliente'));
         modal.show();
-    
+
 
 
 
@@ -71,8 +71,8 @@ async function ver_datosClientes(id_cliente) {
 
 var inputTasaCambio = document.getElementById('inputTasaCambio');
 
-inputTasaCambio.addEventListener('change', function(){
-conversionMoneda();
+inputTasaCambio.addEventListener('change', function () {
+    conversionMoneda();
 
 });
 
@@ -114,16 +114,16 @@ function conversionMoneda() {
     var pagoMensualDolares = inputPagoMensualDolares.value;
     var pagoQuincenalDolares = inputPagoQuincenalDolares.value;
 
-    inputCapitalCordobas.value = (capitalDolares * tasaCambio).toLocaleString('es-NI', {minimumFractionDigits: 2});
-    inputPagoMensualCordobas.value = (pagoMensualDolares * tasaCambio).toLocaleString('es-NI', {minimumFractionDigits: 2});
-    inputPagoQuincenalCordobas.value = (pagoQuincenalDolares * tasaCambio).toLocaleString('es-NI', {minimumFractionDigits: 2});
-    
+    inputCapitalCordobas.value = (capitalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+    inputPagoMensualCordobas.value = (pagoMensualDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+    inputPagoQuincenalCordobas.value = (pagoQuincenalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
 
 }
 
-  // Agregar un listener al evento change del input
+// Agregar un listener al evento change del input
 
-  document.getElementById("filtro-comboBox").addEventListener("change", function () {
+document.getElementById("filtro-comboBox").addEventListener("change", function () {
     const selectedValue = this.value; // Valor seleccionado en el combobox
     // Enviar una solicitud POST al servidor con el valor seleccionado
     // Puedes usar fetch o axios para hacer la solicitud
@@ -209,6 +209,8 @@ fileInput.addEventListener('change', function (event) {
 
 
 });
+
+
 
 
 
