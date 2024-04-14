@@ -545,7 +545,10 @@ def añadir_pago(id_cliente):
 
         # Verifica si el checkbox de no pago está marcado
         if 'checkBoxNoPago' in request.form:
-            estadoPago = 0  # Establece el estado de pago como no pagado 
+            estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
+
+        elif 'checkBoxPrimerPago' in request.form:
+            estadoPago = primer_pago_del_prestamo  # Establece el estado de pago como primer pago 
         else:
             estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
 
@@ -563,7 +566,7 @@ def añadir_pago(id_cliente):
         try:
             id_contrato = obtener_IdContrato(db_session, id_cliente)
 
-            num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+            num_pagos = comprobar_primerPago(db_session, id_contrato)
 
 
 
@@ -602,7 +605,7 @@ def añadir_pago(id_cliente):
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
-    num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 

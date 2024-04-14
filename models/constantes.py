@@ -37,6 +37,7 @@ monedaConversion = 2
 pago_completo = 1
 pago_incompleto = 2
 no_hay_pago = 0 
+primer_pago_del_prestamo = 3
 
 
 # Constantes para los tipos de saldos

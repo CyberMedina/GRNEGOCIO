@@ -200,12 +200,14 @@
                                             <span class="tooltip-icon {% if pago.estado_pago == 0 %}text-danger
                                             {% elif pago.estado_pago == 1 %}text-success
                                             {% elif pago.estado_pago == 2 %}text-warning
+                                            {% elif pago.estado_pago == 3 %}text-secondary
                                             {% endif %}" {% if pago.estado_pago==2 %}data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Pago incompleto, monto quincenal: {{ dataCliente.codigoMoneda }}{{
                                                 dataCliente.pagoQuincenal }}" {% elif pago.estado_pago==0
                                                 %}data-bs-toggle="tooltip" data-bs-placement="top" title="No hay pago"
                                                 {% elif pago.estado_pago==1 %}data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Pago completo" {% endif %}>
+                                                data-bs-placement="top" title="Pago completo"
+                                                {% elif pago.estado_pago==3 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Primer pago" {% endif %}>
                                                 {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }} {{ pago.cifraPago
                                                 }}
                                                 <br> (NO PAGÓ) {% else %} {{ pago.codigoMoneda }} {{ pago.cifraPago }}
@@ -379,6 +381,13 @@
                                 No pagó</label>
                         </div>
                         <!-- end checkbox -->
+
+                        <div class="form-check checkbox-style checkbox-danger mb-20">
+                            <input class="form-check-input" type="checkbox" value="0" id="checkBoxPrimerPago"
+                                name="checkBoxPrimerPago" />
+                            <label class="form-check-label" for="checkBoxPrimerPago">
+                                Primer pago</label>
+                        </div>
                 </div>
 
 

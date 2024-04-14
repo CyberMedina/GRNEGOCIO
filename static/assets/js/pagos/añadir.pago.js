@@ -440,6 +440,8 @@ function obtener_pago() {
         var bootstrapTooltip = new bootstrap.Tooltip(spanElement);
         // bootstrapTooltip.updateTitleContent(data.monto_pagoEspecial.descripcion);
 
+        var checkBoxPrimerPago = document.getElementById('checkBoxPrimerPago');
+
         // Verifica el estado y agrega los atributos necesarios
         if (data.monto_pagoEspecial.estado == 0) {
           console.log('Agregando atributos');
@@ -448,11 +450,14 @@ function obtener_pago() {
           spanElement.setAttribute('data-bs-target', '#modalCalculoPrimerPago');
           spanElement.style.cursor = 'pointer';
           spanElement.style.color = '#0728e8';
+          checkBoxPrimerPago.checked = true;
+
         } else {
           console.log('Eliminando atributos');
           spanElement.removeAttribute('href');
           spanElement.removeAttribute('data-bs-toggle');
           spanElement.removeAttribute('data-bs-target');
+          checkBoxPrimerPago.checked = false;
         }
 
       })

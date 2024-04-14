@@ -235,12 +235,12 @@ def obtener_IdContrato(db_session, id_cliente):
         db_session.close()
 
 
-def comprobar_primerPago(db_session, id_contrato, estado):
+def comprobar_primerPago(db_session, id_contrato):
     try:
         query = text("""
-        SELECT COUNT(*) FROM pagos WHERE id_contrato = :id_contrato AND estado = :estado;""")
+        SELECT COUNT(*) FROM pagos WHERE id_contrato = :id_contrato""")
         result = db_session.execute(
-            query, {'id_contrato': id_contrato, 'estado': estado}).fetchall()
+            query, {'id_contrato': id_contrato}).fetchall()
         return result[0]
 
     except SQLAlchemyError as e:
@@ -425,6 +425,33 @@ AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2);""")
         return None
     finally:
         db_session.close()
+
+# Esta función es utilizada para verificar si el cliente ha pagado el monto total de la quincena en el caso que sea el primer pago
+def validacion_primer_pago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estadoMoneda):
+    try:
+        query = text("""
+                     SELECT *
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = :id_contrato 
+AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
+AND dp.estado = :estadoMoneda
+AND P.estado = :estadoPago1;""")
+
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':primer_pago_del_prestamo}).fetchone()
+        if result is None:
+            return None
+        else:
+            return result[0]
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
 
 
 def determinar_quincena(date):
@@ -787,7 +814,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
-    num_pagos = comprobar_primerPago(db_session, id_contrato, activo)
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
     print(pagos_cliente)
@@ -811,12 +838,23 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
 
         inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
 
+
+        existencia_primer_pago = validacion_primer_pago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
         sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
 
         quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(fecha)
 
-
-        if sumPagosQuincena:
+        # Validamos que el cliente haya pagado el monto total de la quincena en su primer pago
+        if existencia_primer_pago:
+            monto_pagoEspecial = '0.00'
+            monto_pago = {
+                        'cifra': monto_pagoEspecial,
+                        'estado' : 1,
+                        'descripcion' : f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
+                    }
+        # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
+        elif sumPagosQuincena:
             print(f'sumataria de pagos: {sumPagosQuincena} y pago quincenal: {pagos_cliente[0]["pagoQuincenal"]}') 
             if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
                 monto_pagoEspecial = '0.00'
@@ -826,7 +864,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
                         'descripcion' : 'Ya se ha pagado el monto total de la quincena'
                     }
             else:
-                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena 
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena
                 monto_pago = {
                         'cifra': monto_pagoEspecial,
                         'estado' : 1,
