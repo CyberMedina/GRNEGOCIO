@@ -404,7 +404,7 @@ def obtener_quincena_actual(fecha_actual, dia_mes):
     return inicio_quincena_str, fin_quincena_str
 
 
-def validacion_fechaPago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estado):
+def validacion_fechaPago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estadoMoneda):
     try:
         query = text("""
                      SELECT SUM(cifraPago) 
@@ -412,10 +412,11 @@ FROM detalle_pagos dp
 JOIN pagos p ON dp.id_pagos = p.id_pagos 
 WHERE id_contrato = :id_contrato 
 AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
-AND dp.estado = :estado;""")
+AND dp.estado = :estadoMoneda
+AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2);""")
 
         result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
-                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estado': estado}).fetchone()
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':pago_completo, 'estadoPago2' : pago_incompleto}).fetchone()
         return result[0]
 
     except SQLAlchemyError as e:
