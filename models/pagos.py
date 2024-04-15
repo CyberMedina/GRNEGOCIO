@@ -618,7 +618,6 @@ LIMIT 1;
             if monto_anterior < 0:
                 monto_anterior = 0.00
         else:
-            print("No hay ninguna transacción de saldo registrada")
             monto_anterior = 0.00
 
 
@@ -652,10 +651,10 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
         if estado_pago == no_hay_pago:
 
             id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
-            print(id_cliente)
+
 
             cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente)
-            print(cifra_anterior)
+
             
             actualizar_saldo_en_contra(db_session, id_cliente, saldo_en_contra, cifra_anterior, activo)
 
@@ -688,15 +687,15 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
         db_session.close()
 
 # Esta función recupera el saldo en contra de un cliente
-def validar_saldo_pendiente(db_sesssion, id_cliente):
+def validar_saldo_pendiente_en_contra(db_sesssion, id_cliente):
     try:
         query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo 
 FROM saldos_pagos sp
 JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
-WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = :id_cliente;""")
+WHERE id_tipoSaldos_pagos = :estado AND c.id_cliente = :id_cliente;""")
         result = db_sesssion.execute(
-            query, {'id_cliente': id_cliente}).fetchone()
+            query, {'id_cliente': id_cliente, 'estado': saldo_en_contra}).fetchone()
         if result is None:
             return None
         return result
@@ -726,7 +725,7 @@ def actualizar_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, cifr
 
 def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
 
-    saldos_pagos = validar_saldo_pendiente(db_session, id_cliente)
+    saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
 
     if saldos_pagos is None:
         try:
@@ -782,6 +781,36 @@ def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_mone
             db_session.close()
 
 
+
+
+def reducir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
+    saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+
+    if saldos_pagos is None:
+        try:
+            # Obtener el ID de la tabla persona
+            id_saldos_pagos = (ObtenerIDTabla(
+                db_session, "id_saldos_pagos", "saldos_pagos"))
+
+            # Insertar el pago
+            query = text("""
+                        INSERT INTO saldos_pagos (id_saldos_pagos, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
+                            VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
+                            """
+                         )
+            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
+                               'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'estado': estado})
+            db_session.commit()
+            return id_saldos_pagos
+
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return None
+        finally:
+            db_session.close()
+
+
 def insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, monto, tipo_transaccion):
     try:
         # Obtener el ID de la tabla persona
@@ -817,7 +846,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
     num_pagos = comprobar_primerPago(db_session, id_contrato)
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
-    print(pagos_cliente)
+
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
@@ -832,7 +861,6 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
                     }
     else: 
         # si hay más de un pago
-        print("Hay más de un pago")
 
         dia_mes = fecha.day
 
@@ -855,7 +883,6 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
                     }
         # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
         elif sumPagosQuincena:
-            print(f'sumataria de pagos: {sumPagosQuincena} y pago quincenal: {pagos_cliente[0]["pagoQuincenal"]}') 
             if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
                 monto_pagoEspecial = '0.00'
                 monto_pago = {
@@ -879,8 +906,24 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
                     'descripcion' : 'Pago quincenal'
                 }
         
-    
-    print("Empieza la depuración pago especial")
-    print(monto_pagoEspecial)
+
 
     return monto_pago
+
+def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
+    # Convertir a float si es string
+    if isinstance(cantidadPago, str):
+        cantidadPago = float(cantidadPago)
+    if isinstance(monto_pago_quincenal, str):
+        monto_pago_quincenal = float(monto_pago_quincenal)
+
+    if cantidadPago > monto_pago_quincenal:
+        diferencia_a_saldo = cantidadPago - monto_pago_quincenal
+    else:
+        diferencia_a_saldo = None
+
+    return diferencia_a_saldo
+
+
+
+

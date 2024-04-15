@@ -559,6 +559,12 @@ def añadir_pago(id_cliente):
             
         else:
             cantidadPagarCordobas_conversion = 0.00
+
+        resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
+        saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+        cifra_a_pagar = resultado_pago_fecha['cifra']
+        print(cifra_a_pagar)
+        
             
 
         db_session.begin()
@@ -579,6 +585,17 @@ def añadir_pago(id_cliente):
               
                 insertar_detalle_pagos(db_session, id_pagos, id_moneda,
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
+                
+            pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
+
+            if pago_a_saldo:
+                if saldo_pendiente:
+                    pago_a_saldo
+
+
+                
+
+
                 
 
             if estadoPago == 0:
@@ -609,7 +626,7 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-    saldo_pendiente = validar_saldo_pendiente(db_session, id_cliente)
+    saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
