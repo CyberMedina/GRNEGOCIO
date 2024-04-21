@@ -592,8 +592,8 @@ def añadir_pago(id_cliente):
 
             #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar
             if diferencia_pago_a_saldo:
-                print("Diferencia de pago a saldo")
-                reducir_saldo_en_contra(db_session, id_cliente, saldo_en_contra, id_moneda, cantidadPagarDolares, saldo_a_favor)
+                reducir_saldo_en_contra(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda, 
+                                        diferencia_pago_a_saldo, saldo_a_favor)
 
                     
 
@@ -631,6 +631,8 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
+
+
     saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
@@ -664,6 +666,8 @@ def añadir_pago(id_cliente):
             pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado_contrato=activo, estado_detalle_pago=monedaOriginal)
     else:
         pagos = []
+
+    print(saldo_pendiente)
 
 
     print(monto_pagoEspecial)

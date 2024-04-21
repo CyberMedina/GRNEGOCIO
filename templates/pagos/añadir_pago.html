@@ -93,9 +93,13 @@
 
 
 
-                                    {% if saldo_pendiente and saldo_pendiente.cifraSaldo > 0.00 %}
+                                    {% if saldo_pendiente.estado == 2 and saldo_pendiente.cifraSaldo > 0.00 %}
                                     <p><strong class="text-danger">Saldo pendiente: {{ saldo_pendiente.codigoMoneda }}
                                             {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
+                                    {% elif saldo_pendiente.estado == 1 and saldo_pendiente.cifraSaldo > 0.00 %}
+                                    <p><strong class="text-success">Saldo a favor: {{ saldo_pendiente.codigoMoneda }}
+                                            {{ saldo_pendiente.cifraSaldo }}<span></span></strong></p>
+                                            <span></span></strong></p>
                                     {% endif %}
 
                                 </div>
