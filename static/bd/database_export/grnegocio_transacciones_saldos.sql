@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -46,7 +44,6 @@ CREATE TABLE `transacciones_saldos` (
 
 LOCK TABLES `transacciones_saldos` WRITE;
 /*!40000 ALTER TABLE `transacciones_saldos` DISABLE KEYS */;
-INSERT INTO `transacciones_saldos` VALUES (1,2,34,1,27.00,'Aumento','2024-04-06 20:49:51');
 /*!40000 ALTER TABLE `transacciones_saldos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:57
+-- Dump completed on 2024-04-23 15:55:41

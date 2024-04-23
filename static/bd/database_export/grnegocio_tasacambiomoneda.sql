@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -18,34 +16,35 @@ USE `grnegocio`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `contrato_fiador`
+-- Table structure for table `tasacambiomoneda`
 --
 
-DROP TABLE IF EXISTS `contrato_fiador`;
+DROP TABLE IF EXISTS `tasacambiomoneda`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `contrato_fiador` (
-  `id_contrato_fiador` int NOT NULL,
-  `id_cliente` int NOT NULL,
-  `estado_civil` int NOT NULL,
-  `nombre_delegacion` varchar(100) DEFAULT NULL,
-  `dptoArea_trabajo` varchar(80) DEFAULT NULL,
-  `ftoColillaINSS` varchar(255) DEFAULT NULL,
-  `estado` int NOT NULL,
-  PRIMARY KEY (`id_contrato_fiador`),
-  KEY `id_cliente` (`id_cliente`),
-  CONSTRAINT `contrato_fiador_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `cliente` (`id_cliente`)
+CREATE TABLE `tasacambiomoneda` (
+  `id_tasaCambioMoneda` int NOT NULL,
+  `moneda_origen` int DEFAULT NULL,
+  `moneda_destino` int DEFAULT NULL,
+  `cifraTasaCambio` decimal(4,2) DEFAULT NULL,
+  `cifraTasaCambioAnterior` decimal(4,2) DEFAULT NULL,
+  `fechaModificacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_tasaCambioMoneda`),
+  KEY `moneda_origen` (`moneda_origen`),
+  KEY `moneda_destino` (`moneda_destino`),
+  CONSTRAINT `tasacambiomoneda_ibfk_1` FOREIGN KEY (`moneda_origen`) REFERENCES `moneda` (`id_moneda`),
+  CONSTRAINT `tasacambiomoneda_ibfk_2` FOREIGN KEY (`moneda_destino`) REFERENCES `moneda` (`id_moneda`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `contrato_fiador`
+-- Dumping data for table `tasacambiomoneda`
 --
 
-LOCK TABLES `contrato_fiador` WRITE;
-/*!40000 ALTER TABLE `contrato_fiador` DISABLE KEYS */;
-INSERT INTO `contrato_fiador` VALUES (1,1,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,3,2,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,4,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,7,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,9,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,11,1,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',1);
-/*!40000 ALTER TABLE `contrato_fiador` ENABLE KEYS */;
+LOCK TABLES `tasacambiomoneda` WRITE;
+/*!40000 ALTER TABLE `tasacambiomoneda` DISABLE KEYS */;
+INSERT INTO `tasacambiomoneda` VALUES (1,1,2,36.60,36.80,'2024-03-19 00:10:51');
+/*!40000 ALTER TABLE `tasacambiomoneda` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:59
+-- Dump completed on 2024-04-23 15:55:42

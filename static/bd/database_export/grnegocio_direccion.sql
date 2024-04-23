@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -18,38 +16,30 @@ USE `grnegocio`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `saldos_pagos`
+-- Table structure for table `direccion`
 --
 
-DROP TABLE IF EXISTS `saldos_pagos`;
+DROP TABLE IF EXISTS `direccion`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `saldos_pagos` (
-  `id_saldos_pagos` int NOT NULL,
-  `id_cliente` int NOT NULL,
-  `id_tipoSaldos_pagos` int NOT NULL,
-  `id_moneda` int NOT NULL,
-  `cifraSaldo` decimal(10,2) NOT NULL,
-  `fecha_saldo` datetime NOT NULL,
-  `estado` int DEFAULT NULL,
-  PRIMARY KEY (`id_saldos_pagos`),
-  KEY `id_cliente` (`id_cliente`),
-  KEY `id_tipoSaldos_pagos` (`id_tipoSaldos_pagos`),
-  KEY `id_moneda` (`id_moneda`),
-  CONSTRAINT `saldos_pagos_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `cliente` (`id_cliente`),
-  CONSTRAINT `saldos_pagos_ibfk_2` FOREIGN KEY (`id_tipoSaldos_pagos`) REFERENCES `tiposaldos_pagos` (`id_tipoSaldos_pagos`),
-  CONSTRAINT `saldos_pagos_ibfk_3` FOREIGN KEY (`id_moneda`) REFERENCES `moneda` (`id_moneda`)
+CREATE TABLE `direccion` (
+  `id_direccion` int NOT NULL,
+  `nombre_direccion` varchar(50) NOT NULL,
+  `direccion_escrita` varchar(150) NOT NULL,
+  `direccion_mapa` varchar(500) DEFAULT NULL,
+  `estado` int NOT NULL,
+  PRIMARY KEY (`id_direccion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `saldos_pagos`
+-- Dumping data for table `direccion`
 --
 
-LOCK TABLES `saldos_pagos` WRITE;
-/*!40000 ALTER TABLE `saldos_pagos` DISABLE KEYS */;
-INSERT INTO `saldos_pagos` VALUES (1,1,2,1,27.00,'2024-04-06 20:49:51',1),(2,9,2,1,27.00,'2024-04-06 20:49:51',1);
-/*!40000 ALTER TABLE `saldos_pagos` ENABLE KEYS */;
+LOCK TABLES `direccion` WRITE;
+/*!40000 ALTER TABLE `direccion` DISABLE KEYS */;
+INSERT INTO `direccion` VALUES (1,'1','Semaforos de la julio martinez 2c al norte 2c al e','Semaforos de la julio martinez 2c al norte 2c al e',1),(2,'2','El chilamate ','Semaforos de la julio martinez 2c al norte 2c al e',1),(3,'1','dafsaf','',1),(4,'1','Del 5c al Este 3 c al Oeste','',1),(5,'1','No se xd','',1),(6,'1','NO SE 2','',1),(7,'1','DUDOSA PROCEDENCIA','',1),(8,'1','El chilamate','El chilamate',1),(9,'1','En el mero san judas','',1),(10,'1','El mero San Judas también','',1),(11,'1','Del chilamate 3 cuadras arriba','',1),(12,'1','No sé jaja','',1);
+/*!40000 ALTER TABLE `direccion` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:58
+-- Dump completed on 2024-04-23 15:55:43

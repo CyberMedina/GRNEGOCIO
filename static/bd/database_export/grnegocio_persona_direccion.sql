@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -18,32 +16,31 @@ USE `grnegocio`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `persona`
+-- Table structure for table `persona_direccion`
 --
 
-DROP TABLE IF EXISTS `persona`;
+DROP TABLE IF EXISTS `persona_direccion`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `persona` (
+CREATE TABLE `persona_direccion` (
   `id_persona` int NOT NULL,
-  `nombres` varchar(150) NOT NULL,
-  `apellidos` varchar(150) NOT NULL,
-  `genero` int NOT NULL,
-  `cedula` varchar(50) NOT NULL,
-  `fecha_nacimiento` date NOT NULL,
+  `id_direccion` int NOT NULL,
   `estado` int NOT NULL,
-  PRIMARY KEY (`id_persona`)
+  PRIMARY KEY (`id_persona`,`id_direccion`),
+  KEY `id_direccion` (`id_direccion`),
+  CONSTRAINT `persona_direccion_ibfk_1` FOREIGN KEY (`id_persona`) REFERENCES `persona` (`id_persona`),
+  CONSTRAINT `persona_direccion_ibfk_2` FOREIGN KEY (`id_direccion`) REFERENCES `direccion` (`id_direccion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `persona`
+-- Dumping data for table `persona_direccion`
 --
 
-LOCK TABLES `persona` WRITE;
-/*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (1,'Jhonatan','Medina',1,'001-150902-1014A','2024-03-14',1),(2,'Germán René ','Medina Mayorga ',1,'201-311045-0008S','2024-03-14',1),(3,'Matilda','Louis',1,'001-211185-003214','2024-03-18',1),(4,'Lidia Celina','Aguirre Santos',2,'201-311045-0008S','2024-03-21',1),(5,'Gloria Del Carmen','Rodriguez Canales',2,'201-311045-0008S','2024-03-22',1),(6,'Ana Gabriel','Montoya Canales',2,'201-311045-0008S','2024-03-22',1),(7,'Marlen del Rosario','Guevara Canales',2,'201-311045-0008S','2024-03-23',1),(8,'Germán René','Medina Mayorga',1,'201-311045-0008S','2024-03-25',1),(9,'Denise Nayely ','Marchena Aburto ',1,'','2024-03-25',1),(10,'Gloria Del Carmen','Sobervia',2,'201-150902-1014D','2024-03-26',1),(11,'Chihiro ','Carmona',1,'001-150902-1014A','2024-03-30',1),(12,'Muñeca','Del carmen',2,'001-150902-1013S','2024-03-30',1);
-/*!40000 ALTER TABLE `persona` ENABLE KEYS */;
+LOCK TABLES `persona_direccion` WRITE;
+/*!40000 ALTER TABLE `persona_direccion` DISABLE KEYS */;
+INSERT INTO `persona_direccion` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1);
+/*!40000 ALTER TABLE `persona_direccion` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -55,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:57
+-- Dump completed on 2024-04-23 15:55:40

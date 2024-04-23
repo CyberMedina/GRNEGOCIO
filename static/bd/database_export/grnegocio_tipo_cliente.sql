@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -18,31 +16,28 @@ USE `grnegocio`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `direccion_telefono`
+-- Table structure for table `tipo_cliente`
 --
 
-DROP TABLE IF EXISTS `direccion_telefono`;
+DROP TABLE IF EXISTS `tipo_cliente`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `direccion_telefono` (
-  `id_direccion` int NOT NULL,
-  `id_telefono` int NOT NULL,
+CREATE TABLE `tipo_cliente` (
+  `id_tipoCliente` int NOT NULL,
+  `nombre_tipoCliente` varchar(50) NOT NULL,
   `estado` int NOT NULL,
-  PRIMARY KEY (`id_direccion`,`id_telefono`),
-  KEY `id_telefono` (`id_telefono`),
-  CONSTRAINT `direccion_telefono_ibfk_1` FOREIGN KEY (`id_direccion`) REFERENCES `direccion` (`id_direccion`),
-  CONSTRAINT `direccion_telefono_ibfk_2` FOREIGN KEY (`id_telefono`) REFERENCES `telefono` (`id_telefono`)
+  PRIMARY KEY (`id_tipoCliente`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `direccion_telefono`
+-- Dumping data for table `tipo_cliente`
 --
 
-LOCK TABLES `direccion_telefono` WRITE;
-/*!40000 ALTER TABLE `direccion_telefono` DISABLE KEYS */;
-INSERT INTO `direccion_telefono` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1);
-/*!40000 ALTER TABLE `direccion_telefono` ENABLE KEYS */;
+LOCK TABLES `tipo_cliente` WRITE;
+/*!40000 ALTER TABLE `tipo_cliente` DISABLE KEYS */;
+INSERT INTO `tipo_cliente` VALUES (0,'Cliente inactivo',1),(2,'Cliente Normal',1),(3,'Cliente Especial',1),(4,'Cliente Fiador',1),(5,'Cliente en proceso',1);
+/*!40000 ALTER TABLE `tipo_cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:57
+-- Dump completed on 2024-04-23 15:55:42

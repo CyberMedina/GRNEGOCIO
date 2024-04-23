@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: grnegocio
@@ -47,7 +45,7 @@ CREATE TABLE `pagos` (
 
 LOCK TABLES `pagos` WRITE;
 /*!40000 ALTER TABLE `pagos` DISABLE KEYS */;
-INSERT INTO `pagos` VALUES (6,2,3,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-11-10','2024-03-23 01:25:14',1),(9,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-03-25 16:12:04',1),(10,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-03-25 16:16:41',1),(12,3,4,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-26','2024-03-26 12:14:10',1),(17,2,3,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-26','2024-03-26 23:11:36',1),(21,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-19','2024-03-27 15:09:43',1),(22,1,1,'Es su primer pago, por ende la cifra es de 7.16 dólares ','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-28','2024-03-28 01:44:29',1),(25,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-31','2024-03-31 17:55:40',1),(26,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-31','2024-03-31 18:21:26',1),(30,1,1,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-19','2024-03-31 21:10:09',1),(32,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-04','2024-04-04 21:11:49',1),(33,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-06','2024-04-06 20:12:42',1),(34,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-06','2024-04-06 20:49:51',0);
+INSERT INTO `pagos` VALUES (1,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-01','2024-04-14 22:56:16',3),(2,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-23','2024-04-23 15:52:08',0);
 /*!40000 ALTER TABLE `pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -60,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-07 16:05:58
+-- Dump completed on 2024-04-23 15:55:40
