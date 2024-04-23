@@ -362,9 +362,16 @@ function validacionDolares(event) {
     cantidadPagar$.style.color = 'red';
     tipoPagoCompleto.selectedIndex = 2; // Indica que pagó imcompleto
 
-  } else {
+  }
+  
+  else if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) === parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))) {
     cantidadPagar$.style.color = 'green';
     tipoPagoCompleto.selectedIndex = 1; // Indica que pagó completo
+  }
+  
+  else if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) > parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))){
+    cantidadPagar$.style.color = "skyblue"
+    tipoPagoCompleto.selectedIndex = 4; // Indica que pagó completo
   }
 }
 

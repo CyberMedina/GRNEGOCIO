@@ -562,7 +562,7 @@ def añadir_pago(id_cliente):
 
         resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
         saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
-        saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
+        # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
         cifra_a_pagar = resultado_pago_fecha['cifra']
         print(cifra_a_pagar)
         
@@ -588,12 +588,13 @@ def añadir_pago(id_cliente):
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
             
             diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
-            print(diferencia_pago_a_saldo) 
 
             #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar
             if diferencia_pago_a_saldo:
-                reducir_saldo_en_contra(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda, 
-                                        diferencia_pago_a_saldo, saldo_a_favor)
+                reducir_saldo_en_contra(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
+                                        diferencia_pago_a_saldo, activo)
+                
+
 
                     
 

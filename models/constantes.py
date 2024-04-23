@@ -36,6 +36,7 @@ monedaConversion = 2
 # Constantes para pagos completos o incompletos
 pago_completo = 1
 pago_incompleto = 2
+pago_de_mas = 4
 no_hay_pago = 0 
 primer_pago_del_prestamo = 3
 

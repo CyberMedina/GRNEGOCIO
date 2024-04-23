@@ -205,13 +205,16 @@
                                             {% elif pago.estado_pago == 1 %}text-success
                                             {% elif pago.estado_pago == 2 %}text-warning
                                             {% elif pago.estado_pago == 3 %}text-secondary
+                                            {% elif pago.estado_pago == 4 %}text-success
                                             {% endif %}" {% if pago.estado_pago==2 %}data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Pago incompleto, monto quincenal: {{ dataCliente.codigoMoneda }}{{
                                                 dataCliente.pagoQuincenal }}" {% elif pago.estado_pago==0
                                                 %}data-bs-toggle="tooltip" data-bs-placement="top" title="No hay pago"
                                                 {% elif pago.estado_pago==1 %}data-bs-toggle="tooltip"
                                                 data-bs-placement="top" title="Pago completo"
-                                                {% elif pago.estado_pago==3 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Primer pago" {% endif %}>
+                                                {% elif pago.estado_pago==3 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Primer pago"
+                                                {% elif pago.estado_pago == 4 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Pago de más"
+                                                {% endif %}>
                                                 {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }} {{ pago.cifraPago
                                                 }}
                                                 <br> (NO PAGÓ) {% else %} {{ pago.codigoMoneda }} {{ pago.cifraPago }}
@@ -405,6 +408,8 @@
                                 <option value="0">NO HAY PAGO</option>
                                 <option value="1">COMPLETO</option>
                                 <option value="2">INCOMPLETO</option>
+                                <option value="3">PRIMER PAGO</option>
+                                <option value="4">DE MAS</option>
                             </select>
                         </div>
                     </div>

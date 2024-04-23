@@ -413,10 +413,10 @@ JOIN pagos p ON dp.id_pagos = p.id_pagos
 WHERE id_contrato = :id_contrato 
 AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
 AND dp.estado = :estadoMoneda
-AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2);""")
+AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2 OR p.estado = :estadoPago3);""")
 
         result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
-                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':pago_completo, 'estadoPago2' : pago_incompleto}).fetchone()
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':pago_completo, 'estadoPago2' : pago_incompleto, 'estadoPago3': pago_de_mas}).fetchone()
         return result[0]
 
     except SQLAlchemyError as e:
@@ -576,9 +576,9 @@ def obtener_saldos_pagos(db_session, id_cliente):
     try:
         query = text("""SELECT * from saldos_pagos WHERE id_cliente = :id_cliente;""")
         result = db_session.execute(query, {'id_cliente': id_cliente}).fetchall()
-        if result is None:
-            return None
-        return result
+        if result:
+            return result
+        return None
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -590,10 +590,8 @@ def obtener_saldos_pagos(db_session, id_cliente):
 
     
 
-def obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente):
+def obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente, estado):
     try:
-
-        id_tipoSaldos_pagos = obtener_tipo_saldo(db_session, id_cliente)
 
 
 
@@ -606,10 +604,10 @@ ORDER BY ts.fecha_transaccion DESC  -- Suponiendo que tienes una columna fecha_t
 LIMIT 1;
 """)
         ultima_transaccion_saldo = db_session.execute(query, {'id_pagos': id_pagos}).fetchone()
+        print(f"La ultima transaccion es" + str(ultima_transaccion_saldo))
 
         if ultima_transaccion_saldo:
-
-            saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente, saldo_en_contra)
+            saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente, estado)
 
             if "Aumento" in ultima_transaccion_saldo[1]:
                 monto_anterior = saldo_actual[3] - ultima_transaccion_saldo[0]
@@ -650,15 +648,26 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
         # Si el estado del pago es "No hay pago", se debe eliminar el registro de la tabla transacciones_saldos 
         # y actualizar el saldo en contra
 
-        if estado_pago == no_hay_pago:
 
-            id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
-
-
-            cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente)
+        if estado_pago == no_hay_pago or estado_pago == pago_de_mas:
 
             
-            actualizar_saldo(db_session, id_cliente, saldo_en_contra, cifra_anterior, activo)
+
+            id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
+            print(f"el id del cliente es" + str(id_cliente))
+
+            result_saldo = validar_que_tipo_salo_es(db_session, id_cliente)
+            if result_saldo:
+                id_tipoSaldos_pagos = result_saldo[1]
+            else:
+                id_tipoSaldos_pagos = None
+
+
+            cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente, id_tipoSaldos_pagos) 
+            print(f"la cifra anterior es" + str(cifra_anterior))
+
+            
+            actualizar_saldo(db_session, id_cliente, id_tipoSaldos_pagos, cifra_anterior, activo)
 
             query = text(
                 """DELETE FROM transacciones_saldos WHERE id_pagos = :id_pagos;""")
@@ -845,18 +854,26 @@ def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_mone
 
 def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pagos, id_moneda, diferencia_pago, estado):
 
-    result = obtener_saldos_pagos(db_session, id_cliente)
-    if result:
-        id_saldos_pagos = result[0][0]
+    # Si el id_tipoSadlos_pago es proporcionado, se debe utilizar ese valor
+    # De lo cont
+
+    print("El id_tipoSaldos_pagos es" + str(id_tipoSaldos_pagos))
+
+
+    result_saldos = obtener_saldos_pagos(db_session, id_cliente)
+    print(result_saldos)
+
+
 
     saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     print(saldos_pagos)
     saldos_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
     print(saldos_a_favor)
 
-    if saldos_pagos is None:
+    if result_saldos is None:
         try:
-            estado = saldo_a_favor
+
+            estado = id_tipoSaldos_pagos
             print("Entró cuando no hay saldo")
             print(estado)
             # Obtener el ID de la tabla persona
@@ -869,9 +886,10 @@ def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pago
                             VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
                             """
                          )
-            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': estado,
+            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
                                'id_moneda': id_moneda, 'cifraSaldo': diferencia_pago, 'estado': activo})
             db_session.commit()
+            
             
 
         except SQLAlchemyError as e:
@@ -886,10 +904,17 @@ def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pago
         if saldos_a_favor[3] == 0.00:
             try:
 
+
+                print("diferencia pago" + str(diferencia_pago))
+                print("id_tipoSaldos_pagos::::::::::: " + str(id_tipoSaldos_pagos))
+
                 actualizar_saldo(
                     db_session, id_cliente, id_tipoSaldos_pagos, diferencia_pago, estado)
+                
+                id_saldos_pagos = saldos_a_favor[0]
 
-                return saldos_pagos[0]
+
+
             except SQLAlchemyError as e:
                 db_session.rollback()
                 print(f"Error: {e}")
@@ -905,7 +930,9 @@ def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pago
                 cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(diferencia_pago))
                 actualizar_saldo(
                     db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
-                return saldos_pagos[0]
+                id_saldos_pagos = saldos_a_favor[0]
+
+
 
             except SQLAlchemyError as e:
                 db_session.rollback()
@@ -921,8 +948,9 @@ def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pago
             cifraSaldoNueva = Decimal(cifraSaldoAnterior - Decimal(diferencia_pago))
             actualizar_saldo(
                 db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
-            
-            return saldos_pagos[0]
+
+            id_saldos_pagos = saldos_pagos[0]           
+
 
         except SQLAlchemyError as e:
             db_session.rollback()
@@ -931,7 +959,10 @@ def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pago
         finally:
             db_session.close()
 
+
     insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago, estado)
+
+    
     return id_saldos_pagos
 
 
