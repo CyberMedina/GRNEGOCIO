@@ -2,10 +2,7 @@ CREATE DATABASE grnegocio;
 
 USE grnegocio;
 
--- DROP DATABASE grnegocio;
 
--- Los estados serán de la siguiente manera
--- 0 inactivo, 1 activos
 
 
 CREATE TABLE moneda(
@@ -170,14 +167,12 @@ CREATE TABLE tipoSaldos_pagos(
 CREATE TABLE saldos_pagos(
 	id_saldos_pagos INT PRIMARY KEY,
   id_cliente INT NOT NULL,
-  id_tipoSaldos_pagos INT NOT NULL,
   id_moneda INT NOT NULL,
   cifraSaldo DECIMAL(10,2) NOT NULL,
   fecha_saldo DATETIME NOT NULL,
   estado INT,
   
   FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
-  FOREIGN KEY (id_tipoSaldos_pagos) REFERENCES tipoSaldos_pagos(id_tipoSaldos_pagos),
   FOREIGN KEY (id_moneda) REFERENCES moneda(id_moneda)
   
 );

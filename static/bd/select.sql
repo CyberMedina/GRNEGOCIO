@@ -349,6 +349,14 @@ WHERE id_contrato = '2'
 AND fecha_pago BETWEEN '2024-03-16' AND '2024-03-30' 
 AND dp.estado = '1';
 
+SELECT *
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = '6' 
+AND fecha_pago BETWEEN '2024-04-1' AND '2024-04-15' 
+AND dp.estado = '1'
+AND p.estado = 3;
+
 SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos
 FROM cliente cl
 JOIN persona p ON cl.id_persona = p.id_persona
@@ -361,7 +369,7 @@ SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo
 FROM saldos_pagos sp
 JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
-WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = '1';
+WHERE c.id_cliente = '9';
 
 
 SELECT id_saldos_pagos
@@ -389,4 +397,9 @@ ORDER BY ts.fecha_transaccion DESC
 LIMIT 1;
 
 
-
+SELECT id_saldos_pagos
+FROM saldos_pagos
+WHERE id_cliente = '9'
+  AND cifraSaldo > 0;
+  
+SELECT * FROM saldos_pagos WHERE id_cliente = '9'

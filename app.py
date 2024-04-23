@@ -589,23 +589,15 @@ def añadir_pago(id_cliente):
             
             diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
 
-            #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar
+            #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
             if diferencia_pago_a_saldo:
-                reducir_saldo_en_contra(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
+                ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
                                         diferencia_pago_a_saldo, activo)
                 
-
-
-                    
-
-
-                
-
-
-                
-
+            # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
             if estadoPago == 0:
-                id_saldos_pagos = añadir_saldo_en_contra(db_session, id_cliente, saldo_en_contra, id_moneda, cantidadPagarDolares, saldo_en_contra)
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
+                                        diferencia_pago_a_saldo, activo)
                 insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolares, Aumento)
 
            
