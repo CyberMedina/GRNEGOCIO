@@ -541,15 +541,15 @@ def obtener_estado_pago(db_session, id_pagos):
         db_session.close()
 
 
-def obtener_saldo_con_id_cliente(db_session, id_cliente, estado):
+def obtener_saldo_con_id_cliente(db_session, id_cliente):
     try:
-        query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo
+        query = text("""SELECT m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo
 FROM saldos_pagos sp
 JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
-WHERE id_tipoSaldos_pagos = :estado AND c.id_cliente = :id_cliente;""")
+WHERE c.id_cliente = :id_cliente;""")
         result = db_session.execute(
-            query, {'estado' : estado, 'id_cliente': id_cliente}).fetchone()
+            query, {'id_cliente': id_cliente}).fetchone()
         return result
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -590,7 +590,7 @@ def obtener_saldos_pagos(db_session, id_cliente):
 
     
 
-def obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente, estado):
+def obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente):
     try:
 
 
@@ -607,12 +607,12 @@ LIMIT 1;
         print(f"La ultima transaccion es" + str(ultima_transaccion_saldo))
 
         if ultima_transaccion_saldo:
-            saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente, estado)
+            saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente)
 
             if "Aumento" in ultima_transaccion_saldo[1]:
-                monto_anterior = saldo_actual[3] - ultima_transaccion_saldo[0]
+                monto_anterior = saldo_actual[2] - ultima_transaccion_saldo[0]
             elif "Disminucion" in ultima_transaccion_saldo[1]:
-                monto_anterior = saldo_actual[3] + ultima_transaccion_saldo[0]
+                monto_anterior = saldo_actual[2] + ultima_transaccion_saldo[0]
 
             # Validando que no sean negativos los saldos
             if monto_anterior < 0:
@@ -656,18 +656,14 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
             id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
             print(f"el id del cliente es" + str(id_cliente))
 
-            result_saldo = validar_que_tipo_salo_es(db_session, id_cliente)
-            if result_saldo:
-                id_tipoSaldos_pagos = result_saldo[1]
-            else:
-                id_tipoSaldos_pagos = None
 
 
-            cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente, id_tipoSaldos_pagos) 
+
+            cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente) 
             print(f"la cifra anterior es" + str(cifra_anterior))
 
             
-            actualizar_saldo(db_session, id_cliente, id_tipoSaldos_pagos, cifra_anterior, activo)
+            actualizar_saldo(db_session, id_cliente, cifra_anterior, activo)
 
             query = text(
                 """DELETE FROM transacciones_saldos WHERE id_pagos = :id_pagos;""")
@@ -699,7 +695,7 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
 
 def validar_que_tipo_salo_es(db_session, id_cliente):
     try:
-        query = text("""SELECT id_saldos_pagos, id_tipoSaldos_pagos
+        query = text("""SELECT id_tipoSaldos_pagos
 FROM saldos_pagos
 WHERE id_cliente = :id_cliente
   AND cifraSaldo > 0;
@@ -749,6 +745,34 @@ WHERE id_tipoSaldos_pagos = :estado AND c.id_cliente = :id_cliente;""")
     else:
         return None
     
+
+
+# Esta función recupera el saldo en contra de un cliente
+def validar_existencia_saldo_frontEnd(db_sesssion, id_cliente):
+
+
+        try:
+            query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, ABS(sp.cifraSaldo) as cifraSaldo,
+CASE 
+    WHEN sp.cifraSaldo >= 0 THEN 1
+    ELSE 2
+END as estado
+FROM saldos_pagos sp
+JOIN moneda m ON m.id_moneda = sp.id_moneda
+JOIN cliente c ON c.id_cliente = sp.id_cliente
+WHERE c.id_cliente = :id_cliente;""")
+
+            result = db_sesssion.execute(query, {'id_cliente': id_cliente}).fetchone()
+            if result:
+                return result
+            else:
+                return None
+        except SQLAlchemyError as e:
+            db_sesssion.rollback()
+            print(f"Error: {e}")
+            return None
+        finally:
+            db_sesssion.close()
 
 # Esta función recupera el saldo en contra de un cliente
 def validar_existencia_saldo(db_sesssion, id_cliente):
@@ -817,8 +841,10 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
     saldos_pagos = validar_existencia_saldo(db_session, id_cliente)
 
+
     if saldos_pagos is None:
         try:
+            print("No existe la tabla saldo para este cliente, creando!")
             # Obtener el ID de la tabla persona
             id_saldos_pagos = (ObtenerIDTabla(
                 db_session, "id_saldos_pagos", "saldos_pagos"))
@@ -857,8 +883,13 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
     # Procedimiento para incrementar el saldo
     elif tipo_saldo == saldo_en_contra:
         try:
+            print("El saldo es en contra")
             cifraSaldoAnterior = Decimal(saldos_pagos[3])
+            print(f"La cifra anterior es" + str(cifraSaldoAnterior))
             cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
+            print
+            print(f"La cifra nueva es" + str(cifraSaldoNueva))
+
             actualizar_saldo(
                 db_session, id_cliente, cifraSaldoNueva, estado)
             return saldos_pagos[0]
@@ -872,8 +903,11 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
     # Procedimiento para reducir el saldo
     elif tipo_saldo == saldo_a_favor:
         try:
+            print("Es saldo a favor")
             cifraSaldoAnterior = Decimal(saldos_pagos[3])
-            cifraSaldoNueva = Decimal(cifraSaldoAnterior - Decimal(cifraSaldo))
+            print(f'saldo anterior es' + str(cifraSaldoAnterior))
+            cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
+            print("El saldo nuevo es" + str(cifraSaldoNueva))
             actualizar_saldo(
                 db_session, id_cliente, cifraSaldoNueva, estado)
             return saldos_pagos[0]
@@ -891,181 +925,181 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
 
 
-def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
+# def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
 
-    saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+#     saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
 
-    if saldos_pagos is None:
-        try:
-            # Obtener el ID de la tabla persona
-            id_saldos_pagos = (ObtenerIDTabla(
-                db_session, "id_saldos_pagos", "saldos_pagos"))
+#     if saldos_pagos is None:
+#         try:
+#             # Obtener el ID de la tabla persona
+#             id_saldos_pagos = (ObtenerIDTabla(
+#                 db_session, "id_saldos_pagos", "saldos_pagos"))
 
-            # Insertar el pago
-            query = text("""
-                        INSERT INTO saldos_pagos (id_saldos_pagos, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
-                            VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
-                            """
-                         )
-            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
-                               'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'estado': estado})
-            db_session.commit()
-            return id_saldos_pagos
+#             # Insertar el pago
+#             query = text("""
+#                         INSERT INTO saldos_pagos (id_saldos_pagos, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
+#                             VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
+#                             """
+#                          )
+#             db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
+#                                'id_moneda': id_moneda, 'cifraSaldo': cifraSaldo, 'estado': estado})
+#             db_session.commit()
+#             return id_saldos_pagos
 
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return None
-        finally:
-            db_session.close()
+#         except SQLAlchemyError as e:
+#             db_session.rollback()
+#             print(f"Error: {e}")
+#             return None
+#         finally:
+#             db_session.close()
 
-    elif saldos_pagos[3] == 0.00:
-        try:
+#     elif saldos_pagos[3] == 0.00:
+#         try:
 
-            actualizar_saldo(
-                db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldo, estado)
+#             actualizar_saldo(
+#                 db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldo, estado)
 
-            return saldos_pagos[0]
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return None
-        finally:
-            db_session.close()
-    # Procedimiento para incrementar el saldo
-    else:
-        try:
-            cifraSaldoAnterior = Decimal(saldos_pagos[3])
-            cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
-            actualizar_saldo(
-                db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
-            return saldos_pagos[0]
+#             return saldos_pagos[0]
+#         except SQLAlchemyError as e:
+#             db_session.rollback()
+#             print(f"Error: {e}")
+#             return None
+#         finally:
+#             db_session.close()
+#     # Procedimiento para incrementar el saldo
+#     else:
+#         try:
+#             cifraSaldoAnterior = Decimal(saldos_pagos[3])
+#             cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
+#             actualizar_saldo(
+#                 db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
+#             return saldos_pagos[0]
 
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return None
-        finally:
-            db_session.close()
-
-
+#         except SQLAlchemyError as e:
+#             db_session.rollback()
+#             print(f"Error: {e}")
+#             return None
+#         finally:
+#             db_session.close()
 
 
 
 
 
-def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pagos, id_moneda, diferencia_pago, estado):
-
-    # Si el id_tipoSadlos_pago es proporcionado, se debe utilizar ese valor
-    # De lo cont
-
-    print("El id_tipoSaldos_pagos es" + str(id_tipoSaldos_pagos))
 
 
-    result_saldos = obtener_saldos_pagos(db_session, id_cliente)
-    print(result_saldos)
+# def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pagos, id_moneda, diferencia_pago, estado):
+
+#     # Si el id_tipoSadlos_pago es proporcionado, se debe utilizar ese valor
+#     # De lo cont
+
+#     print("El id_tipoSaldos_pagos es" + str(id_tipoSaldos_pagos))
+
+
+#     result_saldos = obtener_saldos_pagos(db_session, id_cliente)
+#     print(result_saldos)
 
 
 
-    saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
-    print(saldos_pagos)
-    saldos_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
-    print(saldos_a_favor)
+#     saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+#     print(saldos_pagos)
+#     saldos_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
+#     print(saldos_a_favor)
 
-    if result_saldos is None:
-        try:
+#     if result_saldos is None:
+#         try:
 
-            estado = id_tipoSaldos_pagos
-            print("Entró cuando no hay saldo")
-            print(estado)
-            # Obtener el ID de la tabla persona
-            id_saldos_pagos = (ObtenerIDTabla(
-                db_session, "id_saldos_pagos", "saldos_pagos"))
+#             estado = id_tipoSaldos_pagos
+#             print("Entró cuando no hay saldo")
+#             print(estado)
+#             # Obtener el ID de la tabla persona
+#             id_saldos_pagos = (ObtenerIDTabla(
+#                 db_session, "id_saldos_pagos", "saldos_pagos"))
 
-            # Insertar el pago
-            query = text("""
-                        INSERT INTO saldos_pagos (id_saldos_pagos, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
-                            VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
-                            """
-                         )
-            db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
-                               'id_moneda': id_moneda, 'cifraSaldo': diferencia_pago, 'estado': activo})
-            db_session.commit()
+#             # Insertar el pago
+#             query = text("""
+#                         INSERT INTO saldos_pagos (id_saldos_pagos, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, fecha_saldo, estado)
+#                             VALUES (:id_saldos_pagos, :id_cliente, :id_tipoSaldos_pagos, :id_moneda, :cifraSaldo, NOW(), :estado);
+#                             """
+#                          )
+#             db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
+#                                'id_moneda': id_moneda, 'cifraSaldo': diferencia_pago, 'estado': activo})
+#             db_session.commit()
             
             
 
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return None
-        finally:
-            db_session.close()
-    elif saldos_a_favor:
-        print("Entró cuando hay saldo a favor")
-        print(saldos_a_favor[3])
-        if saldos_a_favor[3] == 0.00:
-            try:
+#         except SQLAlchemyError as e:
+#             db_session.rollback()
+#             print(f"Error: {e}")
+#             return None
+#         finally:
+#             db_session.close()
+#     elif saldos_a_favor:
+#         print("Entró cuando hay saldo a favor")
+#         print(saldos_a_favor[3])
+#         if saldos_a_favor[3] == 0.00:
+#             try:
 
 
-                print("diferencia pago" + str(diferencia_pago))
-                print("id_tipoSaldos_pagos::::::::::: " + str(id_tipoSaldos_pagos))
+#                 print("diferencia pago" + str(diferencia_pago))
+#                 print("id_tipoSaldos_pagos::::::::::: " + str(id_tipoSaldos_pagos))
 
-                actualizar_saldo(
-                    db_session, id_cliente, id_tipoSaldos_pagos, diferencia_pago, estado)
+#                 actualizar_saldo(
+#                     db_session, id_cliente, id_tipoSaldos_pagos, diferencia_pago, estado)
                 
-                id_saldos_pagos = saldos_a_favor[0]
+#                 id_saldos_pagos = saldos_a_favor[0]
 
 
 
-            except SQLAlchemyError as e:
-                db_session.rollback()
-                print(f"Error: {e}")
-                return None
-            finally:
-                db_session.close()
-        # Procedimiento para disminuir el saldo en contra
-        elif saldos_a_favor[3] > 0.00:
-            try:
-                print("Entró por acá")
-                cifraSaldoAnterior = Decimal(saldos_a_favor[3])
-                print(cifraSaldoAnterior)
-                cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(diferencia_pago))
-                actualizar_saldo(
-                    db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
-                id_saldos_pagos = saldos_a_favor[0]
+#             except SQLAlchemyError as e:
+#                 db_session.rollback()
+#                 print(f"Error: {e}")
+#                 return None
+#             finally:
+#                 db_session.close()
+#         # Procedimiento para disminuir el saldo en contra
+#         elif saldos_a_favor[3] > 0.00:
+#             try:
+#                 print("Entró por acá")
+#                 cifraSaldoAnterior = Decimal(saldos_a_favor[3])
+#                 print(cifraSaldoAnterior)
+#                 cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(diferencia_pago))
+#                 actualizar_saldo(
+#                     db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
+#                 id_saldos_pagos = saldos_a_favor[0]
 
 
 
-            except SQLAlchemyError as e:
-                db_session.rollback()
-                print(f"Error: {e}")
-                return None
-            finally:
-                db_session.close()
-    else:
-        try:
-            print("Entró en el peor de los casos")
-            estado = saldo_en_contra
-            cifraSaldoAnterior = Decimal(saldos_pagos[3])
-            cifraSaldoNueva = Decimal(cifraSaldoAnterior - Decimal(diferencia_pago))
-            actualizar_saldo(
-                db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
+#             except SQLAlchemyError as e:
+#                 db_session.rollback()
+#                 print(f"Error: {e}")
+#                 return None
+#             finally:
+#                 db_session.close()
+#     else:
+#         try:
+#             print("Entró en el peor de los casos")
+#             estado = saldo_en_contra
+#             cifraSaldoAnterior = Decimal(saldos_pagos[3])
+#             cifraSaldoNueva = Decimal(cifraSaldoAnterior - Decimal(diferencia_pago))
+#             actualizar_saldo(
+#                 db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
 
-            id_saldos_pagos = saldos_pagos[0]           
-
-
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return None
-        finally:
-            db_session.close()
+#             id_saldos_pagos = saldos_pagos[0]           
 
 
-    insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago, estado)
+#         except SQLAlchemyError as e:
+#             db_session.rollback()
+#             print(f"Error: {e}")
+#             return None
+#         finally:
+#             db_session.close()
+
+
+#     insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago, estado)
 
     
-    return id_saldos_pagos
+#     return id_saldos_pagos
 
 
 def insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, monto, tipo_transaccion):

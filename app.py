@@ -561,7 +561,7 @@ def añadir_pago(id_cliente):
             cantidadPagarCordobas_conversion = 0.00
 
         resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
-        saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+        #saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
         # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
         cifra_a_pagar = resultado_pago_fecha['cifra']
         print(cifra_a_pagar)
@@ -588,17 +588,22 @@ def añadir_pago(id_cliente):
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
             
             diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
+            print(f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
 
             #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
             if diferencia_pago_a_saldo:
-                ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
-                                        diferencia_pago_a_saldo, activo)
-                
-            # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
-            if estadoPago == 0:
                 id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
                                         diferencia_pago_a_saldo, activo)
                 insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolares, Aumento)
+                
+                
+                
+            # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
+            if estadoPago == 0:
+                cantidadPagarDolaresNegativo = cantidadPagarDolares - (cantidadPagarDolares * 2) 
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda, 
+                                        cantidadPagarDolaresNegativo, activo)
+                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
 
            
 
@@ -626,7 +631,7 @@ def añadir_pago(id_cliente):
 
 
 
-    saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+    # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
@@ -660,7 +665,7 @@ def añadir_pago(id_cliente):
     else:
         pagos = []
 
-    print(saldo_pendiente)
+
 
 
     print(monto_pagoEspecial)
@@ -669,7 +674,7 @@ def añadir_pago(id_cliente):
         "monto_pagoEspecial": monto_pagoEspecial,
         "pagos" : pagos,
         "años_pagos": años_pagos,
-        "saldo_pendiente": saldo_pendiente
+        "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
