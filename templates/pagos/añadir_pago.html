@@ -16,7 +16,6 @@
                 <div class="col-md-6">
                     <div class="title">
                         <h2>Pago de cliente</h2>
-                        <a href="" data-bs-toggle="modal" data-bs-target="#modalCalculoPrimerPago">Pruebita</a>
                     </div>
                 </div>
                 <!-- end col -->
@@ -64,45 +63,67 @@
                                     }
                                 </script>
 
-                                <div class="col-12 mb-5">
-                                    <span class="status-btn close-btn mb-2">No ha pagado</span>
-                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
-                                            dataCliente.nombre_tipoCliente }}</span></p>
-                                    <a id="btnMostrarDetallesCliente" href="#0" class="text-medium text-dark">[Leer
-                                        más]</a>
-                                    <div class="detallesCliente" id="detallesCliente" hidden>
-                                        <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
-                                                dataCliente.tiempo_pago }}</span></p>
-                                        <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
-                                                dataCliente.fechaPrestamo }}</span></p>
-                                        <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
-                                                dataCliente.fecha_prestamo_desde }}</span></p>
-                                        <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
-                                                    dataCliente.monto_solicitado }}</span> </strong></p>
-                                        <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes
-                                                    }}%</span></strong>
-                                        </p>
-                                        <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
-                                                    dataCliente.pagoMensual }}</span></strong></p>
-                                        <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
-                                                    dataCliente.pagoQuincenal }}</span></strong></p>
+                                <div class="col-md-8 mb-5">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <span class="status-btn close-btn mb-2">No ha pagado</span>
+                                            <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
+                                                    dataCliente.nombre_tipoCliente }}</span></p>
+                                            <a id="btnMostrarDetallesCliente" href="#0"
+                                                class="text-medium text-dark">[Leer
+                                                más]</a>
+                                            <div class="detallesCliente" id="detallesCliente" hidden>
+                                                <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
+                                                        dataCliente.tiempo_pago }}</span></p>
+                                                <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
+                                                        dataCliente.fechaPrestamo }}</span></p>
+                                                <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
+                                                        dataCliente.fecha_prestamo_desde }}</span></p>
+                                                <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                            dataCliente.monto_solicitado }}</span> </strong></p>
+                                                <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes
+                                                            }}%</span></strong>
+                                                </p>
+                                                <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
+                                                            dataCliente.pagoMensual }}</span></strong></p>
+                                                <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
+                                                            dataCliente.pagoQuincenal }}</span></strong></p>
+                                            </div>
+
+                                            <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark"
+                                                hidden>[Leer menos]</a>
+
+
+
+                                            {% if saldo_pendiente.estado == 2 and saldo_pendiente.cifraSaldo > 0.00 %}
+                                            <p><strong class="text-danger">Saldo pendiente: {{
+                                                    saldo_pendiente.codigoMoneda }}
+                                                    {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
+                                            {% elif saldo_pendiente.estado == 1 and saldo_pendiente.cifraSaldo > 0.00 %}
+                                            <p><strong class="text-success">Saldo a favor: {{
+                                                    saldo_pendiente.codigoMoneda }}
+                                                    {{ saldo_pendiente.cifraSaldo }}<span></span></strong></p>
+                                            <span></span></strong></p>
+                                            {% endif %}
+
+
+                                        </div>
                                     </div>
 
-                                    <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark"
-                                        hidden>[Leer menos]</a>
+                                </div>
 
-
-
-                                    {% if saldo_pendiente.estado == 2 and saldo_pendiente.cifraSaldo > 0.00 %}
-                                    <p><strong class="text-danger">Saldo pendiente: {{ saldo_pendiente.codigoMoneda }}
-                                            {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
-                                    {% elif saldo_pendiente.estado == 1 and saldo_pendiente.cifraSaldo > 0.00 %}
-                                    <p><strong class="text-success">Saldo a favor: {{ saldo_pendiente.codigoMoneda }}
-                                            {{ saldo_pendiente.cifraSaldo }}<span></span></strong></p>
-                                            <span></span></strong></p>
-                                    {% endif %}
+                                <div class="col-md-4 mb-5">
+                                    <div class="row">
+                                        <a data-bs-toggle="modal"
+                                        data-bs-target="#modalAñadirPago" id="gestionarPago" href="#RealizarPago"
+                                            class="main-btn primary-btn-light rounded-full btn-hover col-md-8 col-md-8 offset-md-4 offset-lg-4 offset-xl-4 offset-xxl-8">
+                                            <i class="lni lni-plus"></i>
+                                            Añadir pago
+                                        </a>
+                                    </div>
 
                                 </div>
+
                                 <div class="d-flex align-items-center">
                                     <h6>Año:</h6>
                                     <div class="select-style-1 mb-0 ml-10">
@@ -120,16 +141,23 @@
                                     </div>
                                 </div>
 
+
+
+
+
                             </div>
 
 
 
-                            <a href="#0"
-                                class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8"
-                                data-bs-toggle="modal" data-bs-target="#modalAñadirPago">
-                                <i class="lni lni-plus"></i>
-                                Añadir pago
-                            </a>
+
+
+                            <!-- <a href="#0" class="main-btn primary-btn btn-hover btn-sm mt-3" data-bs-toggle="modal"
+                                data-bs-target="#ModalOpcionImprimir">
+                                <i class="lni lni-printer mr-5"></i> Imprimir
+                            </a> -->
+
+
+
 
 
                             <!-- ============ Theme Option Start ============= -->
@@ -211,9 +239,10 @@
                                                 dataCliente.pagoQuincenal }}" {% elif pago.estado_pago==0
                                                 %}data-bs-toggle="tooltip" data-bs-placement="top" title="No hay pago"
                                                 {% elif pago.estado_pago==1 %}data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Pago completo"
-                                                {% elif pago.estado_pago==3 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Primer pago"
-                                                {% elif pago.estado_pago == 4 %}data-bs-toggle="tooltip" data-bs-placement="top" title="Pago de más"
+                                                data-bs-placement="top" title="Pago completo" {% elif
+                                                pago.estado_pago==3 %}data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="Primer pago" {% elif pago.estado_pago==4
+                                                %}data-bs-toggle="tooltip" data-bs-placement="top" title="Pago de más"
                                                 {% endif %}>
                                                 {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }} {{ pago.cifraPago
                                                 }}
@@ -367,10 +396,13 @@
                                     <label for="">Pago en $</label>
                                     <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                         id="cantidadPagar$" required />
-                                    <span class="icon" style="z-index: 1 !important;"><i class="fa-solid fa-coins"></i></span>
-                                    <span id="pCantidadPagarVerificar$" style="position:relative; z-index: 5 !important;" class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="{{monto_pagoEspecial.descripcion }}"></span>
-                                    <input id="cantidadPagarVerificar$" type="text"
-                                        value="" hidden>
+                                    <span class="icon" style="z-index: 1 !important;"><i
+                                            class="fa-solid fa-coins"></i></span>
+                                    <span id="pCantidadPagarVerificar$"
+                                        style="position:relative; z-index: 5 !important;" class="tooltip-icon"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="{{monto_pagoEspecial.descripcion }}"></span>
+                                    <input id="cantidadPagarVerificar$" type="text" value="" hidden>
                                 </div>
                                 <!-- end select -->
                             </div>
@@ -389,7 +421,7 @@
                         </div>
                         <!-- end checkbox -->
 
-                        <div class="form-check checkbox-style checkbox-danger mb-20">
+                        <div class="form-check checkbox-style checkbox-danger mb-20" hidden>
                             <input class="form-check-input" type="checkbox" value="0" id="checkBoxPrimerPago"
                                 name="checkBoxPrimerPago" />
                             <label class="form-check-label" for="checkBoxPrimerPago">
@@ -400,7 +432,7 @@
 
 
 
-                <div class="col-8 col-sm-4 col-md-4">
+                <div class="col-8 col-sm-4 col-md-4" hidden>
                     <div class="select-style-1">
                         <label class="">PAGO COMPLETO O INCOMPLETO</label>
                         <div class="select-position">
@@ -594,6 +626,66 @@
     </div>
 </div>
 <!-- ModalFour End -->
+
+
+
+<!-- ModalOpcionImprimir start -->
+<div class="warning-modal">
+    <div class="modal fade" id="ModalOpcionImprimir" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h5 class="text-bold">Opción de impresión</h5>
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+                        <p class="text-sm">
+                        <div class="row">
+
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <div class="input-style-1">
+                                    <label class="text-bold">Incio fecha</label>
+                                    <input type="date" required name="inicioFechaImpresion" id="inicioFechaImpresion" />
+                                    <p id="tiempoLetrasInicioFechaImpresion"></p>
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <div class="input-style-1">
+                                    <label class="text-bold">Fin fecha</label>
+                                    <input type="date" required name="finFechaImpresion" id="finFechaImpresion" />
+                                    <p id="tiempoLetrasFinFechaImpresion"></p>
+                                </div>
+                            </div>
+
+
+                            <div class="form-check checkbox-style checkbox-success mb-20">
+                                <input class="form-check-input" type="checkbox" value="0" id="checkBoxNoPago"
+                                    name="checkBoxNoPago" />
+                                <label class="form-check-label" for="checkBoxNoPago">
+                                    Enviar impresión a telefono</label>
+                            </div>
+                        </div>
+                        </p>
+                    </div>
+                    <div class="action d-flex flex-wrap justify-content-end">
+                        <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                            Cancelar
+                        </button>
+                        <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1">
+                            Ir a imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ModalOpcionImprimir End -->
 
 <!-- ModalThree start -->
 <div class="warning-modal">
