@@ -594,7 +594,7 @@ def añadir_pago(id_cliente):
             if diferencia_pago_a_saldo:
                 id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
                                         diferencia_pago_a_saldo, activo)
-                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolares, Aumento)
+                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
                 
                 
                 

@@ -612,11 +612,17 @@ LIMIT 1;
             if "Aumento" in ultima_transaccion_saldo[1]:
                 monto_anterior = saldo_actual[2] - ultima_transaccion_saldo[0]
             elif "Disminucion" in ultima_transaccion_saldo[1]:
-                monto_anterior = saldo_actual[2] + ultima_transaccion_saldo[0]
+                if saldo_actual[2] < 0:
+                    monto_anterior = abs(saldo_actual[2]) + ultima_transaccion_saldo[0]
+                    if monto_anterior > 0:
+                        monto_anterior = -monto_anterior
+                else:
+                    monto_anterior = saldo_actual[2] + abs(ultima_transaccion_saldo[0])
+
 
             # Validando que no sean negativos los saldos
-            if monto_anterior < 0:
-                monto_anterior = 0.00
+            # if monto_anterior < 0:
+            #     monto_anterior = 0.00
         else:
             monto_anterior = 0.00
 
@@ -650,6 +656,8 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
 
 
         if estado_pago == no_hay_pago or estado_pago == pago_de_mas:
+
+            print("entró en la eliminación de más")
 
             
 
