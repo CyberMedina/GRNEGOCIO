@@ -696,22 +696,36 @@ def PruebaImprimir_pago():
 
         
         id_cliente = '9'
-        fecha_inicio = '2024-01-01'
-        fecha_fin = '2024-12-31'
+        fecha_inicio = '2024-03-01'
+        fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
+        fecha_fin = '2024-04-30'
+
+        fecha_inicio_totalSaldo = '2010-01-01'
+        fecha_fin_totalSaldo = fecha_inicio
 
         if not all([id_cliente, fecha_inicio, fecha_fin]):
             return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
         
+        suma_saldo = transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_totalSaldo, fecha_fin_totalSaldo, activo, monedaOriginal, consulta_sumatoria_total)
+
+
+
         datos_pago = {
             'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
             'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
-            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal),
+            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_QUEES, fecha_fin, activo, monedaOriginal, consulta_normal),
+            'suma_saldo' : suma_saldo,
+            'fecha_saldo_inicial': fecha_fin_totalSaldo,
+            'saldo_pendiente' : validar_existencia_saldo_frontEnd(db_session, id_cliente),
         }
 
         return render_template('pagos/imprimir_pago_template.html', **datos_pago)
 
 
+
+
+    
 
 @app.route('/eliminar_pago', methods=['POST'])
 def eliminar_pago():

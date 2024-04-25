@@ -82,10 +82,10 @@
             <th>Saldo</th>
         </tr>
         <tr>
-            <td>Saldo inicial</td>
+            <td>Saldo inicial al {{ fecha_saldo_inicial }}</td>
             <td></td>
             <td></td>
-            <td>$0</td>
+            <td>{{ suma_saldo }}</td>
 
         </tr>
         {% for historialSaldo in transacciones_saldos %}
@@ -99,7 +99,7 @@
         <tr>
             <td>Total</td>
             <td></td>
-            <td></td>
+            <td> - {{ saldo_pendiente.cifraSaldo }}</td>
         </tr>
 </body>
 </html>

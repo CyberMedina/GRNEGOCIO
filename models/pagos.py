@@ -369,7 +369,7 @@ ORDER BY
         db_session.close()
 
 
-def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
+def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta):
     try:
         query = text("""
                      SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
@@ -389,7 +389,46 @@ AND dp.estado = :estado_detalle_pago;
 """)
         result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
                                     'estado_contrato': estado_contrato, 'estado_detalle_pago': estado_detalle_pago}).fetchall()
-        return result
+        
+        if tipo_consulta == consulta_normal:
+            return result
+        elif tipo_consulta == consulta_sumatoria_total:
+            cifra_anterior = 0
+            total_cifra = 0
+            primer_elemento = True
+
+            for row in result:
+                if primer_elemento:
+                    print("primero entro acá")
+                    cifra_anterior = row[1]
+                    print(cifra_anterior)
+                    primer_elemento = False
+                else:
+                    print("En el segundo registro entró acá")
+                    if row[2] == Aumento:
+                        total_cifra = cifra_anterior + abs(row[1])
+                        print(f"{cifra_anterior} + {abs(row[1])}  ")
+                        cifra_anterior = total_cifra
+                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+
+                    else:
+                        total_cifra = cifra_anterior - abs(row[1])
+                        print(f"{cifra_anterior} - {abs(row[1])} = {total_cifra}")
+                        cifra_anterior = total_cifra
+                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+
+
+
+
+            print(f"La suma total es: {total_cifra}")
+            return total_cifra
+
+
+
+
+        
+
+
 
     except SQLAlchemyError as e:
         db_session.rollback()

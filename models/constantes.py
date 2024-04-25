@@ -47,5 +47,10 @@ saldo_en_contra = 2
 Aumento = "Aumento"
 Disminucion = "Disminucion"
 
+# Estados para los registros de los saldos
+existe_registro = 1
+no_existe_registro = 0
 
-
+# Constantes para los tipos de consulta FUNCION transacciones_saldo_contrato
+consulta_normal = 1
+consulta_sumatoria_total = 2

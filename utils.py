@@ -14,6 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import random
 import time
+import datetime
 
 def ObtenerIDTabla(db_session, id_tabla, tabla):
     query = text(f'SELECT MAX({id_tabla}) AS id FROM {tabla}')
@@ -186,3 +187,14 @@ def obtener_fechaIncioYFin_con_año(año):
     return fecha_inicio, fecha_fin
 
 
+def sumar_dias(fecha_inicio, dias_a_sumar):
+    # Convertir la fecha de inicio a un objeto datetime
+    fecha_inicio_obj = datetime.datetime.strptime(fecha_inicio, '%Y-%m-%d')
+
+    # Sumar los días especificados
+    fecha_fin_obj = fecha_inicio_obj + datetime.timedelta(days=dias_a_sumar)
+
+    # Convertir la fecha resultante a una cadena en el formato deseado
+    fecha_fin_totalSaldo = fecha_fin_obj.strftime('%Y-%m-%d')
+
+    return fecha_fin_totalSaldo
