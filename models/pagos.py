@@ -193,6 +193,7 @@ def calcular_pago_diario(pago_mensual, cantidad_dias):
         print(f"Error: {e}")
         return None
 
+
 def calcular_cifra_pago_quincenal(pago_diario, fecha_prestamo):
     try:
         if fecha_prestamo.day <= 15:
@@ -203,15 +204,17 @@ def calcular_cifra_pago_quincenal(pago_diario, fecha_prestamo):
             primer_pago = pago_diario * cantidad_días
 
         return primer_pago
-    
+
     except Exception as e:
         print(f"Error: {e}")
         return None
 
+
 def calcular_primerPago_quincenal(pago_mensual, fecha_prestamo):
     try:
         pago_diario = calcular_pago_diario(pago_mensual, mes_comercial)
-        primer_pago = calcular_cifra_pago_quincenal(pago_diario, fecha_prestamo)
+        primer_pago = calcular_cifra_pago_quincenal(
+            pago_diario, fecha_prestamo)
         return primer_pago
     except Exception as e:
         print(f"Error: {e}")
@@ -366,6 +369,36 @@ ORDER BY
         db_session.close()
 
 
+def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
+    try:
+        query = text("""
+                     SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes -- Se eliminó la coma aquí
+FROM transacciones_saldos ts
+INNER JOIN detalle_pagos dp ON ts.id_pagos = dp.id_pagos
+INNER JOIN pagos p ON dp.id_pagos = p.id_pagos
+INNER JOIN contrato c ON p.id_contrato = c.id_contrato
+WHERE p.id_cliente = :id_cliente
+AND p.fecha_pago BETWEEN :añoInicio AND :añoFin
+AND c.estado = :estado_contrato
+AND dp.estado = :estado_detalle_pago;
+""")
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
+                                    'estado_contrato': estado_contrato, 'estado_detalle_pago': estado_detalle_pago}).fetchall()
+        return result
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
 def obtener_años_pagos(db_session, id_cliente, estado):
     try:
         query = text("""SELECT YEAR(p.fecha_pago) AS años 
@@ -376,7 +409,6 @@ GROUP BY YEAR(fecha_pago)
 ORDER BY YEAR(fecha_pago) DESC;""")
         result = db_session.execute(
             query, {'id_cliente': id_cliente, 'estado': estado}).fetchall()
-
 
         return result
 
@@ -419,7 +451,7 @@ AND dp.estado = :estadoMoneda
 AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2 OR p.estado = :estadoPago3);""")
 
         result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
-                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':pago_completo, 'estadoPago2' : pago_incompleto, 'estadoPago3': pago_de_mas}).fetchone()
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1': pago_completo, 'estadoPago2': pago_incompleto, 'estadoPago3': pago_de_mas}).fetchone()
         return result[0]
 
     except SQLAlchemyError as e:
@@ -430,6 +462,8 @@ AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2 OR p.estado = :estadoPag
         db_session.close()
 
 # Esta función es utilizada para verificar si el cliente ha pagado el monto total de la quincena en el caso que sea el primer pago
+
+
 def validacion_primer_pago_quincena(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estadoMoneda):
     try:
         query = text("""
@@ -442,7 +476,7 @@ AND dp.estado = :estadoMoneda
 AND P.estado = :estadoPago1;""")
 
         result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
-                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1':primer_pago_del_prestamo}).fetchone()
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1': primer_pago_del_prestamo}).fetchone()
         if result is None:
             return None
         else:
@@ -454,7 +488,6 @@ AND P.estado = :estadoPago1;""")
         return None
     finally:
         db_session.close()
-
 
 
 def determinar_quincena(date):
@@ -502,7 +535,7 @@ WHERE
 
         for row in result:
             result_dict = {
-                'id_cliente' : row[0],
+                'id_cliente': row[0],
                 'id_pagos': row[1],
                 'observacion': row[2],
                 'evidencia_pago': row[3],
@@ -564,8 +597,10 @@ WHERE c.id_cliente = :id_cliente;""")
 
 def obtener_tipo_saldo(db_session, id_cliente):
     try:
-        query = text("""SELECT id_tipoSaldos_pagos FROM saldos_pagos WHERE id_cliente = :id_cliente;""")
-        result = db_session.execute(query, {'id_cliente': id_cliente}).fetchone()
+        query = text(
+            """SELECT id_tipoSaldos_pagos FROM saldos_pagos WHERE id_cliente = :id_cliente;""")
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente}).fetchone()
         return result[0]
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -577,8 +612,10 @@ def obtener_tipo_saldo(db_session, id_cliente):
 
 def obtener_saldos_pagos(db_session, id_cliente):
     try:
-        query = text("""SELECT * from saldos_pagos WHERE id_cliente = :id_cliente;""")
-        result = db_session.execute(query, {'id_cliente': id_cliente}).fetchall()
+        query = text(
+            """SELECT * from saldos_pagos WHERE id_cliente = :id_cliente;""")
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente}).fetchall()
         if result:
             return result
         return None
@@ -590,13 +627,8 @@ def obtener_saldos_pagos(db_session, id_cliente):
         db_session.close()
 
 
-
-    
-
 def obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente):
     try:
-
-
 
         query = text("""SELECT ts.monto, ts.tipo_transaccion 
 FROM transacciones_saldos ts
@@ -606,7 +638,8 @@ WHERE p.id_pagos = :id_pagos
 ORDER BY ts.fecha_transaccion DESC  -- Suponiendo que tienes una columna fecha_transaccion
 LIMIT 1;
 """)
-        ultima_transaccion_saldo = db_session.execute(query, {'id_pagos': id_pagos}).fetchone()
+        ultima_transaccion_saldo = db_session.execute(
+            query, {'id_pagos': id_pagos}).fetchone()
         print(f"La ultima transaccion es" + str(ultima_transaccion_saldo))
 
         if ultima_transaccion_saldo:
@@ -616,19 +649,19 @@ LIMIT 1;
                 monto_anterior = saldo_actual[2] - ultima_transaccion_saldo[0]
             elif "Disminucion" in ultima_transaccion_saldo[1]:
                 if saldo_actual[2] < 0:
-                    monto_anterior = abs(saldo_actual[2]) + ultima_transaccion_saldo[0]
+                    monto_anterior = abs(
+                        saldo_actual[2]) + ultima_transaccion_saldo[0]
                     if monto_anterior > 0:
                         monto_anterior = -monto_anterior
                 else:
-                    monto_anterior = saldo_actual[2] + abs(ultima_transaccion_saldo[0])
-
+                    monto_anterior = saldo_actual[2] + \
+                        abs(ultima_transaccion_saldo[0])
 
             # Validando que no sean negativos los saldos
             # if monto_anterior < 0:
             #     monto_anterior = 0.00
         else:
             monto_anterior = 0.00
-
 
         return monto_anterior
 
@@ -639,9 +672,11 @@ LIMIT 1;
     finally:
         db_session.close()
 
+
 def buscar_id_cliente_con_id_pagos(db_session, id_pagos):
     try:
-        query = text("""SELECT id_cliente FROM pagos WHERE id_pagos = :id_pagos;""")
+        query = text(
+            """SELECT id_cliente FROM pagos WHERE id_pagos = :id_pagos;""")
         result = db_session.execute(query, {'id_pagos': id_pagos}).fetchone()
         return result[0]
     except SQLAlchemyError as e:
@@ -651,29 +686,24 @@ def buscar_id_cliente_con_id_pagos(db_session, id_pagos):
     finally:
         db_session.close()
 
+
 def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
     try:
 
-        # Si el estado del pago es "No hay pago", se debe eliminar el registro de la tabla transacciones_saldos 
+        # Si el estado del pago es "No hay pago", se debe eliminar el registro de la tabla transacciones_saldos
         # y actualizar el saldo en contra
-
 
         if estado_pago == no_hay_pago or estado_pago == pago_de_mas:
 
             print("entró en la eliminación de más")
 
-            
-
             id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
             print(f"el id del cliente es" + str(id_cliente))
 
-
-
-
-            cifra_anterior = obtener_cifraSaldo_anterior(db_session, id_pagos, id_cliente) 
+            cifra_anterior = obtener_cifraSaldo_anterior(
+                db_session, id_pagos, id_cliente)
             print(f"la cifra anterior es" + str(cifra_anterior))
 
-            
             actualizar_saldo(db_session, id_cliente, cifra_anterior, activo)
 
             query = text(
@@ -704,6 +734,7 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
     finally:
         db_session.close()
 
+
 def validar_que_tipo_salo_es(db_session, id_cliente):
     try:
         query = text("""SELECT id_tipoSaldos_pagos
@@ -711,7 +742,8 @@ FROM saldos_pagos
 WHERE id_cliente = :id_cliente
   AND cifraSaldo > 0;
 """)
-        result = db_session.execute(query, {'id_cliente': id_cliente}).fetchone()
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente}).fetchone()
         if result is None:
             return None
         return result
@@ -723,11 +755,11 @@ WHERE id_cliente = :id_cliente
         db_session.close()
 
 # Esta función recupera el saldo en contra de un cliente
+
+
 def validar_saldo_pendiente_en_contra(db_sesssion, id_cliente):
 
     result_saldo = validar_que_tipo_salo_es(db_sesssion, id_cliente)
-    
-
 
     if result_saldo:
         id_tipoSaldos_pagos = result_saldo[1]
@@ -745,7 +777,8 @@ FROM saldos_pagos sp
 JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
 WHERE id_tipoSaldos_pagos = :estado AND c.id_cliente = :id_cliente;""")
-            result = db_sesssion.execute(query, {'id_cliente': id_cliente, 'estado': estado}).fetchone()
+            result = db_sesssion.execute(
+                query, {'id_cliente': id_cliente, 'estado': estado}).fetchone()
             return result
         except SQLAlchemyError as e:
             db_sesssion.rollback()
@@ -755,15 +788,13 @@ WHERE id_tipoSaldos_pagos = :estado AND c.id_cliente = :id_cliente;""")
             db_sesssion.close()
     else:
         return None
-    
 
 
 # Esta función recupera el saldo en contra de un cliente
 def validar_existencia_saldo_frontEnd(db_sesssion, id_cliente):
 
-
-        try:
-            query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, ABS(sp.cifraSaldo) as cifraSaldo,
+    try:
+        query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, ABS(sp.cifraSaldo) as cifraSaldo,
 CASE 
     WHEN sp.cifraSaldo >= 0 THEN 1
     ELSE 2
@@ -773,42 +804,42 @@ JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
 WHERE c.id_cliente = :id_cliente;""")
 
-            result = db_sesssion.execute(query, {'id_cliente': id_cliente}).fetchone()
-            if result:
-                return result
-            else:
-                return None
-        except SQLAlchemyError as e:
-            db_sesssion.rollback()
-            print(f"Error: {e}")
+        result = db_sesssion.execute(
+            query, {'id_cliente': id_cliente}).fetchone()
+        if result:
+            return result
+        else:
             return None
-        finally:
-            db_sesssion.close()
+    except SQLAlchemyError as e:
+        db_sesssion.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_sesssion.close()
 
 # Esta función recupera el saldo en contra de un cliente
+
+
 def validar_existencia_saldo(db_sesssion, id_cliente):
 
-
-        try:
-            query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo, sp.estado
+    try:
+        query = text("""SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo, sp.estado
 FROM saldos_pagos sp
 JOIN moneda m ON m.id_moneda = sp.id_moneda
 JOIN cliente c ON c.id_cliente = sp.id_cliente
 WHERE c.id_cliente = :id_cliente;""")
-            result = db_sesssion.execute(query, {'id_cliente': id_cliente}).fetchone()
-            if result:
-                return result
-            else:
-                return None
-        except SQLAlchemyError as e:
-            db_sesssion.rollback()
-            print(f"Error: {e}")
+        result = db_sesssion.execute(
+            query, {'id_cliente': id_cliente}).fetchone()
+        if result:
+            return result
+        else:
             return None
-        finally:
-            db_sesssion.close()
-
-    
-
+    except SQLAlchemyError as e:
+        db_sesssion.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_sesssion.close()
 
 
 # Esta función recupera el saldo a favor de un cliente
@@ -837,7 +868,7 @@ def actualizar_saldo(db_session, id_cliente, cifraSaldo, estado):
         query = text(
             """UPDATE saldos_pagos SET cifraSaldo = :cifraSaldo, fecha_saldo = NOW(), estado = :estado WHERE id_cliente = :id_cliente;""")
         db_session.execute(query, {
-                           'cifraSaldo': cifraSaldo, 'estado': estado, 'id_cliente' : id_cliente})
+                           'cifraSaldo': cifraSaldo, 'estado': estado, 'id_cliente': id_cliente})
         db_session.commit()
         return True
     except SQLAlchemyError as e:
@@ -851,7 +882,6 @@ def actualizar_saldo(db_session, id_cliente, cifraSaldo, estado):
 def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifraSaldo, estado):
 
     saldos_pagos = validar_existencia_saldo(db_session, id_cliente)
-
 
     if saldos_pagos is None:
         try:
@@ -931,11 +961,6 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
             db_session.close()
 
 
-
-
-
-
-
 # def añadir_saldo_en_contra(db_session, id_cliente, id_tipoSaldos_pagos, id_moneda, cifraSaldo, estado):
 
 #     saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
@@ -994,11 +1019,6 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 #             db_session.close()
 
 
-
-
-
-
-
 # def reducir_saldo_en_contra(db_session, id_cliente, id_pagos, id_tipoSaldos_pagos, id_moneda, diferencia_pago, estado):
 
 #     # Si el id_tipoSadlos_pago es proporcionado, se debe utilizar ese valor
@@ -1009,7 +1029,6 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
 #     result_saldos = obtener_saldos_pagos(db_session, id_cliente)
 #     print(result_saldos)
-
 
 
 #     saldos_pagos = validar_saldo_pendiente_en_contra(db_session, id_cliente)
@@ -1036,8 +1055,7 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 #             db_session.execute(query, {'id_saldos_pagos': id_saldos_pagos, 'id_cliente': id_cliente, 'id_tipoSaldos_pagos': id_tipoSaldos_pagos,
 #                                'id_moneda': id_moneda, 'cifraSaldo': diferencia_pago, 'estado': activo})
 #             db_session.commit()
-            
-            
+
 
 #         except SQLAlchemyError as e:
 #             db_session.rollback()
@@ -1057,9 +1075,8 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
 #                 actualizar_saldo(
 #                     db_session, id_cliente, id_tipoSaldos_pagos, diferencia_pago, estado)
-                
-#                 id_saldos_pagos = saldos_a_favor[0]
 
+#                 id_saldos_pagos = saldos_a_favor[0]
 
 
 #             except SQLAlchemyError as e:
@@ -1080,7 +1097,6 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 #                 id_saldos_pagos = saldos_a_favor[0]
 
 
-
 #             except SQLAlchemyError as e:
 #                 db_session.rollback()
 #                 print(f"Error: {e}")
@@ -1096,7 +1112,7 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 #             actualizar_saldo(
 #                 db_session, id_cliente, id_tipoSaldos_pagos, cifraSaldoNueva, estado)
 
-#             id_saldos_pagos = saldos_pagos[0]           
+#             id_saldos_pagos = saldos_pagos[0]
 
 
 #         except SQLAlchemyError as e:
@@ -1109,7 +1125,7 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
 #     insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago, estado)
 
-    
+
 #     return id_saldos_pagos
 
 
@@ -1149,68 +1165,68 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
-        
 
         # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
         monto_pago = {
-                        'cifra': monto_pagoEspecial,
-                        'estado' : 0,
-                        'descripcion' : 'Primer pago'
-                    }
-    else: 
+            'cifra': monto_pagoEspecial,
+            'estado': 0,
+            'descripcion': 'Primer pago'
+        }
+    else:
         # si hay más de un pago
 
         dia_mes = fecha.day
 
         inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
 
+        existencia_primer_pago = validacion_primer_pago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
 
-        existencia_primer_pago = validacion_primer_pago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+        sumPagosQuincena = validacion_fechaPago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
 
-        sumPagosQuincena = validacion_fechaPago_quincena(db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
-
-        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(fecha)
+        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(
+            fecha)
 
         # Validamos que el cliente haya pagado el monto total de la quincena en su primer pago
         if existencia_primer_pago:
             monto_pagoEspecial = '0.00'
             monto_pago = {
-                        'cifra': monto_pagoEspecial,
-                        'estado' : 1,
-                        'descripcion' : f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
-                    }
+                'cifra': monto_pagoEspecial,
+                'estado': 1,
+                'descripcion': f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
+            }
         # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
         elif sumPagosQuincena:
             if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
                 monto_pagoEspecial = '0.00'
                 monto_pago = {
-                        'cifra': monto_pagoEspecial,
-                        'estado' : 3,
-                        'descripcion' : 'Ya se ha pagado el monto total de la quincena'
-                    }
+                    'cifra': monto_pagoEspecial,
+                    'estado': 3,
+                    'descripcion': 'Ya se ha pagado el monto total de la quincena'
+                }
             else:
-                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - sumPagosQuincena
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - \
+                    sumPagosQuincena
                 monto_pago = {
-                        'cifra': monto_pagoEspecial,
-                        'estado' : 1,
-                        'descripcion' : f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
-                    }
+                    'cifra': monto_pagoEspecial,
+                    'estado': 1,
+                    'descripcion': f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
+                }
         # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
         else:
             monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
             monto_pago = {
-                    'cifra': monto_pagoEspecial,
-                    'estado' : 2,
-                    'descripcion' : 'Pago quincenal'
-                }
-        
-
+                'cifra': monto_pagoEspecial,
+                'estado': 2,
+                'descripcion': 'Pago quincenal'
+            }
 
     return monto_pago
+
 
 def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
     # Convertir a float si es string
@@ -1227,6 +1243,3 @@ def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
         diferencia_a_saldo = None
 
     return diferencia_a_saldo
-
-
-

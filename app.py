@@ -36,10 +36,9 @@ def initialize_session_variable(key, default_value):
 def before_request():
     initialize_session_variable("numero_seleccionado_ordenar_clientes", '1')
     initialize_session_variable("numero_seleccionado_ordenar_prestamos", '5')
-    initialize_session_variable("numero_seleccionado_ordenar_clientesPrestamos", '0')
+    initialize_session_variable(
+        "numero_seleccionado_ordenar_clientesPrestamos", '0')
     initialize_session_variable("año_seleccionado", datetime.now().year)
-
-    
 
 
 @app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
@@ -81,7 +80,6 @@ def actualizar_tasa_cambio():
 @app.route('/')
 def index():
 
-
     return render_template('index.html')
 
 ######## Rutas para guardar en sesión el número seleccionado en diferentes templates ########
@@ -98,6 +96,7 @@ def guardar_en_sesion_ordenar_clientes():
 
     return jsonify({"message": "Número guardado en sesión correctamente"})
 
+
 @app.route("/guardar_año_seleccionado", methods=["POST"])
 def guardar_año_seleccionado():
     data = request.get_json()
@@ -106,11 +105,6 @@ def guardar_año_seleccionado():
     session["año_seleccionado"] = selected_value
 
     return jsonify({"message": "Año guardado en sesión correctamente"})
-
-
-
-
-
 
 
 @app.route("/convertir_numeros_a_letras", methods=["POST"])
@@ -174,7 +168,6 @@ def clientes():
     cantidad_clientes = contar_resultados(
         db_session, "cliente", [session.get("numero_seleccionado_ordenar_clientes")])
 
-
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
@@ -184,7 +177,6 @@ def clientes():
         "index_estado": obtener_index_columna(cursor, "Estado"),
         "index_id": obtener_index_columna(cursor, "id_cliente")
     }
-
 
     if request.method == 'POST':
         nombres = request.form['nombres']
@@ -253,7 +245,6 @@ def prestamos():
     cantidad_clientes = contar_resultados(
         db_session, "cliente", [session.get("numero_seleccionado_ordenar_prestamos")])
 
-
     # Procesamos la lista de clientes para mostrarla en el formulario
     formulario_clientes = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
@@ -263,7 +254,6 @@ def prestamos():
         "index_estado": obtener_index_columna(cursor, "Estado"),
         "index_id": obtener_index_columna(cursor, "id_cliente")
     }
-
 
     if request.method == 'POST':
         nombres = request.form['nombres']
@@ -317,10 +307,7 @@ def prestamos():
 @app.route('/anadir_prestamo/<int:id_cliente>', methods=['GET', 'POST'])
 def anadir_prestamo(id_cliente):
 
-
     datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
-
-
 
     datos_formulario_anadir_prestamo = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
@@ -450,25 +437,17 @@ def anadir_prestamo(id_cliente):
                 id_contrato_fiador = insertar_contrato_fiador(
                     db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
 
-
             if tipoCliente == cliente_normal:
-
-
 
                 id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
                                                 montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
                                                 fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
 
-
             elif tipoCliente == cliente_especial:
-
-
 
                 id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
                                                 montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
                                                 fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
-
-           
 
             db_session.commit()
 
@@ -495,8 +474,6 @@ def datos_prestamoV1():
 
     data = request.get_json()
     id_cliente = data.get("id_cliente")
-
-  
 
     datos_pago = datos_pagov1(db_session, id_cliente)
 
@@ -527,8 +504,6 @@ def listado_clientes_pagos():
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
 def añadir_pago(id_cliente):
 
-
-
     if request.method == 'POST':
 
         id_moneda = request.form['tipoMonedaPago']
@@ -540,33 +515,33 @@ def añadir_pago(id_cliente):
         evidenciaPago = request.files['evidenciaPago']
         tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
-
-        cantidadPagarDolares =  convertir_string_a_decimal(cantidadPagarDolares)
+        cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
 
         # Verifica si el checkbox de no pago está marcado
         if 'checkBoxNoPago' in request.form:
             estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
 
         elif 'checkBoxPrimerPago' in request.form:
-            estadoPago = primer_pago_del_prestamo  # Establece el estado de pago como primer pago 
+            # Establece el estado de pago como primer pago
+            estadoPago = primer_pago_del_prestamo
         else:
             estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
 
         id_moneda = int(id_moneda)
 
         if cantidadPagarCordobas:
-            cantidadPagarCordobas_conversion = convertir_string_a_decimal(cantidadPagarCordobas)
-            
+            cantidadPagarCordobas_conversion = convertir_string_a_decimal(
+                cantidadPagarCordobas)
+
         else:
             cantidadPagarCordobas_conversion = 0.00
 
-        resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
-        #saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
+        resultado_pago_fecha = obtener_pagoEspecial(
+            db_session, id_cliente, fechaPago)
+        # saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
         # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
         cifra_a_pagar = resultado_pago_fecha['cifra']
         print(cifra_a_pagar)
-        
-            
 
         db_session.begin()
 
@@ -575,37 +550,36 @@ def añadir_pago(id_cliente):
 
             num_pagos = comprobar_primerPago(db_session, id_contrato)
 
-
-
             id_pagos = insertarPago(
                 db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, estadoPago)
             insertar_detalle_pagos(
                 db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 
             if id_moneda is not dolares:
-              
+
                 insertar_detalle_pagos(db_session, id_pagos, id_moneda,
                                        cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
-            
-            diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
-            print(f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
 
-            #Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
+            diferencia_pago_a_saldo = obtener_diferencia_a_saldo(
+                cantidadPagarDolares, cifra_a_pagar)
+            print(
+                f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
+
+            # Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
             if diferencia_pago_a_saldo:
-                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda, 
-                                        diferencia_pago_a_saldo, activo)
-                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
-                
-                
-                
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda,
+                                                diferencia_pago_a_saldo, activo)
+                insertar_transaccion_saldo(
+                    db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
+
             # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
             if estadoPago == 0:
-                cantidadPagarDolaresNegativo = cantidadPagarDolares - (cantidadPagarDolares * 2) 
-                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda, 
-                                        cantidadPagarDolaresNegativo, activo)
-                insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
-
-           
+                cantidadPagarDolaresNegativo = cantidadPagarDolares - \
+                    (cantidadPagarDolares * 2)
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda,
+                                                cantidadPagarDolaresNegativo, activo)
+                insertar_transaccion_saldo(
+                    db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
 
         except SQLAlchemyError as e:
             db_session.rollback()
@@ -616,12 +590,10 @@ def añadir_pago(id_cliente):
             db_session.rollback()
             print(f"Error: {e}")
             return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
-        
+
         db_session.commit()
 
         return redirect(url_for('añadir_pago', id_cliente=id_cliente))
-    
-    
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
@@ -629,27 +601,17 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-
-
     # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
-
     fecha_actual = datetime.now()
 
-    monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, fecha_actual)
-    
-        
-
-
-
-
-
+    monto_pagoEspecial = obtener_pagoEspecial(
+        db_session, id_cliente, fecha_actual)
 
     # Procesos para las sesiones de los filtros de los pagos
     años_pagos = obtener_años_pagos(db_session, id_cliente, activo)
-
 
     pagos = []
 
@@ -657,26 +619,26 @@ def añadir_pago(id_cliente):
         # Convertir los elementos de años_pagos a enteros
         años_pagos_verificar = [int(año[0]) for año in años_pagos]
 
-            # Luego validamos si está en sesión el año de los pagos de ese contrato
+        # Luego validamos si está en sesión el año de los pagos de ese contrato
         if session["año_seleccionado"] in años_pagos_verificar:
-            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(session.get("año_seleccionado"))
-            print(fecha_formateadaInicio, fecha_formateadaFin)
-            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio, añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                session.get("año_seleccionado"))
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
 
         else:
-            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(años_pagos[0][0])
-            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio, añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                años_pagos[0][0])
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
     else:
         pagos = []
-
-
-
 
     print(monto_pagoEspecial)
     formulario_añadir_pago = {
         "datos_cliente": pagos_cliente,
         "monto_pagoEspecial": monto_pagoEspecial,
-        "pagos" : pagos,
+        "pagos": pagos,
         "años_pagos": años_pagos,
         "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
     }
@@ -684,8 +646,70 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
+@app.route('/imprimir_pago', methods=['POST'])
+def imprimir_pago():
+    try:
+        # data = request.get_json()
+        # if not data:
+        #     return jsonify({"error": "No se está recibiendo ninguna información"}), 400
+
+        # id_cliente = data.get('id_cliente')
+        # fecha_inicio = data.get('fecha_inicio')
+        # fecha_fin = data.get('fecha_fin')
+
+        
+        id_cliente = '9'
+        fecha_inicio = '2024-01-01'
+        fecha_fin = '2024-12-31'
+
+        if not all([id_cliente, fecha_inicio, fecha_fin]):
+            return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
+        
+        datos_pago = {
+            'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
+            'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
+                                   añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
+        }
 
 
+
+        salida_html = render_template('pagos/imprimir_pago_template.html', **datos_pago)
+
+        print(salida_html)
+
+        return jsonify({salida_html}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/PruebaImprimir_pago', methods=['GET', 'POST'])
+def PruebaImprimir_pago():
+
+        # data = request.get_json()
+        # if not data:
+        #     return jsonify({"error": "No se está recibiendo ninguna información"}), 400
+
+        # id_cliente = data.get('id_cliente')
+        # fecha_inicio = data.get('fecha_inicio')
+        # fecha_fin = data.get('fecha_fin')
+
+        
+        id_cliente = '9'
+        fecha_inicio = '2024-01-01'
+        fecha_fin = '2024-12-31'
+
+        if not all([id_cliente, fecha_inicio, fecha_fin]):
+            return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
+        
+        datos_pago = {
+            'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
+            'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
+                                   añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
+            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal),
+        }
+
+        return render_template('pagos/imprimir_pago_template.html', **datos_pago)
 
 
 
@@ -700,7 +724,7 @@ def eliminar_pago():
         # Obtener el estado del pago para saber si el pago está pagado o no
         estado_pago = int(obtener_estado_pago(db_session, id_pagos))
 
-        #Eliminamos el pago mediante un proceso de eliminación en la función
+        # Eliminamos el pago mediante un proceso de eliminación en la función
         eliminar_pago_idPagos(db_session, id_pagos, estado_pago)
         db_session.commit()
         return jsonify({'message': 'Pago eliminado'}), 200
@@ -718,6 +742,7 @@ def eliminar_pago():
     finally:
         db_session.close()
 
+
 @app.route('/informacion_pagoEspecifico', methods=['POST'])
 def informacion_pagoEspecifico():
     try:
@@ -731,12 +756,12 @@ def informacion_pagoEspecifico():
         db_session.rollback()
         print(f"Error: {e}")
         return jsonify({'error': f'Error en la base de datos: {str(e)}'}), 500
-    
+
     except Exception as e:
         db_session.rollback()
         print(f"Error: {e}")
         return jsonify({'error': f'Error desconocido: {str(e)}'}), 500
-    
+
     finally:
         db_session.close()
 
@@ -744,32 +769,21 @@ def informacion_pagoEspecifico():
 @app.route('/verificar_pago_quincenal', methods=['POST'])
 def verificar_pago_quincenal():
 
-
     data = request.get_json()
     data_anadida = data.get('data')
 
-    
     id_cliente = data_anadida.get('id_cliente')
     fecha = data_anadida.get('fecha_a_pagar')
 
     monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, fecha)
 
-    
-
-    
-
-
     return jsonify({"monto_pagoEspecial": monto_pagoEspecial}), 200
-
-
-
 
 
 @app.route('/prueba_extraer_plata', methods=['GET', 'POST'])
 def prueba_extraer_plata():
 
     dolar = obtener_tasa_cambio_oficial()
-
 
     return 'Si entró!'
 
@@ -792,7 +806,6 @@ def busqueda_capital(nombres):
 
     result = db_session.execute(query, {"nombres": nombres}).fetchone()
 
-
     return result
 
 
@@ -801,9 +814,8 @@ def busqueda_capital(nombres):
 def obtener_capital():
     if request.method == 'POST':
         data = request.json
-    
+
         nombres = data['person']
-    
 
         try:
             result = busqueda_capital(nombres)
