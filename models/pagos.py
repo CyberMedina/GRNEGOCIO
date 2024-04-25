@@ -317,7 +317,7 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
         db_session.close()
 
 
-def pagos_por_contrato(db_session, id_cliente, año, estado_contrato, estado_detalle_pago):
+def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
     try:
         query = text(""" SELECT 
     p.id_pagos,
@@ -346,12 +346,15 @@ JOIN
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
-    p.id_cliente = :id_cliente AND YEAR(p.fecha_pago) = :año AND c.estado = :estado_contrato AND dp.estado = :estado_detalle_pago
+    p.id_cliente = :id_cliente 
+    AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
+    AND c.estado = :estado_contrato 
+    AND dp.estado = :estado_detalle_pago
 ORDER BY 
     p.fecha_pago, p.id_pagos ASC;
 """)
 
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'año': año,
+        result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
                                     'estado_contrato': estado_contrato, "estado_detalle_pago": estado_detalle_pago}).fetchall()
         return result
 

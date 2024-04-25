@@ -659,9 +659,13 @@ def añadir_pago(id_cliente):
 
             # Luego validamos si está en sesión el año de los pagos de ese contrato
         if session["año_seleccionado"] in años_pagos_verificar:
-            pagos = pagos_por_contrato(db_session, id_cliente, año=session.get("año_seleccionado"), estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(session.get("año_seleccionado"))
+            print(fecha_formateadaInicio, fecha_formateadaFin)
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio, añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+
         else:
-            pagos = pagos_por_contrato(db_session, id_cliente, año=años_pagos[0][0], estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(años_pagos[0][0])
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio, añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
     else:
         pagos = []
 

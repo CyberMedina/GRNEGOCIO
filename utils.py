@@ -178,3 +178,11 @@ def obtener_quincenaActual_letras(date):
     # Retornar la quincena, el mes y el año como una tupla
     return quincena, mes, anio
 
+def obtener_fechaIncioYFin_con_año(año):
+    # Obtener la fecha de inicio y fin de la quincena
+    fecha_inicio = f"{año}-01-01"
+    fecha_fin = f"{año}-12-31"
+
+    return fecha_inicio, fecha_fin
+
+
