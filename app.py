@@ -708,7 +708,8 @@ def PruebaImprimir_pago():
         
         suma_saldo = transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_totalSaldo, fecha_fin_totalSaldo, activo, monedaOriginal, consulta_sumatoria_total)
 
-
+        quincena, mes, anio = obtener_quincenaActual_letras(fecha_fin_totalSaldo)
+        fecha_fin_totalSaldoFormateado = f"{quincena} quincena de {mes} del {anio}"
 
         datos_pago = {
             'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
@@ -716,7 +717,7 @@ def PruebaImprimir_pago():
                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
             'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_QUEES, fecha_fin, activo, monedaOriginal, consulta_normal),
             'suma_saldo' : suma_saldo,
-            'fecha_saldo_inicial': fecha_fin_totalSaldo,
+            'fecha_saldo_inicial': fecha_fin_totalSaldo + fecha_fin_totalSaldoFormateado,
             'saldo_pendiente' : validar_existencia_saldo_frontEnd(db_session, id_cliente),
         }
 

@@ -166,6 +166,10 @@ def convertir_string_a_decimal(input_str):
 
 
 def obtener_quincenaActual_letras(date):
+    # Si la entrada es una cadena, convertirla a datetime
+    if isinstance(date, str):
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+
     # Obtener el mes y el año de la fecha
     mes = calendar.month_name[date.month]
     anio = date.year
@@ -180,9 +184,20 @@ def obtener_quincenaActual_letras(date):
     return quincena, mes, anio
 
 def obtener_fechaIncioYFin_con_año(año):
-    # Obtener la fecha de inicio y fin de la quincena
-    fecha_inicio = f"{año}-01-01"
-    fecha_fin = f"{año}-12-31"
+    # Verificar si el año es un entero
+    if isinstance(año, int):
+        # Crear un objeto datetime con el año
+        año = datetime.datetime(año, 1, 1)
+    elif isinstance(año, str):
+        # Si la entrada es una cadena, convertirla a datetime
+        año = datetime.datetime.strptime(año, "%Y")
+    else:
+        # Si el tipo de dato no es ni int ni str, mostrar un mensaje de error
+        raise ValueError("El año debe ser un entero o una cadena en formato 'YYYY'.")
+
+    # Obtener la fecha de inicio y fin del año
+    fecha_inicio = datetime.datetime(año.year, 1, 1)
+    fecha_fin = datetime.datetime(año.year, 12, 31)
 
     return fecha_inicio, fecha_fin
 
