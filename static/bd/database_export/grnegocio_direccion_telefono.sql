@@ -39,7 +39,7 @@ CREATE TABLE `direccion_telefono` (
 
 LOCK TABLES `direccion_telefono` WRITE;
 /*!40000 ALTER TABLE `direccion_telefono` DISABLE KEYS */;
-INSERT INTO `direccion_telefono` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1);
+INSERT INTO `direccion_telefono` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1),(13,13,1),(14,14,1);
 /*!40000 ALTER TABLE `direccion_telefono` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:42
+-- Dump completed on 2024-04-27 16:18:20

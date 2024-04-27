@@ -44,6 +44,7 @@ CREATE TABLE `transacciones_saldos` (
 
 LOCK TABLES `transacciones_saldos` WRITE;
 /*!40000 ALTER TABLE `transacciones_saldos` DISABLE KEYS */;
+INSERT INTO `transacciones_saldos` VALUES (1,1,2,2,-706.13,'Disminucion','2024-04-27 15:58:01'),(2,1,4,1,-58.92,'Disminucion','2024-04-27 15:59:15'),(3,1,6,1,-20.67,'Disminucion','2024-04-27 16:01:00'),(4,1,8,1,-45.26,'Disminucion','2024-04-27 16:05:35'),(5,1,10,1,-45.26,'Disminucion','2024-04-27 16:09:49'),(6,1,11,1,-80.78,'Disminucion','2024-04-27 16:11:05'),(7,1,13,1,-61.65,'Disminucion','2024-04-27 16:11:46');
 /*!40000 ALTER TABLE `transacciones_saldos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:41
+-- Dump completed on 2024-04-27 16:18:18

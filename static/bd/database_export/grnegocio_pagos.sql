@@ -45,7 +45,7 @@ CREATE TABLE `pagos` (
 
 LOCK TABLES `pagos` WRITE;
 /*!40000 ALTER TABLE `pagos` DISABLE KEYS */;
-INSERT INTO `pagos` VALUES (1,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-01','2024-04-14 22:56:16',3),(2,5,9,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-23','2024-04-23 15:52:08',0);
+INSERT INTO `pagos` VALUES (1,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-02-17','2024-04-27 10:45:32',3),(2,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-01-31','2024-04-27 15:58:01',0),(3,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:58:46',2),(4,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:59:15',0),(5,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:00:37',2),(6,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:01:00',0),(7,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:02',2),(8,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:35',0),(9,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:35',2),(10,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:49',0),(11,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-15','2024-04-27 16:11:05',0),(12,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:25',2),(13,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:46',0);
 /*!40000 ALTER TABLE `pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:40
+-- Dump completed on 2024-04-27 16:18:19

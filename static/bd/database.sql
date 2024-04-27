@@ -200,3 +200,19 @@ JOIN cliente c ON c.id_cliente = sp.id_cliente
 WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = '11'
 
 
+
+SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes -- Se eliminó la coma aquí
+FROM transacciones_saldos ts
+INNER JOIN detalle_pagos dp ON ts.id_pagos = dp.id_pagos
+INNER JOIN pagos p ON dp.id_pagos = p.id_pagos
+INNER JOIN contrato c ON p.id_contrato = c.id_contrato
+WHERE p.id_cliente = 13
+AND p.fecha_pago BETWEEN '2024-01-01' AND '2024-12-31'
+AND c.estado = 1
+AND dp.estado = 1;
+

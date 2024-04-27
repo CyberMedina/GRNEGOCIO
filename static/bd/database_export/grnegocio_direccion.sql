@@ -38,7 +38,7 @@ CREATE TABLE `direccion` (
 
 LOCK TABLES `direccion` WRITE;
 /*!40000 ALTER TABLE `direccion` DISABLE KEYS */;
-INSERT INTO `direccion` VALUES (1,'1','Semaforos de la julio martinez 2c al norte 2c al e','Semaforos de la julio martinez 2c al norte 2c al e',1),(2,'2','El chilamate ','Semaforos de la julio martinez 2c al norte 2c al e',1),(3,'1','dafsaf','',1),(4,'1','Del 5c al Este 3 c al Oeste','',1),(5,'1','No se xd','',1),(6,'1','NO SE 2','',1),(7,'1','DUDOSA PROCEDENCIA','',1),(8,'1','El chilamate','El chilamate',1),(9,'1','En el mero san judas','',1),(10,'1','El mero San Judas también','',1),(11,'1','Del chilamate 3 cuadras arriba','',1),(12,'1','No sé jaja','',1);
+INSERT INTO `direccion` VALUES (1,'1','Semaforos de la julio martinez 2c al norte 2c al e','Semaforos de la julio martinez 2c al norte 2c al e',1),(2,'2','El chilamate ','Semaforos de la julio martinez 2c al norte 2c al e',1),(3,'1','dafsaf','',1),(4,'1','Del 5c al Este 3 c al Oeste','',1),(5,'1','No se xd','',1),(6,'1','NO SE 2','',1),(7,'1','DUDOSA PROCEDENCIA','',1),(8,'1','El chilamate','El chilamate',1),(9,'1','En el mero san judas','',1),(10,'1','El mero San Judas también','',1),(11,'1','Del chilamate 3 cuadras arriba','',1),(12,'1','No sé jaja','',1),(13,'1','Por el mercado oriental','',1),(14,'1','NO HAY','',1);
 /*!40000 ALTER TABLE `direccion` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:43
+-- Dump completed on 2024-04-27 16:18:20

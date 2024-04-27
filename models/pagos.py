@@ -403,7 +403,7 @@ AND dp.estado = :estado_detalle_pago;
                     print("primero entro acá")
                     total_cifra = row[1] - abs(suma_saldo)
                     cifra_anterior = total_cifra
-                    print(cifra_anterior)
+                    print(f"{row[1]} - {abs(suma_saldo)} = {total_cifra}")
                     primer_elemento = False
                 else:
                     print("En el segundo registro entró acá")

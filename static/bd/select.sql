@@ -289,7 +289,7 @@ JOIN
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
-    p.id_pagos = '35'
+    p.id_pagos = '1'
 
     
 
@@ -304,16 +304,17 @@ GROUP BY YEAR(p.fecha_pago)
 ORDER BY YEAR(p.fecha_pago) DESC ;
 
 SELECT
-		p.id_pagos,
+    p.id_pagos,
     p.observacion, 
     p.evidencia_pago, 
     p.fecha_pago, 
-    p.fecha_realizacion_pago, 
+    p.fecha_realizacion_pago,
+    p.estado AS estado_pago, 
     m.codigoMoneda, 
     m.nombreMoneda, 
     dp.cifraPago, 
-    dp.tasa_conversion, 
-    dp.estado,
+    dp.tasa_conversion,
+    dp.estado AS estado_detalle_pago,
     CASE 
         WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
         ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
@@ -328,7 +329,10 @@ JOIN
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
 WHERE 
-    p.id_cliente = "7" AND YEAR(p.fecha_pago) = "2024" AND c.estado = "1" AND dp.estado = "1"
+    p.id_cliente = "9" 
+    AND p.fecha_pago BETWEEN '2024-01-01' AND '2024-12-31' -- Intervalo de tiempo
+    AND c.estado = "1" 
+    AND dp.estado = "1"
 ORDER BY 
     p.fecha_pago, p.id_pagos ASC;
     

@@ -57,7 +57,7 @@ CREATE TABLE `contrato` (
 
 LOCK TABLES `contrato` WRITE;
 /*!40000 ALTER TABLE `contrato` DISABLE KEYS */;
-INSERT INTO `contrato` VALUES (1,1,1,1,'4','Yucalteca','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-14','2024-09-26',15,7.16,'2024-03-14 23:10:54',1),(2,3,2,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-22','2024-12-11',15,16.20,'2024-03-22 00:14:01',1),(3,4,3,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',500.00,1,18.00,90.00,45.00,'2024-03-22','2025-07-25',30,27.00,'2024-03-22 00:16:16',1),(4,7,4,1,'1','','<FileStorage: \'\' (\'application/octet-stream\')>',590.00,1,18.00,106.20,53.10,'2024-03-25','2024-09-28',15,21.24,'2024-03-25 16:11:34',1),(5,9,5,2,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-26','2024-11-22',15,9.00,'2024-03-26 23:26:53',1),(6,11,6,1,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-21','2024-11-22',15,35.80,'2024-03-30 23:57:42',1);
+INSERT INTO `contrato` VALUES (1,1,1,1,'4','Yucalteca','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-14','2024-09-26',15,7.16,'2024-03-14 23:10:54',1),(2,3,2,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-22','2024-12-11',15,16.20,'2024-03-22 00:14:01',1),(3,4,3,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',500.00,1,18.00,90.00,45.00,'2024-03-22','2025-07-25',30,27.00,'2024-03-22 00:16:16',1),(4,7,4,1,'1','','<FileStorage: \'\' (\'application/octet-stream\')>',590.00,1,18.00,106.20,53.10,'2024-03-25','2024-09-28',15,21.24,'2024-03-25 16:11:34',1),(5,9,5,2,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-26','2024-11-22',15,9.00,'2024-03-26 23:26:53',1),(6,11,6,1,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-21','2024-11-22',15,35.80,'2024-03-30 23:57:42',1),(7,13,7,2,'7','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',1077.00,1,15.00,161.55,80.78,'2023-02-21','2023-12-20',15,53.90,'2024-04-27 10:02:09',1);
 /*!40000 ALTER TABLE `contrato` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -70,4 +70,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:42
+-- Dump completed on 2024-04-27 16:18:20

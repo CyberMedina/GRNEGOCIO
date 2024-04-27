@@ -40,7 +40,7 @@ CREATE TABLE `persona` (
 
 LOCK TABLES `persona` WRITE;
 /*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (1,'Jhonatan','Medina',1,'001-150902-1014A','2024-03-14',1),(2,'Germán René ','Medina Mayorga ',1,'201-311045-0008S','2024-03-14',1),(3,'Matilda','Louis',1,'001-211185-003214','2024-03-18',1),(4,'Lidia Celina','Aguirre Santos',2,'201-311045-0008S','2024-03-21',1),(5,'Gloria Del Carmen','Rodriguez Canales',2,'201-311045-0008S','2024-03-22',1),(6,'Ana Gabriel','Montoya Canales',2,'201-311045-0008S','2024-03-22',1),(7,'Marlen del Rosario','Guevara Canales',2,'201-311045-0008S','2024-03-23',1),(8,'Germán René','Medina Mayorga',1,'201-311045-0008S','2024-03-25',1),(9,'Denise Nayely ','Marchena Aburto ',1,'','2024-03-25',1),(10,'Gloria Del Carmen','Sobervia',2,'201-150902-1014D','2024-03-26',1),(11,'Chihiro ','Carmona',1,'001-150902-1014A','2024-03-30',1),(12,'Muñeca','Del carmen',2,'001-150902-1013S','2024-03-30',1);
+INSERT INTO `persona` VALUES (1,'Jhonatan','Medina',1,'001-150902-1014A','2024-03-14',1),(2,'Germán René ','Medina Mayorga ',1,'201-311045-0008S','2024-03-14',1),(3,'Matilda','Louis',1,'001-211185-003214','2024-03-18',1),(4,'Lidia Celina','Aguirre Santos',2,'201-311045-0008S','2024-03-21',1),(5,'Gloria Del Carmen','Rodriguez Canales',2,'201-311045-0008S','2024-03-22',1),(6,'Ana Gabriel','Montoya Canales',2,'201-311045-0008S','2024-03-22',1),(7,'Marlen del Rosario','Guevara Canales',2,'201-311045-0008S','2024-03-23',1),(8,'Germán René','Medina Mayorga',1,'201-311045-0008S','2024-03-25',1),(9,'Denise Nayely ','Marchena Aburto ',1,'','2024-03-25',1),(10,'Gloria Del Carmen','Sobervia',2,'201-150902-1014D','2024-03-26',1),(11,'Chihiro ','Carmona',1,'001-150902-1014A','2024-03-30',1),(12,'Muñeca','Del carmen',2,'001-150902-1013S','2024-03-30',1),(13,'Juan','Ramón',1,'001-000000-0000A','1988-02-10',1),(14,'NO HAY','NO HAY',1,'001-000000-000A','2024-04-27',1);
 /*!40000 ALTER TABLE `persona` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:43
+-- Dump completed on 2024-04-27 16:18:20

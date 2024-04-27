@@ -564,14 +564,7 @@ def añadir_pago(id_cliente):
                 cantidadPagarDolares, cifra_a_pagar)
             print(
                 f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
-
-            # Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
-            if diferencia_pago_a_saldo:
-                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda,
-                                                diferencia_pago_a_saldo, activo)
-                insertar_transaccion_saldo(
-                    db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
-
+            
             # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
             if estadoPago == 0:
                 cantidadPagarDolaresNegativo = cantidadPagarDolares - \
@@ -580,6 +573,15 @@ def añadir_pago(id_cliente):
                                                 cantidadPagarDolaresNegativo, activo)
                 insertar_transaccion_saldo(
                     db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
+
+            # Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
+            elif diferencia_pago_a_saldo:
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda,
+                                                diferencia_pago_a_saldo, activo)
+                insertar_transaccion_saldo(
+                    db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
+
+
 
         except SQLAlchemyError as e:
             db_session.rollback()

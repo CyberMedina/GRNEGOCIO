@@ -42,7 +42,7 @@ CREATE TABLE `contrato_fiador` (
 
 LOCK TABLES `contrato_fiador` WRITE;
 /*!40000 ALTER TABLE `contrato_fiador` DISABLE KEYS */;
-INSERT INTO `contrato_fiador` VALUES (1,1,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,3,2,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,4,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,7,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,9,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,11,1,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',1);
+INSERT INTO `contrato_fiador` VALUES (1,1,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,3,2,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,4,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,7,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,9,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,11,1,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(7,13,1,'7','','<FileStorage: \'\' (\'application/octet-stream\')>',1);
 /*!40000 ALTER TABLE `contrato_fiador` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-23 15:55:41
+-- Dump completed on 2024-04-27 16:18:19
