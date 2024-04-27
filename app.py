@@ -1,7 +1,7 @@
 from logging import getLogger
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session, url_for, redirect
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
@@ -646,59 +646,23 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
-@app.route('/imprimir_pago', methods=['POST'])
-def imprimir_pago():
-    try:
-        # data = request.get_json()
-        # if not data:
-        #     return jsonify({"error": "No se está recibiendo ninguna información"}), 400
-
-        # id_cliente = data.get('id_cliente')
-        # fecha_inicio = data.get('fecha_inicio')
-        # fecha_fin = data.get('fecha_fin')
-
-        
-        id_cliente = '9'
-        fecha_inicio = '2024-01-01'
-        fecha_fin = '2024-12-31'
-
-        if not all([id_cliente, fecha_inicio, fecha_fin]):
-            return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
-        
-        datos_pago = {
-            'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
-            'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
-                                   añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
-        }
 
 
-
-        salida_html = render_template('pagos/imprimir_pago_template.html', **datos_pago)
-
-        print(salida_html)
-
-        return jsonify({salida_html}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-
-@app.route('/PruebaImprimir_pago', methods=['GET', 'POST'])
+@app.route('/Imprimir_pago', methods=['GET', 'POST'])
 def PruebaImprimir_pago():
 
-        # data = request.get_json()
-        # if not data:
-        #     return jsonify({"error": "No se está recibiendo ninguna información"}), 400
+        data = request.get_json()
+        print(data)
+        if not data:
+            return jsonify({"error": "No se está recibiendo ninguna información"}), 400
 
-        # id_cliente = data.get('id_cliente')
-        # fecha_inicio = data.get('fecha_inicio')
-        # fecha_fin = data.get('fecha_fin')
+        id_cliente = data.get('id_cliente')
+        fecha_inicio = data.get('fechaInicio')
+        fecha_fin = data.get('fechaFin')
 
         
-        id_cliente = '9'
-        fecha_inicio = '2024-03-01'
+
         fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
-        fecha_fin = '2024-04-30'
 
         fecha_inicio_totalSaldo = '2010-01-01'
         fecha_fin_totalSaldo = fecha_inicio
@@ -715,13 +679,15 @@ def PruebaImprimir_pago():
             'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
             'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
-            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_QUEES, fecha_fin, activo, monedaOriginal, consulta_normal),
+            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal),
             'suma_saldo' : suma_saldo,
-            'fecha_saldo_inicial': fecha_fin_totalSaldo + fecha_fin_totalSaldoFormateado,
+            'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
             'saldo_pendiente' : validar_existencia_saldo_frontEnd(db_session, id_cliente),
         }
 
-        return render_template('pagos/imprimir_pago_template.html', **datos_pago)
+        html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
+
+        return Response(html_formulario, mimetype='text/html'), 200
 
 
 
