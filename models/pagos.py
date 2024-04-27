@@ -369,7 +369,7 @@ ORDER BY
         db_session.close()
 
 
-def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta):
+def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):
     try:
         query = text("""
                      SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
@@ -391,7 +391,50 @@ AND dp.estado = :estado_detalle_pago;
                                     'estado_contrato': estado_contrato, 'estado_detalle_pago': estado_detalle_pago}).fetchall()
         
         if tipo_consulta == consulta_normal:
-            return result
+
+            result_list = []
+            cifra_anterior = 0
+            total_cifra = 0
+            primer_elemento = True
+
+
+            for row in result:
+                if primer_elemento:
+                    print("primero entro acá")
+                    total_cifra = row[1] - abs(suma_saldo)
+                    cifra_anterior = total_cifra
+                    print(cifra_anterior)
+                    primer_elemento = False
+                else:
+                    print("En el segundo registro entró acá")
+                    if row[2] == Aumento:
+                        total_cifra = cifra_anterior + abs(row[1])
+                        print(f"{cifra_anterior} + {abs(row[1])}  ")
+                        cifra_anterior = total_cifra
+                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+
+                    else:
+                        total_cifra = cifra_anterior - abs(row[1])
+                        print(f"{cifra_anterior} - {abs(row[1])} = {total_cifra}")
+                        cifra_anterior = total_cifra
+                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+                result_dict = {
+                    'id_moneda': row[0],
+                    'monto': row[1],
+                    'tipo_transaccion': row[2],
+                    'fecha_transaccion': row[3],
+                    'fecha_pago': row[4],
+                    'descripcion_quincena': row[5],
+                    'id_mes': row[6],
+                    'sumatoria': total_cifra,
+                }
+              
+                result_list.append(result_dict)
+
+
+
+
+            return result_list
         elif tipo_consulta == consulta_sumatoria_total:
             cifra_anterior = 0
             total_cifra = 0

@@ -670,18 +670,22 @@ def PruebaImprimir_pago():
         if not all([id_cliente, fecha_inicio, fecha_fin]):
             return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
         
-        suma_saldo = transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_totalSaldo, fecha_fin_totalSaldo, activo, monedaOriginal, consulta_sumatoria_total)
+        suma_saldo = transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_totalSaldo, fecha_fin_totalSaldo, activo, monedaOriginal, consulta_sumatoria_total, 0)
 
-        quincena, mes, anio = obtener_quincenaActual_letras(fecha_fin_totalSaldo)
-        fecha_fin_totalSaldoFormateado = f"{quincena} quincena de {mes} del {anio}"
+        quincenaFechaFinTs, mesFechaFinTs, anioFechaFinTs = obtener_quincenaActual_letras(fecha_fin_totalSaldo)
+        fecha_fin_totalSaldoFormateado = f"{quincenaFechaFinTs} quincena de {mesFechaFinTs} del {anioFechaFinTs}"
+
+        quincenaFechaFin, mesFechaFin, anioFechaFin = obtener_quincenaActual_letras(fecha_fin)
+        fecha_finFormateado = f"{quincenaFechaFin} quincena de {mesFechaFin} del {anioFechaFin}"
 
         datos_pago = {
             'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
             'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
-            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal),
+            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal, suma_saldo),
             'suma_saldo' : suma_saldo,
             'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
+            'fecha_saldo_final': f'{fecha_finFormateado} ({fecha_fin})',
             'saldo_pendiente' : validar_existencia_saldo_frontEnd(db_session, id_cliente),
         }
 

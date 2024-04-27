@@ -48,14 +48,14 @@ finFechaImpresion.addEventListener('change', function () {
 
 // Función para cambiar mostrar la quincena en letras en los labels de la ventana modal
 function labelMostrarQuincenaActualLetras() {
-    tiempoLetrasFinFechaImpresion.innerHTML = fechaLetras(finFechaImpresion.value);
-    tiempoLetrasInicioFechaImpresion.innerHTML = fechaLetras(inicioFechaImpresion.value);
+    tiempoLetrasFinFechaImpresion.innerHTML = fechaLetrasfuncion(finFechaImpresion.value);
+    tiempoLetrasInicioFechaImpresion.innerHTML = fechaLetrasfuncion(inicioFechaImpresion.value);
 }
 
 
 
 
-function fechaLetras(fechaPagoValue) {
+function fechaLetrasfuncion(fechaPagoValue) {
 
 
     const [year, month, day] = fechaPagoValue.split('-');
