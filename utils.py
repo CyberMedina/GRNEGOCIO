@@ -222,21 +222,7 @@ def sumar_dias(fecha_inicio, dias_a_sumar):
 
 
 # Función genérica para enviar un correo
-
-def enviar_correo(destinatario, asunto, cuerpo_html, cuerpo_texto=None):
-    """
-    Envía un correo electrónico.
-
-    Args:
-        destinatario (str): La dirección de correo electrónico del destinatario.
-        asunto (str): El asunto del correo electrónico.
-        cuerpo_html (str): El cuerpo del correo electrónico en formato HTML.
-        cuerpo_texto (str, opcional): El cuerpo del correo electrónico en formato de texto sin formato.
-    """
+def enviar_correo(destinatario, asunto, cuerpo):
     mensaje = Message(asunto, recipients=[destinatario])
-    mensaje.html = cuerpo_html
-
-    if cuerpo_texto:
-        mensaje.body = cuerpo_texto
-
+    mensaje.body = cuerpo
     mail.send(mensaje)

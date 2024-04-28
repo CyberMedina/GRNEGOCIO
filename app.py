@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response
 from flask_mail import Mail, Message
+from io import BytesIO
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
@@ -11,6 +12,7 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
 import weasyprint
+import smtplib
 
 
 # Importando desde archivos locales
@@ -664,7 +666,9 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
-
+def generar_pdf_desde_html(html):
+    htmldoc = weasyprint.HTML(string=html, base_url="")
+    return htmldoc.write_pdf()
 
 @app.route('/Imprimir_pago', methods=['GET', 'POST'])
 def PruebaImprimir_pago():
@@ -714,15 +718,18 @@ def PruebaImprimir_pago():
             print(correo_electronico)
             cuerpo = html_formulario
 
-            pdf_file = 'imprimir_pago'
+            # Genera el PDF desde tu HTML (ya lo tienes)
+            pdf_binario = generar_pdf_desde_html(html_formulario)
 
-            html = weasyprint.HTML(string=cuerpo)
+            with app.app_context():
+                mensaje = Message('Asunto del correo', recipients=[correo_electronico])
+                mensaje.body = 'Cuerpo del correo'
 
-            html.write_pdf(target=pdf_file)
+                # Adjuntar el PDF en formato binario
+                mensaje.attach(filename='nombre_archivo.pdf', content_type='application/pdf', data=pdf_binario)
 
-
-
-            enviar_correo(correo_electronico, asunto_envio_historial, pdf_file)
+                # Enviar el correo electrónico
+                mail.send(mensaje)
 
 
         
