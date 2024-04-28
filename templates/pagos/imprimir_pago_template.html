@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pruebita</title>
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0 auto;
@@ -12,32 +18,38 @@
             padding: 30px;
             line-height: 1.6;
         }
-        h1, h3, h4 {
+
+        h1,
+        h3,
+        h4 {
             color: #333;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #999;
             padding: 0.5rem;
             text-align: left;
         }
     </style>
 </head>
+
 <body>
     {% for dataCliente in dataPagos_cliente %}
     <h1>{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h1>
     <h4>Pago quincenal: {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</h4>
     <h4>Fecha solicitada: {{ fecha_saldo_inicial }} a la {{ fecha_saldo_final }} </h4>
-    <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }} </h4>
+    <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo
+        }} </h4>
     {% endfor %}
 
-    <br>
-    <br>
     <h3>Historial de pagos</h3>
-    <table>
+    <table style="page-break-inside:avoid">
         <tr>
             <th>Fecha</th>
             <th>Concepto</th>
@@ -49,20 +61,20 @@
             {% set estado = '' %}
             {% set estilo = '' %}
             {% if dataPago.estado_pago == 0 %}
-                {% set estado = 'No pagó' %}
-                {% set estilo = 'color: red;' %}
+            {% set estado = 'No pagó' %}
+            {% set estilo = 'color: red;' %}
             {% elif dataPago.estado_pago == 1 %}
-                {% set estado = 'Pago quincenal' %}
-                {% set estilo = 'color: green;' %}
+            {% set estado = 'Pago quincenal' %}
+            {% set estilo = 'color: green;' %}
             {% elif dataPago.estado_pago == 2 %}
-                {% set estado = 'Pago incompleto' %}
-                {% set estilo = 'color: yellow;' %}
+            {% set estado = 'Pago incompleto' %}
+            {% set estilo = 'color: yellow;' %}
             {% elif dataPago.estado_pago == 3 %}
-                {% set estado = 'Primer pago' %}
-                {% set estilo = 'color: green;' %}
+            {% set estado = 'Primer pago' %}
+            {% set estilo = 'color: green;' %}
             {% elif dataPago.estado_pago == 4 %}
-                {% set estado = 'Pago de más' %}
-                {% set estilo = 'color: green;' %}
+            {% set estado = 'Pago de más' %}
+            {% set estilo = 'color: green;' %}
             {% endif %}
             <td>{{ estado }}</td>
             <td style="{{ estilo }}">{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</td>
@@ -74,7 +86,7 @@
     <br>
     <h3>Sumatorias de saldos</h3>
 
-    <table>
+    <table style="page-break-inside:avoid">
         <tr>
             <th>Fecha</th>
             <th>Descripción</th>
@@ -103,4 +115,5 @@
             <td>{{ saldo_pendiente.cifraSaldo }}</td>
         </tr>
 </body>
+
 </html>

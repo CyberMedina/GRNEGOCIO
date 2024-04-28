@@ -700,8 +700,10 @@ def PruebaImprimir_pago():
         quincenaFechaFin, mesFechaFin, anioFechaFin = obtener_quincenaActual_letras(fecha_fin)
         fecha_finFormateado = f"{quincenaFechaFin} quincena de {mesFechaFin} del {anioFechaFin}"
 
+        dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+
         datos_pago = {
-            'dataPagos_cliente' : datos_pagov2(id_cliente, db_session),
+            'dataPagos_cliente' : dataPagos_cliente,
             'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
             'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal, suma_saldo),
@@ -722,11 +724,12 @@ def PruebaImprimir_pago():
             pdf_binario = generar_pdf_desde_html(html_formulario)
 
             with app.app_context():
-                mensaje = Message('Asunto del correo', recipients=[correo_electronico])
-                mensaje.body = 'Cuerpo del correo'
+                print(dataPagos_cliente)
+                mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
+                mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
                 # Adjuntar el PDF en formato binario
-                mensaje.attach(filename='nombre_archivo.pdf', content_type='application/pdf', data=pdf_binario)
+                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
 
                 # Enviar el correo electrónico
                 mail.send(mensaje)
