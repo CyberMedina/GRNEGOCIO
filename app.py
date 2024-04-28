@@ -688,7 +688,7 @@ def PruebaImprimir_pago():
             'suma_saldo' : suma_saldo,
             'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
             'fecha_saldo_final': f'{fecha_finFormateado} ({fecha_fin})',
-            'saldo_pendiente' : validar_existencia_saldo_frontEnd(db_session, id_cliente),
+            'saldo_pendiente' : validar_existencia_saldo(db_session, id_cliente),
         }
 
         html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)

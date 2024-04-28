@@ -31,7 +31,7 @@
     <h1>{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h1>
     <h4>Pago quincenal: {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</h4>
     <h4>Fecha solicitada: {{ fecha_saldo_inicial }} a la {{ fecha_saldo_final }} </h4>
-    <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.cifraSaldo }} </h4>
+    <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }} </h4>
     {% endfor %}
 
     <br>
@@ -100,7 +100,7 @@
             <td>Saldo total a la {{ fecha_saldo_final }}</td>
             <td></td>
             <td></td>
-            <td> - {{ saldo_pendiente.cifraSaldo }}</td>
+            <td>{{ saldo_pendiente.cifraSaldo }}</td>
         </tr>
 </body>
 </html>

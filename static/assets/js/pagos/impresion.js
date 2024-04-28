@@ -131,3 +131,17 @@ function enviar_datos_imprimir_backend() {
     });
 
 }
+
+
+function enviarImpresionTelefono() {
+
+    let checkBoxEnvioCorreo = document.getElementById('checkBoxEnvioCorreo');
+    let divSelectcomboCorreoElectronicoImpresion = document.getElementById('divSelectcomboCorreoElectronicoImpresion');
+    let comboCorreoElectronicoImpresion = document.getElementById('comboCorreoElectronicoImpresion');
+    if (checkBoxEnvioCorreo.checked) {
+      divSelectcomboCorreoElectronicoImpresion.hidden = false;
+    } else {
+      divSelectcomboCorreoElectronicoImpresion.hidden = true;
+    }
+  }
+  

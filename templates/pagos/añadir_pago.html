@@ -150,14 +150,15 @@
 
 
 
-                            
-                            <a href="#Impirmir_historial" class="main-btn primary-btn btn-hover btn-sm mt-3" onclick="abrirModalOpcionImprimir()">
+
+                            <a href="#Impirmir_historial" class="main-btn primary-btn btn-hover btn-sm mt-3"
+                                onclick="abrirModalOpcionImprimir()">
                                 <i class="lni lni-printer mr-5"></i> Imprimir Historial
                             </a>
 
 
 
-<!-- 
+                            <!-- 
                             <a href="/PruebaImprimir_pago" target="_blank"
                                 class="main-btn primary-btn btn-hover btn-sm mt-3">
                                 <i class="lni lni-printer mr-5"></i> Imprimir Historial
@@ -671,10 +672,20 @@
 
 
                             <div class="form-check checkbox-style checkbox-success mb-20">
-                                <input class="form-check-input" type="checkbox" value="0" id="checkBoxNoPago"
-                                    name="checkBoxNoPago" />
-                                <label class="form-check-label" for="checkBoxNoPago">
-                                    Enviar impresión a telefono</label>
+                                <div class="select-style-1">
+                                    <input class="form-check-input" type="checkbox" value="0" id="checkBoxEnvioCorreo"
+                                        name="checkBoxEnvioCorreo" onclick="enviarImpresionTelefono()" />
+                                    <label class="form-check-label" for="checkBoxNoPago">
+                                        Enviar impresión al correo electronico</label>
+                                    <div class="select-position" id="divSelectcomboCorreoElectronicoImpresion" hidden>
+                                        <select class="light-bg" required name="comboCorreoElectronicoImpresion"
+                                            id="comboCorreoElectronicoImpresion">
+                                            <option value="medinajhonatan02@gmail.com">medinajhonatan02@gmail.com</option selected>
+                                            <option value="germanmayorga58@gmail.com">germanmayorga58@gmail.com</option>
+
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         </p>
@@ -683,7 +694,8 @@
                         <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
                             Cancelar
                         </button>
-                        <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1" onclick="enviar_datos_imprimir_backend()">
+                        <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1"
+                            onclick="enviar_datos_imprimir_backend()">
                             Ir a imprimir
                         </button>
                     </div>
