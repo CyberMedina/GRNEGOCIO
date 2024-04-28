@@ -54,3 +54,6 @@ no_existe_registro = 0
 # Constantes para los tipos de consulta FUNCION transacciones_saldo_contrato
 consulta_normal = 1
 consulta_sumatoria_total = 2
+
+# Constantes para los emails
+asunto_envio_historial = "Historial de pagos y de saldo"

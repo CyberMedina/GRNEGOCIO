@@ -2,6 +2,7 @@ from logging import getLogger
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response
+from flask_mail import Mail, Message
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
@@ -9,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
+import weasyprint
 
 
 # Importando desde archivos locales
@@ -19,12 +21,26 @@ from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
 from flask_cors import CORS
+from serverEmail import mail
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
 CORS(app)
 
 # Si no hay un número seleccionado en sesión, simplemente se asigna 1
+
+
+
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
+app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL_USER')
+
+mail.init_app(app)
+
 
 
 def initialize_session_variable(key, default_value):
@@ -662,7 +678,7 @@ def PruebaImprimir_pago():
         fecha_inicio = data.get('fechaInicio')
         fecha_fin = data.get('fechaFin')
 
-        
+
 
         fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
 
@@ -692,6 +708,24 @@ def PruebaImprimir_pago():
         }
 
         html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
+
+        if data.get('checkBoxEnvioCorreo'):
+            correo_electronico = data.get('correoElectronico')
+            print(correo_electronico)
+            cuerpo = html_formulario
+
+            pdf_file = 'imprimir_pago'
+
+            html = weasyprint.HTML(string=cuerpo)
+
+            html.write_pdf(target=pdf_file)
+
+
+
+            enviar_correo(correo_electronico, asunto_envio_historial, pdf_file)
+
+
+        
 
         return Response(html_formulario, mimetype='text/html'), 200
 

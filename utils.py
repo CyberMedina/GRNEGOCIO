@@ -1,3 +1,5 @@
+from serverEmail import mail
+from flask_mail import Message
 from decimal import Decimal
 import re
 from db import *
@@ -5,6 +7,7 @@ from bs4 import BeautifulSoup
 import requests
 import calendar
 import locale
+
 # Cambiar la configuración regional a español
 locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
 
@@ -15,6 +18,9 @@ from selenium.webdriver.chrome.options import Options
 import random
 import time
 import datetime
+
+
+
 
 def ObtenerIDTabla(db_session, id_tabla, tabla):
     query = text(f'SELECT MAX({id_tabla}) AS id FROM {tabla}')
@@ -213,3 +219,24 @@ def sumar_dias(fecha_inicio, dias_a_sumar):
     fecha_fin_totalSaldo = fecha_fin_obj.strftime('%Y-%m-%d')
 
     return fecha_fin_totalSaldo
+
+
+# Función genérica para enviar un correo
+
+def enviar_correo(destinatario, asunto, cuerpo_html, cuerpo_texto=None):
+    """
+    Envía un correo electrónico.
+
+    Args:
+        destinatario (str): La dirección de correo electrónico del destinatario.
+        asunto (str): El asunto del correo electrónico.
+        cuerpo_html (str): El cuerpo del correo electrónico en formato HTML.
+        cuerpo_texto (str, opcional): El cuerpo del correo electrónico en formato de texto sin formato.
+    """
+    mensaje = Message(asunto, recipients=[destinatario])
+    mensaje.html = cuerpo_html
+
+    if cuerpo_texto:
+        mensaje.body = cuerpo_texto
+
+    mail.send(mensaje)

@@ -98,14 +98,24 @@ function enviar_datos_imprimir_backend() {
     let formId_cliente = document.getElementById('formId_cliente');
     let id_cliente = formId_cliente.value;
 
+    let checkBoxEnvioCorreo = document.getElementById('checkBoxEnvioCorreo');
+    let comboCorreoElectronicoImpresion = document.getElementById('comboCorreoElectronicoImpresion');
+
     let datos = {
         fechaInicio: fechaInicio,
         fechaFin: fechaFin,
         id_cliente: id_cliente
     };
 
+    if (checkBoxEnvioCorreo.checked) {
+        if (comboCorreoElectronicoImpresion.value === "") {
+            alert('Debe seleccionar un correo electrónico para enviar el pago');
+            return;
+        }
 
-
+        datos.checkBoxEnvioCorreo = checkBoxEnvioCorreo.checked;
+        datos.correoElectronico = comboCorreoElectronicoImpresion.value;
+    }
 
     fetch('/Imprimir_pago', {
     method: 'POST',
