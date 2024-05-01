@@ -3,13 +3,15 @@ from utils import *
 from models.constantes import *
 from datetime import datetime, timedelta
 from decimal import Decimal
+import timeit
 
 
 def listar_cliesntesPagos(db_session):
     try:
-        query = text("""SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos
+        query = text("""SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos, c.id_contrato, c.pagoMensual, c.pagoQuincenal
 FROM cliente cl
 JOIN persona p ON cl.id_persona = p.id_persona
+JOIN contrato c ON cl.id_cliente = c.id_cliente
 WHERE cl.estado = '1' AND
 cl.id_tipoCliente = '2' OR
 cl.id_tipoCliente = '3';
@@ -1238,6 +1240,8 @@ def insertar_transaccion_saldo(db_session, id_saldos_pagos, id_pagos, id_moneda,
 
 def obtener_pagoEspecial(db_session, id_cliente, fecha):
 
+    
+
     if isinstance(fecha, str):
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
 
@@ -1308,6 +1312,153 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
             }
 
     return monto_pago
+
+
+def obtener_pagoEspecial(db_session, id_cliente, fecha):
+
+    if isinstance(fecha, str):
+        fecha = datetime.strptime(fecha, '%Y-%m-%d')
+    print(fecha)
+
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    if num_pagos[0] == 0:
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+
+        # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
+        monto_pago = {
+            'cifra': monto_pagoEspecial,
+            'estado': 0,
+            'descripcion': 'Primer pago'
+        }
+    else:
+        # si hay más de un pago
+
+        dia_mes = fecha.day
+
+        inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+        existencia_primer_pago = validacion_primer_pago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        sumPagosQuincena = validacion_fechaPago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(
+            fecha)
+
+        # Validamos que el cliente haya pagado el monto total de la quincena en su primer pago
+        if existencia_primer_pago:
+            monto_pagoEspecial = '0.00'
+            monto_pago = {
+                'cifra': monto_pagoEspecial,
+                'estado': 1,
+                'descripcion': f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
+            }
+        # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
+        elif sumPagosQuincena:
+            if sumPagosQuincena >= pagos_cliente[0]['pagoQuincenal']:
+                monto_pagoEspecial = '0.00'
+                monto_pago = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': 3,
+                    'descripcion': 'Ya se ha pagado el monto total de la quincena'
+                }
+            else:
+                monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal'] - \
+                    sumPagosQuincena
+                monto_pago = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': 1,
+                    'descripcion': f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
+                }
+        # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
+        else:
+            monto_pagoEspecial = pagos_cliente[0]['pagoQuincenal']
+            monto_pago = {
+                'cifra': monto_pagoEspecial,
+                'estado': 2,
+                'descripcion': 'Pago quincenal'
+            }
+
+    return monto_pago
+
+
+
+def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_quincenal, pago_mensual, fecha):
+
+    if isinstance(fecha, str):
+        fecha = datetime.strptime(fecha, '%Y-%m-%d')
+    print(fecha)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+    if num_pagos[0] == 0:
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+
+        # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
+        estadoPagoCorte = {
+            'cifra': monto_pagoEspecial,
+            'estado': no_hay_pago,
+            'descripcion': 'Primer pago'
+        }
+    else:
+        # si hay más de un pago
+
+        dia_mes = fecha.day
+
+        inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+        existencia_primer_pago = validacion_primer_pago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        sumPagosQuincena = validacion_fechaPago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(
+            fecha)
+
+        # Validamos que el cliente haya pagado el monto total de la quincena en su primer pago
+        if existencia_primer_pago:
+            monto_pagoEspecial = '0.00'
+            estadoPagoCorte = {
+                'cifra': monto_pagoEspecial,
+                'estado': pago_completo,
+                'descripcion': f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
+            }
+        # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
+        elif sumPagosQuincena:
+            if sumPagosQuincena >= pago_quincenal:
+                monto_pagoEspecial = '0.00'
+                estadoPagoCorte = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': pago_completo,
+                    'descripcion': 'Ya se ha pagado el monto total de la quincena'
+                }
+            else:
+                monto_pagoEspecial = pago_quincenal - \
+                    sumPagosQuincena
+                estadoPagoCorte = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': pago_incompleto,
+                    'descripcion': f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
+                }
+        # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
+        else:
+            monto_pagoEspecial = pago_quincenal
+            estadoPagoCorte = {
+                'cifra': monto_pagoEspecial,
+                'estado': no_hay_pago,
+                'descripcion': 'Pago quincenal'
+            }
+
+    return estadoPagoCorte
 
 
 def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):

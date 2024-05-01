@@ -510,13 +510,39 @@ def datos_prestamoV1():
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
 def listado_clientes_pagos():
 
+
+
+
+    listado_clientesPagosDict = []
+
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+    for listado in listado_clientesPagos:
+        clientePagoDict = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6]
+        }
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        clientePagoDict.update(PagosEstadosCortes)
+        listado_clientesPagosDict.append(clientePagoDict)
+
     # Obtenemos la lista de clientes
+    print(listado_clientesPagosDict)
+
 
     formulario_clientes_pagos = {
-        "listado_clientes_pagos": listar_cliesntesPagos(db_session),
+        "listado_clientes_pagos": listado_clientesPagosDict
     }
 
     return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
+
+
+
 
 
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
@@ -661,6 +687,7 @@ def añadir_pago(id_cliente):
         "pagos": pagos,
         "años_pagos": años_pagos,
         "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
+        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
     }
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)

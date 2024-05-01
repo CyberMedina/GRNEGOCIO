@@ -66,7 +66,15 @@
                                 <div class="col-md-8 mb-5">
                                     <div class="row">
                                         <div class="col-12">
-                                            <span class="status-btn close-btn mb-2">No ha pagado</span>
+                                            {% if estado_pago_corte.estado == 0 %}
+                                            <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No ha pagado</span>
+                                            {% elif estado_pago_corte.estado == 1 %}
+                                            <span class="main-badge success-badge rounded-full mb-2 fs-6 p-3">Al día</span>
+                                            {% elif estado_pago_corte.estado == 2 %}
+                                            <span class="main-badge warning-badge rounded-full mb-2 fs-6 p-3">Pago incompleto</span>
+                                            {% elif estado_pago_corte.estado == 3 %}
+                                            <span class="text-danger">No pagó</span>
+                                            {% endif %}
                                             <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                                     dataCliente.nombre_tipoCliente }}</span></p>
                                             <a id="btnMostrarDetallesCliente" href="#0"

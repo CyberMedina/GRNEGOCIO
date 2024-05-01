@@ -90,7 +90,15 @@
                                     <tr>
                                         <td class="min-width">
                                             <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
+                                            {% if cliente.estado == 1 %}
+                                            <span class="status-btn close-btn">Al día</span>
+                                            {% elif cliente.estado == 2 %}
                                             <span class="status-btn close-btn">No ha pagado</span>
+                                            {% elif cliente.estado == 3 %}
+                                            <span class="status-btn close-btn">No pagó</span>
+                                            {% elif cliente.estado == 4 %}
+                                            {% endif %}
+
                                         </td>
                                         <td class="min-width">
                                             <div class="action">

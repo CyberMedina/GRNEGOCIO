@@ -57,3 +57,4 @@ consulta_sumatoria_total = 2
 
 # Constantes para los emails
 asunto_envio_historial = "Historial de pagos y de saldo"
+

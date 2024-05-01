@@ -71,8 +71,18 @@
                                     {% for cliente in listado_clientes_pagos %}
                                     <tr>
                                         <td>
-                                            <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
-                                            <span class="text-danger">No ha pagado</span>
+                                            <p class="text-bold">{{ cliente.nombres }} {{ cliente.apellidos }}</p>
+
+                                            {% if cliente.estado == 0 %}
+                                            <span class="main-badge danger-badge rounded-full">No ha pagado</span>
+                                            {% elif cliente.estado == 1 %}
+                                            <span class="main-badge success-badge rounded-full">Al día</span>
+                                            {% elif cliente.estado == 2 %}
+                                            <span class="main-badge warning-badge rounded-full">Pago incompleto</span>
+                                            {% elif cliente.estado == 3 %}
+                                            <span class="text-danger">No pagó</span>
+                                            {% endif %}
+
                                         </td>
                                         <td>
                                             {% if cliente.id_tipoCliente == 2 %}
