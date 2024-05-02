@@ -1,0 +1,1436 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Añadir un préstamo{% endblock %}
+
+{% block customCSS %}
+<style>
+  .inactive {
+    color: transparent;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  .step-container {
+    position: relative;
+    text-align: center;
+    transform: translateY(-43%);
+  }
+
+  .step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #007bff;
+    line-height: 30px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+    /* Added cursor pointer */
+  }
+
+  .step-line {
+    position: absolute;
+    top: 16px;
+    left: 50px;
+    width: calc(100% - 100px);
+    height: 2px;
+    background-color: #007bff;
+    z-index: -1;
+  }
+
+  #multi-step-form {
+    overflow-x: hidden;
+  }
+</style>
+
+{% endblock %}
+
+{% block body %}
+<!-- ========== section start ========== -->
+<section class="table-components">
+  <div class="container-fluid">
+    <!-- ========== title-wrapper start ========== -->
+    <div class="title-wrapper pt-30">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="title">
+            <h2>Contrato de préstamo</h2>
+          </div>
+        </div>
+        <!-- end col -->
+        <div class="col-md-6">
+          <div class="breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <a href="#0">Dashboard</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  Préstamos
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+        <!-- end col -->
+      </div>
+      <!-- end row -->
+    </div>
+    <!-- ========== title-wrapper end ========== -->
+
+    <!-- ========== tables-wrapper start ========== -->
+    <div class="tables-wrapper">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card-style-step mb-30">
+            <div class="title">
+              <div class="container-fluid">
+                <div id="container" class="container mt-5">
+                  <div class="progress px-1" style="height: 3px;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0"
+                      aria-valuemax="100"></div>
+                  </div>
+                  <div class="step-container d-flex justify-content-between">
+                    <div class="step-circle" onclick="displayStep(1)">1</div>
+                    <div class="step-circle" onclick="displayStep(2)">2</div>
+                    <div class="step-circle" onclick="displayStep(3)">3</div>
+                    <div class="step-circle" onclick="displayStep(4)">4</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-style mb-30">
+            <div class="title">
+              <div class="container-fluid"></div>
+
+
+
+
+
+              <form action="/anadir_prestamo/{{ datos_cliente.id_cliente }}" method="POST" enctype="multipart/form-data"
+                id="multi-step-form">
+                <div class="row step step-1">
+                  <h3 class="mb-5 text-center">
+                    Verificación de datos personales
+                  </h3>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Nombre(s)*</label>
+                      <input type="text" value="{{ datos_cliente.nombres }}" placeholder="Nombres" name="nombres"
+                        id="nombres" required />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Apellido(s)*</label>
+                      <input type="text" value="{{ datos_cliente.apellidos }}" placeholder="Apellidos" name="apellidos"
+                        id="apellidos" required />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Cédula</label>
+                      <input type="text" value="{{ datos_cliente.cedula }}" placeholder="xxx-xxxxxx-xxxxx" name="cedula"
+                        id="cedula" />
+                      <span class="icon"><i class="fa-regular fa-id-card"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-1">
+                      <label>Fecha de nacimiento*</label>
+                      <input type="date" value="{{ datos_cliente.fecha_nacimiento }}" required name="fechaNac"
+                        id="fechaNac" />
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Género*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="genero" id="genero">
+                          <option value="0">Seleccione el género</option>
+                          <option value="1" {% if datos_cliente.genero==1 %}selected{% endif %}>Masculino</option>
+                          <option value="2" {% if datos_cliente.genero==2 %}selected{% endif %}>Femenino</option>
+                          <option value="3" {% if datos_cliente.genero==3 %}selected{% endif %}>Otro...</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <!-- end col -->
+                  <h5 class="text-bold text-center">Datos de contacto</h5>
+                  <div class="input-style-3">
+                    <label>Dirección*</label>
+                    <textarea placeholder="Dirección" rows="5" name="direccion"
+                      id="direccion">{{ datos_cliente.direccion_escrita }}</textarea>
+                    <input type="text" value="" hidden name="direccion_id" id="direccion_id">
+                    <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                  </div>
+                  <!-- end textarea -->
+                  <!-- end col -->
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Dirección vía enlace Google Maps</label>
+                      <input value="{{ datos_cliente.direccion_mapa }}" type="text"
+                        placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMaps"
+                        id="direccionMaps" />
+                      <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                    </div>
+                  </div>
+                  <div class="select-style-1">
+                    <label>Nombre de esa dirección</label>
+                    <div class="select-position">
+                      <select class="light-bg" required name="nombreDireccion" id="nombreDireccion">
+                        <option value="0">Seleccione el nombre</option>
+                        <option value="1" {% if datos_cliente.nombre_direccion=='1' %}selected{% endif %}>Casa
+                        </option>
+                        <option value="2" {% if datos_cliente.nombre_direccion=='2' %}selected{% endif %}>Trabajo
+                        </option>
+                        <option value="3" {% if datos_cliente.nombre_direccion=='3' %}selected{% endif %}>Otro...
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- end select -->
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Compañía teléfonica*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="idCompaniTelefonica" id="idCompaniTelefonica">
+                          <option value="0">Seleccione la compañía</option>
+                          {% for companias_telef in companias_telefonicas %}
+                          <option value="{{companias_telef.id_compania}}" {% if
+                            companias_telef.nombre_compania==datos_cliente.nombre_compania %} selected {% endif %}>
+                            {{companias_telef.nombre_compania}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Teléfono*</label>
+                      <input value="{{ datos_cliente.numero_telefono }}" type="telf" placeholder="8171-9638"
+                        maxlength="8" required name="telefono" id="telefono" />
+                      <span class="icon"><i class="lni lni-phone"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Nombre de ese teléfono</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="nombreTelefono" id="nombreTelefono">
+                          <option value="0">Seleccione el nombre</option>
+                          <option value="1" {% if datos_cliente.nombre_telefono=='1' %}selected{% endif %}>
+                            Convencional</option>
+                          <option value="2" {% if datos_cliente.nombre_telefono=='2' %}selected{% endif %}>Móvil
+                          </option>
+                          <option value="3" {% if datos_cliente.nombre_telefono=='3' %}selected{% endif %}>Otro...
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Foto del cliente</label>
+                      <input type="file" placeholder="" accept="image/*" name="fotoCliente" id="fotoCliente" />
+                      <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Fotocopia de cédula</label>
+                      <input type="file" placeholder="" accept="image/*" name="foto_cedula" id="foto_cedula" />
+                      <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="button-group d-flex justify-content-center flex-wrap">
+                      <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                        Siguiente
+                      </button>
+                    </div>
+                  </div>
+
+
+                </div>
+                <!-- end col -->
+
+
+                <div class="row step step-2">
+                  <h3 class="mb-5 text-center">
+                    Datos del trabajador
+                  </h3>
+                  <div class="col-sm-12">
+                    <div class="select-style-1">
+                      <label>Estado Civil*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="estadoCivil" id="estadoCivil">
+                          <option value="">Seleccione</option>
+                          <option value="1">Soltero</option>
+                          <option value="2">Casado</option>
+                          <option value="3">Divorciado</option>
+                          <option value="4">Viud@</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Nombre de su delegación</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="nombreDelegacion" id="nombreDelegacion">
+                          <option value="">Seleccione</option>
+                          <option value="1">Delegación Selim Shible</option>
+                          <option value="2">Delegación INSS Central</option>
+                          <option value="3">Delegación Siete Sur</option>
+                          <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
+                          <option value="5">Delegación Julio Buitrago Urroz</option>
+                          <option value="6">Delegación El Triunfo</option>
+                          <option value="7">Otro...</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Departamento o área de trabajo</label>
+                      <input type="text" placeholder="Atención al cliente" name="dptoArea" id="dptoArea" />
+                      <span class="icon"><i class="fa-regular fa-building"></i></span>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Fotocopia de colilla de INSS</label>
+                      <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
+                        id="fotoCopiaColillaInss" />
+                      <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <h3 class="mb-5 text-center">
+                    Datos del préstamo
+                  </h3>
+                  <div class="col-sm-12">
+                    <div class="select-style-1">
+                      <label>Tipo de cliente*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="tipoCliente" id="tipoCliente">
+                          <option value="2">Normal</option>
+                          <option value="3">Especial</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-style-3">
+                      <label>Monto solicitado</label>
+                      <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                        name="montoSolicitado" id="montoSolicitado" required />
+                      <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-3">
+                    <div class="select-style-1">
+                      <label>‎ </label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="tipoMonedaMontoSolicitado"
+                          id="tipoMonedaMontoSolicitado">
+                          {% for tipos_mone in tipos_monedas %}
+                          <option value="{{tipos_mone.id_moneda}}">
+                            {{tipos_mone.nombreMoneda}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <div class="row">
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Tasa de interes</label>
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                          name="tasaInteres" id="tasaInteres" required />
+                        <span class="icon" id="porcentaje" style="margin-left: 3.8rem; margin-top: 2rem">%</span>
+                        <!-- Aquí se mostrará el porcentaje -->
+                      </div>
+                      <!-- end select -->
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Pago mensual</label>
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                          name="pagoMensual" id="pagoMensual" readonly required />
+                        <span class="icon"><i class="fa-solid fa-star"></i></span>
+                        <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal"
+                          data-bs-target="#ModalThree">Ver procedimiento</a>
+                      </div>
+                      <!-- end select -->
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Pago quincenal</label>
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                          name="pagoQuincenal" id="pagoQuincenal" readonly required />
+                        <span class="icon"><i class="fa-regular fa-star-half-stroke"></i></span>
+                      </div>
+                      <!-- end select -->
+                    </div>
+                  </div>
+
+                  <!-- <div class="row">
+                        <div class="col-sm-2">
+                          <div class="select-style-1">
+                            <label>‎</label>
+                            <div class="select-position">
+                              <select class="light-bg" required name="tipoTiempoPlazoSolicitado"
+                                id="tipoTiempoPlazoSolicitado">
+                                <option value="1">Meses</option>
+                                <option value="2">Años</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+
+                      </div> -->
+
+
+
+
+
+                  <div class="col-sm-4">
+                    <div class="input-style-1">
+                      <label>Fecha del préstamo*</label>
+                      <input type="date" required name="fechaPrestamo" id="fechaPrestamo" />
+                    </div>
+                  </div>
+
+                  <div class="col-sm-4">
+                    <div class="input-style-1">
+                      <label>Fecha del pago*</label>
+                      <input type="date" required name="fechaPago" id="fechaPago" />
+                    </div>
+                  </div>
+
+                  <div class="col-sm-4">
+                    <div class="input-style-1">
+                      <label>Fecha del pago letras</label>
+                      <input style="font-size: smaller !important;" type="text" name="fechaPagoLetras"
+                        id="fechaPagoLetras" readonly />
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <div id="divIntervaloPago" class="col-sm-4" hidden>
+                    <div class="select-style-1">
+                      <label>Intervalo de pago</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="IntervaloPagoClienteEspecial"
+                          id="IntervaloPagoClienteEspecial">
+                          <option value="15">Quincenal</option>
+                          <option value="30">Mensual</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <div class="col-sm-4">
+                    <div class="input-style-3">
+                      <label>Monto primer pago</label>
+                      <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                        name="montoPrimerPago" id="montoPrimerPago" required />
+                      <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                      <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal"
+                        data-bs-target="#ModalThree">Ver procedimiento</a>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+
+                  <!-- ModalThree start -->
+                  <div class="warning-modal">
+                    <div class="modal fade" id="modalCalculoPrimerPago" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content card-style">
+                          <div class="modal-header px-0 border-0">
+                            <h3 class="text-bold">Cálculo primer pago</h3>
+                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                              <i class="lni lni-cross-circle"></i>
+                            </button>
+                          </div>
+                          <div class="modal-body px-0">
+                            <div class="content mb-30">
+
+                              <div class="tab-style-3 mb-30">
+                                <nav class="nav" id="nav-tab">
+                                  <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                    data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
+                                    Pago diario
+                                  </button>
+                                  <button id="tab-3-2" class="main-btn deactive-btn rounded-full" data-bs-toggle="tab"
+                                    data-bs-target="#tabContent-3-2">
+                                    Primer pago
+                                  </button>
+                                </nav>
+                                <div class="tab-content" id="nav-tabContent3">
+                                  <div class="tab-pane fade show active" id="tabContent-3-1">
+
+                                    <div class="row">
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1">
+                                          <label>Pago mensual</label>
+                                          <input class="text-center" type="number" placeholder="0"
+                                            name="pagoMensualModal" id="pagoMensualModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Dividido</label>
+                                          <input class="text-center" type="text" placeholder="" value="/" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label>Mes comercial</label>
+                                          <input class="text-center" type="text" value="30 días" name="noDiasMesModal"
+                                            id="noDiasMesModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>resultado</label>
+                                          <input class="text-center" type="text" placeholder="" value="=" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label class="text-success text-bold">Pago diario</label>
+                                          <input class="text-center" type="number" name="resultadoPagoDiarioModal"
+                                            id="resultadoPagoDiarioModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="tab-pane fade" id="tabContent-3-2">
+
+
+                                    <div class="row">
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1">
+                                          <label>Pago diario</label>
+                                          <input class="text-center" type="number" placeholder="0" name="pagoMensual"
+                                            id="pagoDiario2Modal" name="pagoDiario2Modal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Multiplicado</label>
+                                          <input class="text-center" type="text" placeholder="" value="X" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label id="diasRestantesCorteModal"></label>
+                                          <input class="text-center" type="text" value="" id="diasHastaProximoCorte"
+                                            name="diasHastaProximoCorte" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Resultado</label>
+                                          <input class="text-center" type="text" placeholder="" value="=" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label class="text-success text-bold">Primer pago</label>
+                                          <input class="text-center" type="number" value="" id="montoPrimerPagoModal"
+                                            readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <!-- end card -->
+
+
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- ModalThree End -->
+
+                  <!-- ModalThree start -->
+                  <div class="warning-modal">
+                    <div class="modal fade" id="modalNoCalculo" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content card-style">
+                          <div class="modal-header px-0 border-0">
+                            <h3 class="text-bold">Cálculo primer pago</h3>
+                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                              <i class="lni lni-cross-circle"></i>
+                            </button>
+                          </div>
+                          <div class="modal-body px-0">
+                            <p>El monto del primer pago es igual al pago quincenal, debido a que se está prestando a
+                              la quincena</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- ModalThree End -->
+
+
+                  <div class="col-12">
+                    <div class="button-group d-flex justify-content-center flex-wrap">
+                      <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
+                        Anterior
+                      </button>
+                      <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                        Siguiente
+                      </button>
+
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="row step step-3">
+                  <h3 class="mb-5 text-center">
+                    Datos del fiador
+                  </h3>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Nombre(s)*</label>
+                      <input type="text" value="" placeholder="Nombres" name="nombresFiador" id="nombresFiador"
+                        required />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Apellido(s)*</label>
+                      <input type="text" value="" placeholder="Apellidos" name="apellidosFiador" id="apellidosFiador"
+                        required />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Cédula</label>
+                      <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador" id="cedulaFiador"
+                        required />
+                      <span class="icon"><i class="fa-regular fa-id-card"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-1">
+                      <label>Fecha de nacimiento*</label>
+                      <input type="date" value="" required name="fechaNacFiador" id="fechaNacFiador" />
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Género*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="generoFiador" id="generoFiador">
+                          <option value="">Seleccione el género</option>
+                          <option value="1">Masculino</option>
+                          <option value="2">Femenino</option>
+                          <option value="3">Otro...</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Estado Civil</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="estadoCivilFiador" id="estadoCivilFiador">
+                          <option value="">Seleccione</option>
+                          <option value="1">Soltero</option>
+                          <option value="2">Casado</option>
+                          <option value="3">Divorciado</option>
+                          <option value="4">Viud@</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Nombre de su delegación</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="nombreDelegacionFiador" id="nombreDelegacionFiador">
+                          <option value="">Seleccione</option>
+                          <option value="1">Delegación Selim Shible</option>
+                          <option value="2">Delegación INSS Central</option>
+                          <option value="3">Delegación Siete Sur</option>
+                          <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
+                          <option value="5">Delegación Julio Buitrago Urroz</option>
+                          <option value="6">Delegación El Triunfo</option>
+                          <option value="7">Otro...</option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Departamento o área de trabajo</label>
+                      <input type="text" placeholder="Atención al cliente" name="dptoAreaFiador" id="dptoAreaFiador" />
+                      <span class="icon"><i class="fa-regular fa-building"></i></span>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Fotocopia de colilla de INSS</label>
+                      <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInssFiador"
+                        id="fotoCopiaColillaInssFiador" />
+                      <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <h5 class="text-bold text-center">Datos de contacto</h5>
+                  <div class="input-style-3">
+                    <label>Dirección*</label>
+                    <textarea placeholder="Dirección" rows="5" name="direccionFiador" id="direccionFiador"
+                      required></textarea>
+                    <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                  </div>
+                  <!-- end textarea -->
+                  <!-- end col -->
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Dirección vía enlace Google Maps</label>
+                      <input value="{{ datos_cliente.direccion_mapa }}" type="text"
+                        placeholder="https://maps.app.goo.gl/hnBokvG48S8ecMrT9" name="direccionMapsFiador"
+                        id="direccionMapsFiador" />
+                      <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                    </div>
+                  </div>
+                  <div class="select-style-1">
+                    <label>Nombre de esa dirección</label>
+                    <div class="select-position">
+                      <select class="light-bg" required name="nombreDireccionFiador" id="nombreDireccionFiador">
+                        <option value="">Seleccione el nombre</option>
+                        <option value="1">Casa
+                        </option>
+                        <option value="2">Trabajo
+                        </option>
+                        <option value="3">Otro...
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- end select -->
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Compañía teléfonica*</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="idCompaniTelefonicaFiador"
+                          id="idCompaniTelefonicaFiador">
+                          <option value="">Seleccione la compañía</option>
+                          {% for companias_telef in companias_telefonicas %}
+                          <option value="{{companias_telef.id_compania}}">
+                            {{companias_telef.nombre_compania}}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Teléfono*</label>
+                      <input value="" type="telf" placeholder="8171-9638" maxlength="8" required name="telefonoFiador"
+                        id="telefonoFiador" />
+                      <span class="icon"><i class="lni lni-phone"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="select-style-1">
+                      <label>Nombre de ese teléfono</label>
+                      <div class="select-position">
+                        <select class="light-bg" required name="nombreTelefonoFiador" id="nombreTelefonoFiador">
+                          <option value="">Seleccione el nombre</option>
+                          <option value="1">
+                            Convencional</option>
+                          <option value="2">Móvil
+                          </option>
+                          <option value="3">Otro...
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Foto del cliente</label>
+                      <input type="file" placeholder="" accept="image/*" name="fotoFiador" id="fotoFiador" />
+                      <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Fotocopia de cédula</label>
+                      <input type="file" placeholder="" accept="image/*" name="foto_cedulaFiador"
+                        id="foto_cedulaFiador" />
+                      <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check checkbox-style checkbox-danger mb-20">
+                      <input class="form-check-input" type="checkbox" value="5" id="chckbxNoDeudor" />
+                      <label class="form-check-label" for="checkbox-5">
+                        El deudor no cuenta con fiador</label>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="button-group d-flex justify-content-center flex-wrap">
+                      <button type="button" class="main-btn danger-btn-outline m-2 prev-step">
+                        Anterior
+                      </button>
+                      <button type="button" id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                        Siguiente
+                      </button>
+
+                    </div>
+                  </div>
+
+
+                </div>
+                <div class="row step step-4" id="imprimirContrato">
+
+                  <h3 class="mb-5 text-center">
+                    Revisión del contrato
+                  </h3>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Nombre(s)</label>
+                      <input type="text" value="" placeholder="" name="nombresRevisionContrato"
+                        id="nombresRevisionContrato" required readonly />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Apellido(s)</label>
+                      <input type="text" value="" placeholder="" name="apellidosRevisionContrato"
+                        id="apellidosRevisionContrato" required readonly />
+                      <span class="icon"><i class="lni lni-user"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Cédula</label>
+                      <input type="text" value="" placeholder="" name="cedulaRevisionContrato"
+                        id="cedulaRevisionContrato" readonly />
+                      <span class="icon"><i class="fa-regular fa-id-card"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-1">
+                      <label>Fecha de nacimiento</label>
+                      <input type="date" value="" required readonly name="fechaNacRevisionContrato"
+                        id="fechaNacRevisionContrato" />
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Género</label>
+                      <input type="text" value="" required readonly name="generoRevisionContrato"
+                        id="generoRevisionContrato" />
+                      <span class="icon"><i class="fa-solid fa-venus-mars"></i></span>
+                    </div>
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Estado civil</label>
+                      <input type="text" value="" required readonly name="estadoCivilRevisionContrato"
+                        id="estadoCivilRevisionContrato" />
+                      <span class="icon"><i class="fa-solid fa-ring"></i></span>
+                    </div>
+                  </div>
+
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Nombre delegación INSS</label>
+                      <input type="text" value="" required readonly name="nombreDelegacionRevisionContrato"
+                        id="nombreDelegacionRevisionContrato" />
+                      <span class="icon"><i class="fa-solid fa-briefcase"></i></span>
+
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Departamento o área de trabajo</label>
+                      <input type="text" placeholder="" name="dptoAreaRevisionContrato" id="dptoAreaRevisionContrato"
+                        readonly />
+                      <span class="icon"><i class="fa-regular fa-building"></i></span>
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+
+                  <h5 class="text-bold text-center">Datos de contacto</h5>
+                  <div class="input-style-3">
+                    <label>Dirección</label>
+                    <textarea placeholder="" rows="2" name="direccionRevisionContrato" id="direccionRevisionContrato"
+                      readonly></textarea>
+                    <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                  </div>
+                  <!-- end textarea -->
+                  <!-- end col -->
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Dirección vía enlace Google Maps</label>
+                      <input value="" type="text" placeholder="" name="direccionMapsRevisionContrato"
+                        id="direccionMapsRevisionContrato" readonly />
+                      <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-1">
+                      <label>Nombre de esa dirección</label>
+                      <input type="text" placeholder="" name="nombreDireccionRevisionContrato"
+                        id="nombreDireccionRevisionContrato" readonly />
+                    </div>
+                  </div>
+                  <!-- end select -->
+                  <div class="col-sm-6">
+                    <div class="input-style-1">
+                      <label>Compañia Teléfonica</label>
+                      <input type="text" placeholder="" name="companiaTelefonicaRevisionContrato"
+                        id="companiaTelefonicaRevisionContrato" readonly />
+                    </div>
+
+                    <!-- end select -->
+                  </div>
+                  <!-- end col -->
+                  <div class="col-sm-6">
+                    <div class="input-style-3">
+                      <label>Número de teléfono</label>
+                      <input type="text" placeholder="" name="telefonoRevisionContrato" id="telefonoRevisionContrato"
+                        readonly />
+                      <span class="icon"><i class="fa-solid fa-phone"></i></span>
+                    </div>
+                    <!-- end select -->
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="input-style-1">
+                      <label>Nombre del teléfono</label>
+                      <input type="text" placeholder="" name="nombreTelefonoRevisionContrato"
+                        id="nombreTelefonoRevisionContrato" readonly />
+                    </div>
+                    <!-- end select -->
+                  </div>
+
+                  <!-- <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Foto del cliente</label>
+                          <input type="file" placeholder="" accept="image/*" name="fotoCliente" id="fotoCliente" />
+                          <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="input-style-3">
+                          <label>Fotocopia de cédula</label>
+                          <input type="file" placeholder="" accept="image/*" name="foto_cedula" id="foto_cedula" />
+                          <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                        </div>
+                      </div> -->
+
+                  <!-- end col -->
+                  <h3 class="mb-5 text-center">
+                    Datos del préstamo
+                  </h3>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="input-style-3">
+                        <label>Tipo cliente</label>
+                        <input type="text" value="" placeholder="" name="tipoClienteRevisionContrato"
+                          id="tipoClienteRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-solid fa-person"></i></span>
+                      </div>
+                      <!-- end select -->
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Monto solicitado</label>
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                          name="montoSolicitadoRevisionContrato" id="montoSolicitadoRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                      </div>
+                      <!-- end select -->
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="input-style-1">
+                        <label for="">‎</label>
+                        <input type="text" id="tipoMonedaRevisionContrato" name="tipoMonedaRevisionContrato" readonly>
+                      </div>
+                    </div>
+
+                    <div class="row">
+
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Tasa de interes</label>
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                            name="tasaInteresRevisionContrato" id="tasaInteresRevisionContrato" readonly />
+                          <span class="icon" id="porcentaje" style="margin-left: 3.8rem; margin-top: 2rem">%</span>
+                          <!-- Aquí se mostrará el porcentaje -->
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Pago mensual</label>
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                            name="pagoMensualRevisionContrato" id="pagoMensualRevisionContrato" readonly />
+                          <span class="icon"><i class="fa-solid fa-star"></i></span>
+                          <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal"
+                            data-bs-target="#ModalThree">Ver procedimiento</a>
+                        </div>
+                        <!-- end select -->
+                      </div>
+
+                      <div class="col-sm-4">
+                        <div class="input-style-3">
+                          <label>Pago quincenal</label>
+                          <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                            name="pagoQuincenalRevisionContrato" id="pagoQuincenalRevisionContrato" readonly />
+                          <span class="icon"><i class="fa-regular fa-star-half-stroke"></i></span>
+                        </div>
+                        <!-- end select -->
+                      </div>
+                    </div>
+
+                    <!-- <div class="row">
+                          <div class="col-sm-2">
+                            <div class="select-style-1">
+                              <label>‎</label>
+                              <div class="select-position">
+                                <select class="light-bg" required name="tipoTiempoPlazoSolicitado"
+                                  id="tipoTiempoPlazoSolicitado">
+                                  <option value="1">Meses</option>
+                                  <option value="2">Años</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+  
+  
+                        </div> -->
+
+
+
+
+
+                    <div class="col-sm-4">
+                      <div class="input-style-1">
+                        <label>Fecha del préstamo*</label>
+                        <input type="date" required name="fechaPrestamoRevisionContrato"
+                          id="fechaPrestamoRevisionContrato" readonly />
+                      </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-1">
+                        <label>Fecha del pago*</label>
+                        <input type="date" required name="fechaPagoRevisionContrato" id="fechaPagoRevisionContrato"
+                          readonly />
+                      </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Fecha del pago letras</label>
+                        <input style="font-size: smaller !important;" type="text" name="fechaPagoLetrasRevisionContrato"
+                          id="fechaPagoLetrasRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                      </div>
+                      <!-- end select -->
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Monto primer pago</label>
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                          name="montoPrimerPagoRevisionContrato" id="montoPrimerPagoRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                        <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal"
+                          data-bs-target="#ModalThree">Ver procedimiento</a>
+                      </div>
+
+                      <!-- end select -->
+                    </div>
+
+                    <div class="col-sm-4">
+                      <div class="input-style-3">
+                        <label>Intervalo de tiempo del pago</label>
+                        <input type="text" name="intervaloTiempoPagoRevisionContrato"
+                          id="intervaloTiempoPagoRevisionContrato" readonly />
+                        <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                        <span class="icon" id="porcentaje" style="margin-left: 3.1rem; margin-top: 2rem">días</span>
+                      </div>
+                      <!-- end select -->
+                    </div>
+
+                    <div class="datos_fiador" id="datos_fiador">
+                      <div class="row">
+
+                        <h3 class="mb-5 text-center">
+                          Datos del fiador
+                        </h3>
+                        <div class="col-sm-6">
+                          <div class="input-style-3">
+                            <label>Nombre(s)</label>
+                            <input type="text" value="" placeholder="" name="nombresFiadorRevisionContrato"
+                              id="nombresFiadorRevisionContrato" readonly required />
+                            <span class="icon"><i class="lni lni-user"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="input-style-3">
+                            <label>Apellido(s)</label>
+                            <input type="text" value="" placeholder="" name="apellidosFiadorRevisionContrato"
+                              id="apellidosFiadorRevisionContrato" required readonly />
+                            <span class="icon"><i class="lni lni-user"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Cédula</label>
+                            <input type="text" value="" placeholder="" name="cedulaFiadorRevisionContrato"
+                              id="cedulaFiadorRevisionContrato" readonly />
+                            <span class="icon"><i class="fa-regular fa-id-card"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                        <div class="col-12">
+                          <div class="input-style-1">
+                            <label>Fecha de nacimiento</label>
+                            <input type="date" value="" required name="fechaNacFiadorRevisionContrato"
+                              id="fechaNacFiadorRevisionContrato" readonly />
+                          </div>
+                        </div>
+                        <!-- end col -->
+                        <div class="col-sm-6">
+                          <div class="input-style-3">
+                            <label>Género</label>
+                            <input type="text" value="" placeholder="" name="generoFiadorRevisionContrato"
+                              id="generoFiadorRevisionContrato" readonly />
+                            <span class="icon"><i class="fa-solid fa-venus-mars"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                        <!-- end col -->
+                        <h5 class="text-bold text-center">Datos de contacto</h5>
+                        <div class="input-style-3">
+                          <label>Dirección</label>
+                          <textarea placeholder="Dirección" rows="4" name="direccionFiadorRevisionContrato"
+                            id="direccionFiadorRevisionContrato" readonly></textarea>
+                          <span class="icon"><i class="lni lni-map ms-2"></i></span>
+                        </div>
+                        <!-- end textarea -->
+                        <!-- end col -->
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Dirección vía enlace Google Maps</label>
+                            <input value="" type="text" placeholder="" name="direccionMapsFiadorRevisionContrato"
+                              id="direccionMapsFiadorRevisionContrato" readonly />
+                            <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="input-style-1">
+                            <label>Nombre de esa dirección</label>
+                            <input value="" type="text" placeholder="" name="nombreDireccionFiadorRevisionContrato"
+                              id="nombreDireccionFiadorRevisionContrato" readonly />
+                          </div>
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="input-style-1">
+                            <label>Compañia Teléfonica</label>
+                            <input type="text" placeholder="" name="companiaTelefonicaFiadorRevisionContrato"
+                              id="companiaTelefonicaFiadorRevisionContrato" readonly />
+                          </div>
+
+                          <!-- end select -->
+                        </div>
+                        <!-- end col -->
+                        <div class="col-sm-6">
+                          <div class="input-style-3">
+                            <label>Número de teléfono</label>
+                            <input type="text" placeholder="" name="telefonoFiadorRevisionContrato"
+                              id="telefonoFiadorRevisionContrato" readonly />
+                            <span class="icon"><i class="fa-solid fa-phone"></i></span>
+                          </div>
+                          <!-- end select -->
+                        </div>
+                        <div class="col-sm-6">
+                          <div class="input-style-1">
+                            <label>Nombre del teléfono</label>
+                            <input type="text" placeholder="" name="nombreTelefonoFiadorRevisionContrato"
+                              id="nombreTelefonoFiadorRevisionContrato" readonly />
+                          </div>
+                          <!-- end select -->
+                        </div>
+
+                      </div>
+
+
+                    </div>
+
+
+                    <!-- 
+                        <h3 class="mb-5 text-center">
+                          Archivos adjuntos
+                        </h3>
+
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Foto del cliente</label>
+                            <input type="file" placeholder="" accept="image/*" name="fotoFiador" id="fotoFiador" />
+                            <span class="icon"><i class="fa-solid fa-camera"></i></span>
+                          </div>
+                        </div>
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Fotocopia de cédula</label>
+                            <input type="file" placeholder="" accept="image/*" name="foto_cedulaFiador"
+                              id="foto_cedulaFiador" />
+                            <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                          </div>
+                        </div>
+
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Fotocopia de colilla de INSS</label>
+                            <input type="file" placeholder="" accept="image/*" name="fotoCopiaColillaInss"
+                              id="fotoCopiaColillaInss" />
+                            <span class="icon"><i class="fa-regular fa-address-card"></i></span>
+                          </div>
+                        </div>
+
+                        <div class="col-12">
+                          
+                        </div> -->
+                  </div>
+
+                  <div class="row">
+                    <div class="col-12">
+                      <h3 class="text-center mb-3">Sección de impresiones</h3>
+                      <a class="main-btn secondary-btn" onclick="enviarFormulario()">1. Imprimir contrato</a>
+
+                    </div>
+
+                    <div class="col-12 mt-3">
+                      <a class="main-btn secondary-btn" onclick="enviarCarta()">2. Imprimir carta</a>
+
+                    </div>
+                  </div>
+
+                  <div class="row mt-4">
+
+
+                    <div class="col-12">
+
+                      <button type="button" class="main-btn danger-btn-outline prev-step">
+                        Anterior
+                      </button>
+                      <button type="POST" id="btnFinalizar" class="main-btn success-btn btn-hover m-2">
+                        Finalizar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+
+
+            <!-- end table -->
+          </div>
+        </div>
+        <!-- end card -->
+      </div>
+      <!-- end col -->
+    </div>
+    <!-- end row -->
+  </div>
+  <!-- ========== tables-wrapper end ========== -->
+  </div>
+  <!-- end container -->
+</section>
+<!-- ========== section end ========== -->
+
+<!-- ModalTwo start -->
+<div class="warning-modal">
+  <div class="modal fade" id="modalAlertaFecha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content card-style warning-card text-center">
+        <div class="modal-body">
+          <div class="icon text-danger mb-20">
+            <i class="lni lni-warning"></i>
+          </div>
+          <div class="content mb-30">
+            <h2 class="mb-15">!Atención!</h2>
+            <p id="pModalAlertaFecha" class="text-sm text-medium">
+            </p>
+          </div>
+          <div class="action d-flex flex-wrap justify-content-center">
+            <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn rounded-full btn-hover m-1">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ModalTwo End -->
+
+
+
+{% endblock %}
+
+{% block customJS %}
+
+
+
+<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+
+
+
+
+
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{{ url_for('static', filename='assets/js/prestamos/prestamos.js') }}"></script>
+
+<script>
+  let lastScrollTop = 0; // Almacenará la posición del último desplazamiento
+  let hideTimeout; // Almacenará el temporizador para ocultar la tarjeta
+
+  window.addEventListener("scroll", function () {
+    if (window.innerWidth <= 768) {
+      let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+      if (currentScroll > lastScrollTop) {
+        // Scroll hacia abajo
+        hideCard();
+      } else {
+        // Scroll hacia arriba
+        showCard();
+      }
+      lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // Establece la posición del último desplazamiento
+
+      // Reinicia el temporizador para ocultar la tarjeta después de 5 segundos
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(hideCard, 5000); // 5000 milisegundos = 5 segundos
+    } else {
+      showCard(); // En dispositivos de escritorio, siempre mostramos la tarjeta
+    }
+  }, false);
+
+  // Función para mostrar la tarjeta
+  function showCard() {
+    document.querySelector('.card-style-step').style.top = '93px'; // Muestra la tarjeta
+  }
+
+  // Función para ocultar la tarjeta
+  function hideCard() {
+    document.querySelector('.card-style-step').style.top = '-100px'; // Oculta la tarjeta
+  }
+</script>
+
+
+
+
+{% endblock %}

@@ -83,9 +83,7 @@ JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
 JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE
-cl.id_cliente = :id_cliente
-AND
-cl.estado = '5';
+cl.id_cliente = :id_cliente;
                      """)
         result = db_session.execute(
             query, {"id_cliente": id_cliente}).fetchone()
@@ -97,6 +95,9 @@ cl.estado = '5';
         return None
     finally:
         db_session.close()
+
+
+
 
 
 def insertar_contrato(db_session, id_cliente, estado_civil, nombre_delegacion, dptoArea_trabajo, ftoColillaINSS, 

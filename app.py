@@ -23,6 +23,7 @@ from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
+from models.contratos import *
 from flask_cors import CORS
 from serverEmail import mail
 
@@ -855,6 +856,26 @@ def prueba_extraer_plata():
     dolar = obtener_tasa_cambio_oficial()
 
     return 'Si entró!'
+
+########### Empieza el modulo de contrato ##########
+
+@app.route('/visualizar_contrato/<int:id_cliente>', methods=['GET', 'POST'])
+def visualizar_contrato(id_cliente):
+
+    print(id_cliente)
+    datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
+    print(datos_cliente)
+
+    datos_formulario_anadir_prestamo = {
+        "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "tipos_monedas": obtener_tipos_monedas(db_session),
+        "datos_cliente": datos_cliente
+    }
+
+    return render_template('contrato/visualizar_contrato.html', **datos_formulario_anadir_prestamo)
+
+
+
 
 ########### Empieza el modulo de capital ###########
 

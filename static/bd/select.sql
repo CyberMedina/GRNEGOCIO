@@ -31,9 +31,9 @@ JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
 JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE
-cl.id_cliente = '4'
+cl.id_cliente = '13'
 AND
-cl.estado = '0';
+cl.estado = '1';
 
 
 SELECT p.id_persona p.nombres, p.apellidos, p.genero p.cedula, p.fecha_nacimiento, p.estado,
@@ -60,8 +60,6 @@ JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE
 cl.id_cliente = '6'
-AND
-cl.estado = '0';
 
 SELECT pd.id_direccion, dt.id_telefono
 FROM persona p
@@ -407,3 +405,72 @@ WHERE id_cliente = '9'
   AND cifraSaldo > 0;
   
 SELECT * FROM saldos_pagos WHERE id_cliente = '9'
+
+
+SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos, c.id_contrato, c.pagoMensual, c.pagoQuincenal
+FROM cliente cl
+JOIN persona p ON cl.id_persona = p.id_persona
+JOIN contrato c ON cl.id_cliente = c.id_cliente
+WHERE cl.estado = '1' AND
+cl.id_tipoCliente = '2' OR
+cl.id_tipoCliente = '3';
+
+SELECT SUM(cifraPago) 
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = '7'
+AND fecha_pago BETWEEN '2024-01-31' AND '24-12-31' 
+AND dp.estado = '1'
+AND (p.estado = '1' OR p.estado = '2' OR p.estado = '4');
+
+
+
+
+
+SELECT cl.id_cliente, p.id_persona, p.nombres, p.apellidos, p.cedula, p.fecha_nacimiento, p.genero,
+d.direccion_escrita, d.direccion_mapa, d.nombre_direccion,
+c.nombre_compania, t.nombre_telefono, t.numero_telefono, tc.nombre_tipoCliente,
+cl.imagenCliente, cl.imagenCedula, cl.estado
+FROM cliente cl
+JOIN tipo_cliente tc ON cl.id_tipoCliente = tc.id_tipoCliente
+JOIN persona p ON cl.id_persona = p.id_persona
+JOIN persona_direccion pd ON pd.id_persona = p.id_persona
+JOIN direccion d ON d.id_direccion = pd.id_direccion
+JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
+JOIN telefono t ON t.id_telefono = dt.id_telefono
+JOIN companias_telefonicas c ON c.id_compania = t.id_compania
+WHERE
+cl.id_cliente = '6'
+
+
+
+
+
+CREATE TABLE contrato(
+  id_contrato INT PRIMARY KEY,
+  id_cliente INT NOT NULL,
+  id_contrato_fiador INT NOT NULL,
+  estado_civil INT NOT NULL, -- Soltero 1, casado 2, viud@ 3
+  nombre_delegacion VARCHAR(100) NULL,
+  dptoArea_trabajo VARCHAR(80) NULL,
+  ftoColillaINSS VARCHAR(255) NULL,
+  monto_solicitado DECIMAL(10,2) NOT NULL,
+  tipo_monedaMonto_solicitado INT NOT NULL,
+  tasa_interes DECIMAL(5,2) NOT NULL,
+  pagoMensual DECIMAL(10,2) NOT NULL,
+  pagoQuincenal DECIMAL(10,2) NOT NULL,
+  fechaPrestamo DATE NOT NULL,
+  fechaPago DATE NOT NULL,
+  intervalo_tiempoPago INT NOT NULL,
+  montoPrimerPago DECIMAL(10,2) NOT NULL,
+  fechaCreacionContrato DATETIME NOT NULL,
+  estado INT NOT NULL, -- 1 activo: 0 inactivo
+  FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
+  FOREIGN KEY (id_contrato_fiador) REFERENCES contrato_fiador(id_contrato_fiador),
+  FOREIGN KEY (tipo_monedaMonto_solicitado) REFERENCES moneda(id_moneda)
+);
+
+SELECT c.id_contrato_fiador, c.estado_civil, c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes,
+c.fechaPrestamo, c.fechaPago, c.montoPrimerPago
+FROM contrato c
+WHERE id_contrato = ''
