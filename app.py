@@ -862,8 +862,19 @@ def prueba_extraer_plata():
 @app.route('/visualizar_contrato/<int:id_cliente>', methods=['GET', 'POST'])
 def visualizar_contrato(id_cliente):
 
-    print(id_cliente)
+
+    id_contratoActual = obtener_IdContrato(db_session, id_cliente)
     datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
+    datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
+
+    datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente.id_contratofiador)
+    datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador.id_cliente)
+
+
+
+
+
+    
     print(datos_cliente)
 
     datos_formulario_anadir_prestamo = {

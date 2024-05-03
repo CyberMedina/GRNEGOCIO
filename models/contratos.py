@@ -32,3 +32,43 @@ cl.id_cliente = :id_cliente;
         return None
     finally:
         db_session.close()
+
+
+def listarDatosContratoID_contrato(db_session, id_contrato):
+    try:
+        query = text("""
+        SELECT c.id_contrato_fiador, c.id_cliente, c.estado_civil, c.nombre_delegacion, c.dptoArea_trabajo, c.ftoColillaINSS,
+c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes,
+c.fechaPrestamo, c.fechaPago, c.montoPrimerPago
+FROM contrato c
+WHERE id_contrato = :id_contrato;
+                     """)
+        result = db_session.execute(
+            query, {"id_contrato": id_contrato}).fetchone()
+
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+def listarDatosFiadorContratoID_contratoFiador(db_session, id_contrato_fiador):
+    try:
+        query = text("""
+SELECT cf.id_contrato_fiador, cf.id_cliente, cf.estado_civil, cf.nombre_delegacion,
+cf.dptoArea_trabajo, cf.ftoColillaINSS, cf.estado
+FROM contrato_fiador cf
+WHERE cf.id_contrato_fiador = :id_contrato_fiador;""")
+        result = db_session.execute(
+            query, {"id_contrato_fiador": id_contrato_fiador}).fetchone()
+
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
