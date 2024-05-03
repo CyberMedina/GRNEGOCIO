@@ -470,7 +470,53 @@ CREATE TABLE contrato(
   FOREIGN KEY (tipo_monedaMonto_solicitado) REFERENCES moneda(id_moneda)
 );
 
-SELECT c.id_contrato_fiador, c.estado_civil, c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes,
+
+
+-- SELECIONAR TODOS LOS DATOS DEL CLIENTE
+SELECT cl.id_cliente, p.id_persona, p.nombres, p.apellidos, p.cedula, p.fecha_nacimiento, p.genero,
+d.direccion_escrita, d.direccion_mapa, d.nombre_direccion,
+c.nombre_compania, t.nombre_telefono, t.numero_telefono, tc.nombre_tipoCliente,
+cl.imagenCliente, cl.imagenCedula, cl.estado
+FROM cliente cl
+JOIN tipo_cliente tc ON cl.id_tipoCliente = tc.id_tipoCliente
+JOIN persona p ON cl.id_persona = p.id_persona
+JOIN persona_direccion pd ON pd.id_persona = p.id_persona
+JOIN direccion d ON d.id_direccion = pd.id_direccion
+JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
+JOIN telefono t ON t.id_telefono = dt.id_telefono
+JOIN companias_telefonicas c ON c.id_compania = t.id_compania
+WHERE
+cl.id_cliente = '11'
+
+-- SELECT PARA LOS DATOS DEL CONTRATO
+SELECT c.id_contrato_fiador, c.id_cliente, c.estado_civil, c.nombre_delegacion, c.dptoArea_trabajo, c.ftoColillaINSS,
+c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes,
 c.fechaPrestamo, c.fechaPago, c.montoPrimerPago
 FROM contrato c
-WHERE id_contrato = ''
+WHERE id_contrato = '7'
+
+
+SELECT cf.id_contrato_fiador, cf.id_cliente, cf.estado_civil, cf.nombre_delegacion,
+cf.dptoArea_trabajo, cf.ftoColillaINSS, cf.estado
+FROM contrato_fiador cf
+WHERE cf.id_contrato_fiador = '7'
+
+SELECT cl.id_cliente, p.id_persona, p.nombres, p.apellidos, p.cedula, p.fecha_nacimiento, p.genero,
+d.direccion_escrita, d.direccion_mapa, d.nombre_direccion,
+c.nombre_compania, t.nombre_telefono, t.numero_telefono, tc.nombre_tipoCliente,
+cl.imagenCliente, cl.imagenCedula, cl.estado
+FROM cliente cl
+JOIN tipo_cliente tc ON cl.id_tipoCliente = tc.id_tipoCliente
+JOIN persona p ON cl.id_persona = p.id_persona
+JOIN persona_direccion pd ON pd.id_persona = p.id_persona
+JOIN direccion d ON d.id_direccion = pd.id_direccion
+JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
+JOIN telefono t ON t.id_telefono = dt.id_telefono
+JOIN companias_telefonicas c ON c.id_compania = t.id_compania
+WHERE
+cl.id_cliente = '13'
+
+
+
+
+
