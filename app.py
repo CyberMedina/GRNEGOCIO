@@ -867,8 +867,9 @@ def visualizar_contrato(id_cliente):
     datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
     datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
 
-    datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente.id_contratofiador)
-    datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador.id_cliente)
+    datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
+    datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
+
 
 
 
@@ -880,7 +881,10 @@ def visualizar_contrato(id_cliente):
     datos_formulario_anadir_prestamo = {
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
         "tipos_monedas": obtener_tipos_monedas(db_session),
-        "datos_cliente": datos_cliente
+        "datos_cliente": datos_cliente,
+        "datos_contratoCliente": datos_contratoCliente,
+        "datos_contratoFiador": datos_contratoFiador,
+        "datos_fiador" : datos_fiador,
     }
 
     return render_template('contrato/visualizar_contrato.html', **datos_formulario_anadir_prestamo)

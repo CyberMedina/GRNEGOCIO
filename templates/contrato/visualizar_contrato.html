@@ -286,10 +286,14 @@
                       <div class="select-position">
                         <select class="light-bg" required name="estadoCivil" id="estadoCivil">
                           <option value="">Seleccione</option>
-                          <option value="1">Soltero</option>
-                          <option value="2">Casado</option>
-                          <option value="3">Divorciado</option>
-                          <option value="4">Viud@</option>
+                          <option value="1" {% if datos_contratoCliente.estado_civil==1 %}selected{% endif %}>Soltero
+                          </option>
+                          <option value="2" {% if datos_contratoCliente.estado_civil==2 %}selected{% endif %}>Casado
+                          </option>
+                          <option value="3" {% if datos_contratoCliente.estado_civil==3 %}selected{% endif %}>Divorciado
+                          </option>
+                          <option value="4" {% if datos_contratoCliente.estado_civil==4 %}selected{% endif %}>Viud@
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -301,13 +305,20 @@
                       <div class="select-position">
                         <select class="light-bg" required name="nombreDelegacion" id="nombreDelegacion">
                           <option value="">Seleccione</option>
-                          <option value="1">Delegación Selim Shible</option>
-                          <option value="2">Delegación INSS Central</option>
-                          <option value="3">Delegación Siete Sur</option>
-                          <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
-                          <option value="5">Delegación Julio Buitrago Urroz</option>
-                          <option value="6">Delegación El Triunfo</option>
-                          <option value="7">Otro...</option>
+                          <option value="1" {% if datos_contratoCliente.nombre_delegacion== '1' %}selected{% endif %}>
+                            Delegación Selim Shible</option>
+                          <option value="2" {% if datos_contratoCliente.nombre_delegacion== '2' %}selected{% endif %}>
+                            Delegación INSS Central</option>
+                          <option value="3" {% if datos_contratoCliente.nombre_delegacion== '3' %}selected{% endif %}>
+                            Delegación Siete Sur</option>
+                          <option value="4" {% if datos_contratoCliente.nombre_delegacion== '4' %}selected{% endif %}>
+                            Delegación José Benito Escovar (SERVIGOB)</option>
+                          <option value="5" {% if datos_contratoCliente.nombre_delegacion== '5' %}selected{% endif %}>
+                            Delegación Julio Buitrago Urroz</option>
+                          <option value="6" {% if datos_contratoCliente.nombre_delegacion== '6' %}selected{% endif %}>
+                            Delegación El Triunfo</option>
+                          <option value="7" {% if datos_contratoCliente.nombre_delegacion== '7' %}selected{% endif %}>
+                            Otro...</option>
                         </select>
                       </div>
                     </div>
@@ -316,7 +327,7 @@
                   <div class="col-sm-6">
                     <div class="input-style-3">
                       <label>Departamento o área de trabajo</label>
-                      <input type="text" placeholder="Atención al cliente" name="dptoArea" id="dptoArea" />
+                      <input type="text" value="{{ datos_contratoCliente.dptoArea_trabajo }}" placeholder="Atención al cliente" name="dptoArea" id="dptoArea" />
                       <span class="icon"><i class="fa-regular fa-building"></i></span>
                     </div>
 
@@ -340,9 +351,9 @@
                       <label>Tipo de cliente*</label>
                       <div class="select-position">
                         <select class="light-bg" required name="tipoCliente" id="tipoCliente">
-                          <option value="2">Normal</option>
-                          <option value="3">Especial</option>
-                        </select>
+                          <option value="2" {% if datos_cliente.nombre_tipoCliente == 'Cliente Normal' %}selected{% endif %}>Normal</option>
+                          <option value="3" {% if datos_cliente.nombre_tipoCliente == 'Cliente Especial' %}selected{% endif %}>Especial</option>
+                      </select>
                       </div>
                     </div>
                     <!-- end select -->
@@ -350,7 +361,7 @@
                   <div class="col-sm-4">
                     <div class="input-style-3">
                       <label>Monto solicitado</label>
-                      <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                      <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" value=""
                         name="montoSolicitado" id="montoSolicitado" required />
                       <span class="icon"><i class="fa-solid fa-coins"></i></span>
                     </div>
@@ -377,7 +388,7 @@
                     <div class="col-sm-4">
                       <div class="input-style-3">
                         <label>Tasa de interes</label>
-                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                        <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal" value=""
                           name="tasaInteres" id="tasaInteres" required />
                         <span class="icon" id="porcentaje" style="margin-left: 3.8rem; margin-top: 2rem">%</span>
                         <!-- Aquí se mostrará el porcentaje -->
@@ -661,7 +672,7 @@
                   <div class="col-sm-6">
                     <div class="input-style-3">
                       <label>Nombre(s)*</label>
-                      <input type="text" value="" placeholder="Nombres" name="nombresFiador" id="nombresFiador"
+                      <input type="text" value="{{ datos_fiador.nombres }}" placeholder="Nombres" name="nombresFiador" id="nombresFiador"
                         required />
                       <span class="icon"><i class="lni lni-user"></i></span>
                     </div>
@@ -670,7 +681,7 @@
                   <div class="col-sm-6">
                     <div class="input-style-3">
                       <label>Apellido(s)*</label>
-                      <input type="text" value="" placeholder="Apellidos" name="apellidosFiador" id="apellidosFiador"
+                      <input type="text" value="{{ datos_fiador.apellidos }}" placeholder="Apellidos" name="apellidosFiador" id="apellidosFiador"
                         required />
                       <span class="icon"><i class="lni lni-user"></i></span>
                     </div>
@@ -1365,7 +1376,7 @@
           </div>
           <div class="action d-flex flex-wrap justify-content-center">
             <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn rounded-full btn-hover m-1">
-              Close
+              Cerrar
             </button>
           </div>
         </div>
@@ -1427,6 +1438,33 @@
   // Función para ocultar la tarjeta
   function hideCard() {
     document.querySelector('.card-style-step').style.top = '-100px'; // Oculta la tarjeta
+  }
+</script>
+
+<script>
+  // Script que asigna los datos del formulario contrato a la hora de actualizar los datos
+  document.addEventListener("DOMContentLoaded" , function() {
+    let tasaInteres = document.getElementById('tasaInteres');
+    let montoSolicitado = document.getElementById('montoSolicitado');
+    let pagoQuincenal = document.getElementById('pagoQuincenal');
+    let pagoMensual = document.getElementById('pagoMensual');
+    let fechaPrestamo = document.getElementById('fechaPrestamo');
+    let fechaPago = document.getElementById('fechaPago');
+    let montoPrimerPago = document.getElementById('montoPrimerPago');
+
+    fechaPago.value = stringToDate('{{ datos_contratoCliente.fechaPago }}').toISOString().split('T')[0];
+    fechaPrestamo.value = stringToDate('{{ datos_contratoCliente.fechaPrestamo }}').toISOString().split('T')[0];
+    pagoQuincenal.value = {{ datos_contratoCliente.pagoQuincenal }};
+    pagoMensual.value = {{ datos_contratoCliente.pagoMensual }};
+    montoSolicitado.value = {{ datos_contratoCliente.monto_solicitado }};
+    tasaInteres.value = {{ datos_contratoCliente.tasa_interes }};
+    montoPrimerPago.value = {{ datos_contratoCliente.montoPrimerPago }};
+  });
+
+
+  function stringToDate(dateString){
+    let dateParts = dateString.split("-");
+    return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
   }
 </script>
 
