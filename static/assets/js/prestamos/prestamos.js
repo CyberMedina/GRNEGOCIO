@@ -570,7 +570,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  function enviarCarta() {
+  function enviarCarta(event) {
+
+    event.preventDefault();
 
     revision_contrato();
 
@@ -705,7 +707,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   }
 
-  function enviarFormulario() {
+  function enviarFormulario(event) {
+    event.preventDefault();
     // Capturar los valores de los campos
     revision_contrato();
     console.log("probando si funciona el enviar formulario");

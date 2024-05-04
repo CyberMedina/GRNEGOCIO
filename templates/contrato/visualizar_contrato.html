@@ -48,6 +48,8 @@
   }
 </style>
 
+<link rel="stylesheet" href="{{ url_for('static', filename = 'assets/css/contrato/visualizar_contrato.css') }}">
+
 {% endblock %}
 
 {% block body %}
@@ -113,7 +115,7 @@
 
 
 
-              <form action="/anadir_prestamo/{{ datos_cliente.id_cliente }}" method="POST" enctype="multipart/form-data"
+              <form action="" method="POST" enctype="multipart/form-data"
                 id="multi-step-form">
                 <div class="row step step-1">
                   <h3 class="mb-5 text-center">
@@ -265,9 +267,14 @@
 
                   <div class="col-12">
                     <div class="button-group d-flex justify-content-center flex-wrap">
-                      <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step">
+                      <button id="btnGuardar" class="main-btn primary-btn btn-hover m-2 next-step" onclick="no_hacer_nada(event)">
                         Siguiente
                       </button>
+                      <script>
+                        no_hacer_nada = (event) => {
+                          event.preventDefault();
+                        }
+                      </script>
                     </div>
                   </div>
 
@@ -690,7 +697,7 @@
                   <div class="col-12">
                     <div class="input-style-3">
                       <label>Cédula</label>
-                      <input type="text" value="" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador" id="cedulaFiador"
+                      <input type="text" value="{{ datos_fiador.cedula }}" placeholder="xxx-xxxxxx-xxxxx" name="cedulaFiador" id="cedulaFiador"
                         required />
                       <span class="icon"><i class="fa-regular fa-id-card"></i></span>
                     </div>
@@ -699,7 +706,7 @@
                   <div class="col-12">
                     <div class="input-style-1">
                       <label>Fecha de nacimiento*</label>
-                      <input type="date" value="" required name="fechaNacFiador" id="fechaNacFiador" />
+                      <input type="date" value="{{ datos_fiador.fecha_nacimiento }}" required name="fechaNacFiador" id="fechaNacFiador" />
                     </div>
                   </div>
                   <!-- end col -->
@@ -709,9 +716,9 @@
                       <div class="select-position">
                         <select class="light-bg" required name="generoFiador" id="generoFiador">
                           <option value="">Seleccione el género</option>
-                          <option value="1">Masculino</option>
-                          <option value="2">Femenino</option>
-                          <option value="3">Otro...</option>
+                          <option value="1" {% if datos_fiador.genero == 1  %}selected {% endif %}>Masculino</option>
+                          <option value="2" {% if datos_fiador.genero == 2  %}selected {% endif %}>Femenino</option>
+                          <option value="3" {% if datos_fiador.genero == 3  %}selected {% endif %}>Otro...</option>
                         </select>
                       </div>
                     </div>
@@ -723,10 +730,10 @@
                       <div class="select-position">
                         <select class="light-bg" required name="estadoCivilFiador" id="estadoCivilFiador">
                           <option value="">Seleccione</option>
-                          <option value="1">Soltero</option>
-                          <option value="2">Casado</option>
-                          <option value="3">Divorciado</option>
-                          <option value="4">Viud@</option>
+                          <option value="1" {% if datos_contratoFiador.estado_civil == 1 %} selected {% endif %}>Soltero</option>
+                          <option value="2" {% if datos_contratoFiador.estado_civil == 2 %} selected {% endif %}>Casado</option>
+                          <option value="3" {% if datos_contratoFiador.estado_civil == 3 %} selected {% endif %}>Divorciado</option>
+                          <option value="4" {% if datos_contratoFiador.estado_civil == 4 %} selected {% endif %}>Viud@</option>
                         </select>
                       </div>
                     </div>
@@ -738,13 +745,13 @@
                       <div class="select-position">
                         <select class="light-bg" required name="nombreDelegacionFiador" id="nombreDelegacionFiador">
                           <option value="">Seleccione</option>
-                          <option value="1">Delegación Selim Shible</option>
-                          <option value="2">Delegación INSS Central</option>
-                          <option value="3">Delegación Siete Sur</option>
-                          <option value="4">Delegación José Benito Escovar (SERVIGOB)</option>
-                          <option value="5">Delegación Julio Buitrago Urroz</option>
-                          <option value="6">Delegación El Triunfo</option>
-                          <option value="7">Otro...</option>
+                          <option value="1" {% if datos_contratoFiador.nombre_delegacion == '1' %} selected {% endif %}>Delegación Selim Shible</option>
+                          <option value="2" {% if datos_contratoFiador.nombre_delegacion == '2' %} selected {% endif %}>Delegación INSS Central</option>
+                          <option value="3" {% if datos_contratoFiador.nombre_delegacion == '3' %} selected {% endif %}>Delegación Siete Sur</option>
+                          <option value="4" {% if datos_contratoFiador.nombre_delegacion == '4' %} selected {% endif %}>Delegación José Benito Escovar (SERVIGOB)</option>
+                          <option value="5" {% if datos_contratoFiador.nombre_delegacion == '5' %} selected {% endif %}>Delegación Julio Buitrago Urroz</option>
+                          <option value="6" {% if datos_contratoFiador.nombre_delegacion == '6' %} selected {% endif %}>Delegación El Triunfo</option>
+                          <option value="7" {% if datos_contratoFiador.nombre_delegacion == '7' %} selected {% endif %}>Otro...</option>
                         </select>
                       </div>
                     </div>
@@ -753,7 +760,7 @@
                   <div class="col-sm-6">
                     <div class="input-style-3">
                       <label>Departamento o área de trabajo</label>
-                      <input type="text" placeholder="Atención al cliente" name="dptoAreaFiador" id="dptoAreaFiador" />
+                      <input type="text" placeholder="Atención al cliente" name="dptoAreaFiador" id="dptoAreaFiador" value="{{ datos_contratoFiador.dptoArea_trabajo }}" />
                       <span class="icon"><i class="fa-regular fa-building"></i></span>
                     </div>
 
@@ -772,8 +779,8 @@
                   <h5 class="text-bold text-center">Datos de contacto</h5>
                   <div class="input-style-3">
                     <label>Dirección*</label>
-                    <textarea placeholder="Dirección" rows="5" name="direccionFiador" id="direccionFiador"
-                      required></textarea>
+                    <textarea placeholder="Dirección" value="" rows="5" name="direccionFiador" id="direccionFiador"
+                      required>{{ datos_fiador.direccion_escrita }}</textarea>
                     <span class="icon"><i class="lni lni-map ms-2"></i></span>
                   </div>
                   <!-- end textarea -->
@@ -792,11 +799,11 @@
                     <div class="select-position">
                       <select class="light-bg" required name="nombreDireccionFiador" id="nombreDireccionFiador">
                         <option value="">Seleccione el nombre</option>
-                        <option value="1">Casa
+                        <option value="1" {% if datos_fiador.nombre_direccion == '1' %}selected {% endif %}>Casa
                         </option>
-                        <option value="2">Trabajo
+                        <option value="2" {% if datos_fiador.nombre_direccion == '2' %}selected {% endif %}>Trabajo
                         </option>
-                        <option value="3">Otro...
+                        <option value="3" {% if datos_fiador.nombre_direccion == '3' %}selected {% endif %}>Otro...
                         </option>
                       </select>
                     </div>
@@ -810,7 +817,7 @@
                           id="idCompaniTelefonicaFiador">
                           <option value="">Seleccione la compañía</option>
                           {% for companias_telef in companias_telefonicas %}
-                          <option value="{{companias_telef.id_compania}}">
+                          <option value="{{companias_telef.id_compania}}" {% if datos_fiador.nombre_compania == companias_telef.nombre_compania %}selected {% endif %}>
                             {{companias_telef.nombre_compania}}</option>
                           {% endfor %}
                         </select>
@@ -823,7 +830,7 @@
                   <div class="col-sm-6">
                     <div class="input-style-3">
                       <label>Teléfono*</label>
-                      <input value="" type="telf" placeholder="8171-9638" maxlength="8" required name="telefonoFiador"
+                      <input value="{{ datos_fiador.numero_telefono }}" type="telf" placeholder="8171-9638" maxlength="8" required name="telefonoFiador"
                         id="telefonoFiador" />
                       <span class="icon"><i class="lni lni-phone"></i></span>
                     </div>
@@ -835,11 +842,11 @@
                       <div class="select-position">
                         <select class="light-bg" required name="nombreTelefonoFiador" id="nombreTelefonoFiador">
                           <option value="">Seleccione el nombre</option>
-                          <option value="1">
+                          <option value="1" {% if datos_fiador.nombre_telefono == '1' %}selected {% endif %}>
                             Convencional</option>
-                          <option value="2">Móvil
+                          <option value="2" {% if datos_fiador.nombre_telefono == '2' %}selected {% endif %}>Móvil
                           </option>
-                          <option value="3">Otro...
+                          <option value="3" {% if datos_fiador.nombre_telefono == '3' %}selected {% endif %}>Otro...
                           </option>
                         </select>
                       </div>
@@ -1316,13 +1323,38 @@
                   <div class="row">
                     <div class="col-12">
                       <h3 class="text-center mb-3">Sección de impresiones</h3>
-                      <a class="main-btn secondary-btn" onclick="enviarFormulario()">1. Imprimir contrato</a>
+                      <button class="continue-application" onclick="enviarFormulario(event)">
+                        <div>
+                            <div class="pencil"></div>
+                            <div class="folder">
+                                <div class="top">
+                                </div>
+                                <div class="paper"></div>
+                            </div>
+                        </div>
+                        <span>Imprimir contrato</span>
+                    </button>
+
 
                     </div>
 
-                    <div class="col-12 mt-3">
-                      <a class="main-btn secondary-btn" onclick="enviarCarta()">2. Imprimir carta</a>
+                    
 
+                    <div class="col-12 mt-3">
+                      <button class="continue-application" onclick="enviarCarta(event)">
+                        <div>
+                            <div class="pencil"></div>
+                            <div class="folder">
+                                <div class="top">
+                                    <svg viewBox="0 0 24 27">
+                                        <path d="M1,0 L23,0 C23.5522847,-1.01453063e-16 24,0.44771525 24,1 L24,8.17157288 C24,8.70200585 23.7892863,9.21071368 23.4142136,9.58578644 L20.5857864,12.4142136 C20.2107137,12.7892863 20,13.2979941 20,13.8284271 L20,26 C20,26.5522847 19.5522847,27 19,27 L1,27 C0.44771525,27 6.76353751e-17,26.5522847 0,26 L0,1 C-6.76353751e-17,0.44771525 0.44771525,1.01453063e-16 1,0 Z"></path>
+                                    </svg>
+                                </div>
+                                <div class="paper"></div>
+                            </div>
+                        </div>
+                        <span>Imprimir carta</span>
+                    </button>
                     </div>
                   </div>
 
@@ -1442,6 +1474,7 @@
 </script>
 
 <script>
+  revision_contrato();
   // Script que asigna los datos del formulario contrato a la hora de actualizar los datos
   document.addEventListener("DOMContentLoaded" , function() {
     let tasaInteres = document.getElementById('tasaInteres');
@@ -1452,6 +1485,15 @@
     let fechaPago = document.getElementById('fechaPago');
     let montoPrimerPago = document.getElementById('montoPrimerPago');
 
+    const tasaInteresVieja = tasaInteres.value;
+    const montoSolicitadoViejo = montoSolicitado.value;
+    const pagoQuincenalViejo = pagoQuincenal.value;
+    const pagoMensualViejo = pagoMensual.value;
+    const fechaPrestamoVieja = fechaPrestamo.value;
+    const fechaPagoVieja = fechaPago.value;
+    const montoPrimerPagoViejo = montoPrimerPago.value;
+  
+
     fechaPago.value = stringToDate('{{ datos_contratoCliente.fechaPago }}').toISOString().split('T')[0];
     fechaPrestamo.value = stringToDate('{{ datos_contratoCliente.fechaPrestamo }}').toISOString().split('T')[0];
     pagoQuincenal.value = {{ datos_contratoCliente.pagoQuincenal }};
@@ -1461,6 +1503,37 @@
     montoPrimerPago.value = {{ datos_contratoCliente.montoPrimerPago }};
   });
 
+  function verificarCambios() {
+    let tasaInteresActual = tasaInteres.value;
+    let montoSolicitadoActual = montoSolicitado.value;
+    let pagoQuincenalActual = pagoQuincenal.value;
+    let pagoMensualActual = pagoMensual.value;
+    let fechaPrestamoActual = fechaPrestamo.value;
+    let fechaPagoActual = fechaPago.value;
+    let montoPrimerPagoActual = montoPrimerPago.value;
+
+    if (tasaInteresActual !== tasaInteresVieja) {
+      console.log('El campo tasa de interés fue modificado.');
+    }
+    if (montoSolicitadoActual !== montoSolicitadoViejo) {
+      console.log('El campo monto solicitado fue modificado.');
+    }
+    if (pagoQuincenalActual !== pagoQuincenalViejo) {
+      console.log('El campo pago quincenal fue modificado.');
+    }
+    if (pagoMensualActual !== pagoMensualViejo) {
+      console.log('El campo pago mensual fue modificado.');
+    }
+    if (fechaPrestamoActual !== fechaPrestamoVieja) {
+      console.log('El campo fecha de préstamo fue modificado.');
+    }
+    if (fechaPagoActual !== fechaPagoVieja) {
+      console.log('El campo fecha de pago fue modificado.');
+    }
+    if (montoPrimerPagoActual !== montoPrimerPagoViejo) {
+      console.log('El campo monto del primer pago fue modificado.');
+    }
+  }
 
   function stringToDate(dateString){
     let dateParts = dateString.split("-");

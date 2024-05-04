@@ -457,10 +457,9 @@ def anadir_prestamo(id_cliente):
                 checkbox_no_deudor = request.form['chckbxNoDeudor']
                 id_contrato_fiador = insertar_contrato_fiador(
                     db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, no_fiador)
-
             else:
                 id_contrato_fiador = insertar_contrato_fiador(
-                    db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
+                    db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
 
             if tipoCliente == cliente_normal:
 
