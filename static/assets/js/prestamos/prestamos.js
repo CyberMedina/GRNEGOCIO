@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
       "nombreTelefonoFiador": "nombreTelefonoFiadorRevisionContrato",
       "tipoMonedaMontoSolicitado": "tipoMonedaRevisionContrato",
       "tasaInteres": "tasaInteresRevisionContrato",
-      "pagoMensualModal": "pagoMensualRevisionContrato",
+      "pagoMensual" : "pagoMensualRevisionContrato",
       "pagoQuincenal": "pagoQuincenalRevisionContrato",
       "fechaPrestamo": "fechaPrestamoRevisionContrato",
       "fechaPago": "fechaPagoRevisionContrato",
@@ -269,23 +269,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Obtener referencias a los elementos del DOM
   // Obtenemos los inputs del formlario normal
-  const tipoClienteComboBox = document.getElementById('tipoCliente');
-  const divIntervaloPagoClienteEspecial = document.getElementById('divIntervaloPago');
-  const IntervaloPagoClienteEspecial = document.getElementById('IntervaloPagoClienteEspecial');
-  const montoSolicitadoInput = document.getElementById('montoSolicitado');
-  const tasaInteresInput = document.getElementById('tasaInteres');
-  const pagoMensualInput = document.getElementById('pagoMensual');
-  const pagoQuincenalInput = document.getElementById('pagoQuincenal');
-  const pagoMensualInputModal = document.getElementById('pagoMensualModal');
-  const diasHastaProximoCorte = document.getElementById('diasHastaProximoCorte');
+  let tipoClienteComboBox = document.getElementById('tipoCliente');
+  let divIntervaloPagoClienteEspecial = document.getElementById('divIntervaloPago');
+  let IntervaloPagoClienteEspecial = document.getElementById('IntervaloPagoClienteEspecial');
+  let montoSolicitadoInput = document.getElementById('montoSolicitado');
+  let tasaInteresInput = document.getElementById('tasaInteres');
+  let pagoMensualInput = document.getElementById('pagoMensual');
+  let pagoQuincenalInput = document.getElementById('pagoQuincenal');
+  let pagoMensualInputModal = document.getElementById('pagoMensualModal');
+  let diasHastaProximoCorte = document.getElementById('diasHastaProximoCorte');
 
 
 
   // Obtener los inputs del formulario normal
-  const fechaPrestamoInput = document.getElementById('fechaPrestamo');
-  const montoPrimerPagoInput = document.getElementById('montoPrimerPago');
-  const fechaPagoLetras = document.getElementById('fechaPagoLetras');
-  const fechaPago = document.getElementById('fechaPago');
+  let fechaPrestamoInput = document.getElementById('fechaPrestamo');
+  let montoPrimerPagoInput = document.getElementById('montoPrimerPago');
+  let fechaPagoLetras = document.getElementById('fechaPagoLetras');
+  let fechaPago = document.getElementById('fechaPago');
 
 
   ///////////////   MODALS //////////////////////////////////////////
