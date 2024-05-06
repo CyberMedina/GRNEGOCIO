@@ -1,7 +1,3 @@
-document.addEventListener('DOMContentLoaded', function () {
-  stepIndicator.textContent = 1;
-  
-  });
 
 
   function revision_contrato() {
@@ -98,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     }
-    console.log(formContrato);
 
     // Asignación de valores a los inputs
     for (const objetoName in formContrato) {
@@ -252,8 +247,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     updateProgressBar = function () {
-      console.log("ENTRO´!")
-      console.log(currentStep);
       // Subir al principio de la página
       window.scrollTo(0, 0);
       // Esperar un segundo (1000 milisegundos)
@@ -441,7 +434,6 @@ document.addEventListener('DOMContentLoaded', function () {
       primeraSegundaQuincena = "Segunda quincena de " + nombreMes + " de " + year;
     }
 
-    console.log(primeraSegundaQuincena);
 
     fechaPagoLetras.value = primeraSegundaQuincena;
 
@@ -507,8 +499,6 @@ document.addEventListener('DOMContentLoaded', function () {
       corteQuincena = secondFortnightDate;
     }
 
-    // Mostrar los días restantes hasta la próxima quincena
-    console.log('Días restantes hasta la próxima quincena: ' + daysUntilNextFortnight);
 
     diasHastaProximoCorte.value = daysUntilNextFortnight + 1;
 
@@ -519,9 +509,7 @@ document.addEventListener('DOMContentLoaded', function () {
     pagoDiario2Modal.value = pagoDiario.toFixed(2);
 
 
-    // Calcular el monto del primer pago según la fecha del préstamo
 
-    console.log(fechaPrestamo.getDate());
     // Verificar si la fecha es válida
     if (!fechaPrestamo || isNaN(fechaPrestamo.getTime())) {
       // Si la fecha no es válida, establecer el valor del monto del primer pago en 0
@@ -539,10 +527,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     const CopiaModalCalculoPrimerPago = modalCalculoPrimerPago.innerHTML;
-    console.log(CopiaModalCalculoPrimerPago);
     if (fechaPrestamo.getDate() === 1 || fechaPrestamo.getDate() === 15 || fechaPrestamo.getDate() === 30 || fechaPrestamo.getDate() === 31) {
       document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
-      console.log("Es el primer día del mes");
       montoPrimerPago = 0;
       montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
       montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
@@ -603,7 +589,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const dataMontoResult = await responseMonto.json();
-        console.log(dataMontoResult);
 
         fechaLetras = dataMontoResult.fecha_letras;
 
@@ -618,7 +603,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const dataResult = await response.json();
-        console.log(dataResult);
         montoSolicitadoLetras = dataResult.monto_letras;
 
         // Generar contenido HTML y abrir una nueva ventana
@@ -711,11 +695,9 @@ document.addEventListener('DOMContentLoaded', function () {
     event.preventDefault();
     // Capturar los valores de los campos
     revision_contrato();
-    console.log("probando si funciona el enviar formulario");
 
     // Obtener el formulario
     var contrato = revision_contrato();
-    console.log(contrato);
     var nombresPrint = contrato.nombres;
     var apellidosPrint = contrato.apellidos;
     var cedulaPrint = contrato.cedula;

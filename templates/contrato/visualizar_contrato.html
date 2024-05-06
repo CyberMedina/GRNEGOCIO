@@ -375,6 +375,11 @@
                         name="montoSolicitado" id="montoSolicitado" required />
                       <span class="icon"><i class="fa-solid fa-coins"></i></span>
                     </div>
+                    <div class="form-check checkbox-style checkbox-danger mb-20" id="DivchckbxAumentoPrestamo" hidden>
+                      <input class="form-check-input" type="checkbox" value="5" id="chckbxAumentoPrestamo" name="chckbxAumentoPrestamo" />
+                      <label class="form-check-label" for="checkbox-5">
+                        Aumento del prestamo</label>
+                    </div>
                     <!-- end select -->
                   </div>
                   <div class="col-sm-3">
@@ -622,6 +627,146 @@
                     </div>
                   </div>
                   <!-- ModalThree End -->
+
+                   <!-- ModalThree start -->
+                   <div class="warning-modal">
+                    <div class="modal fade" id="modalCalculoPrimerPagoSumaCapital" tabindex="-1" aria-hidden="true">
+                      <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content card-style">
+                          <div class="modal-header px-0 border-0">
+                            <h3 class="text-bold">Cálculo primer pago aumento de prestamo</h3>
+                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal" onclick="event.preventDefault();" >
+                              <i class="lni lni-cross-circle"></i>
+                            </button >
+                          </div>
+                          <div class="modal-body px-0">
+                            <div class="content mb-30">
+
+                              <div class="tab-style-3 mb-30">
+                                <nav class="nav" id="nav-tab">
+                                  <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                    data-bs-toggle="tab" data-bs-target="#tabContent-3-1" onclick="event.preventDefault();">
+                                    Pago diario
+                                  </button>
+                                  <button id="tab-3-2" class="main-btn deactive-btn rounded-full" data-bs-toggle="tab" onclick="event.preventDefault();"
+                                    data-bs-target="#tabContent-3-2">
+                                    Primer pago
+                                  </button>
+                                </nav>
+                                <div class="tab-content" id="nav-tabContent3">
+                                  <div class="tab-pane fade show active" id="tabContent-3-1">
+
+                                    <div class="row">
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1">
+                                          <label>Pago mensual</label>
+                                          <input class="text-center" type="number" placeholder="0"
+                                            name="pagoMensualModal" id="pagoMensualModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Dividido</label>
+                                          <input class="text-center" type="text" placeholder="" value="/" name="division" id="division" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label>Mes comercial</label>
+                                          <input class="text-center" type="text" value="30 días" name="noDiasMesModal"
+                                            id="noDiasMesModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>resultado</label>
+                                          <input class="text-center" type="text" placeholder="" value="=" id="igualresultadoModal" aria-modal="igualResultadoModal" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label class="text-success text-bold">Pago diario</label>
+                                          <input class="text-center" type="number" name="resultadoPagoDiarioModal"
+                                            id="resultadoPagoDiarioModal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="tab-pane fade" id="tabContent-3-2">
+
+
+                                    <div class="row">
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1">
+                                          <label>Pago diario</label>
+                                          <input class="text-center" type="number" placeholder="0"
+                                            id="pagoDiario2Modal" name="pagoDiario2Modal" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Multiplicado</label>
+                                          <input class="text-center" type="text" placeholder="" value="X" readonly name="X" id="X">
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label id="diasRestantesCorteModal"></label>
+                                          <input class="text-center" type="text" id="diasHastaProximoCorte"
+                                            name="diasHastaProximoCorte" readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-2">
+                                        <div class="input-style-1 text-center">
+                                          <label>Resultado</label>
+                                          <input class="text-center" type="text" placeholder="" value="=" id="resultadoModal" name="resultadoModal" readonly>
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+                                      <div class="col-sm-3">
+                                        <div class="input-style-1 text-center">
+                                          <label class="text-success text-bold">Primer pago</label>
+                                          <input class="text-center" type="number" name="montoPrimerPagoModal" id="montoPrimerPagoModal"
+                                            readonly />
+                                        </div>
+                                        <!-- end select -->
+                                      </div>
+
+
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <!-- end card -->
+
+
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- ModalThree End -->
+
 
                   <!-- ModalThree start -->
                   <div class="warning-modal">
@@ -1143,7 +1288,7 @@
                         <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
                           name="montoPrimerPagoRevisionContrato" id="montoPrimerPagoRevisionContrato" readonly />
                         <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                        <a id="linkProcdmtoModal" class="inactive" href="#" data-bs-toggle="modal"
+                        <a id="" class="inactive" href="#" data-bs-toggle="modal"
                           data-bs-target="#ModalThree">Ver procedimiento</a>
                       </div>
 
@@ -1531,11 +1676,11 @@ const inputsStep3 = document.querySelectorAll('.step-3 input');
 
     fechaPago.value = stringToDate('{{ datos_contratoCliente.fechaPago }}').toISOString().split('T')[0];
     fechaPrestamo.value = stringToDate('{{ datos_contratoCliente.fechaPrestamo }}').toISOString().split('T')[0];
-    pagoMensual.value = {{ datos_contratoCliente.pagoMensual }};
-    pagoQuincenal.value = {{ datos_contratoCliente.pagoQuincenal }};
+    pagoMensual.value = {{ datos_contratoCliente.pagoMensual }}.toFixed(2);
+    pagoQuincenal.value = {{ datos_contratoCliente.pagoQuincenal }}.toFixed(2);
     montoSolicitado.value = {{ datos_contratoCliente.monto_solicitado }};
     tasaInteres.value = {{ datos_contratoCliente.tasa_interes }};
-    montoPrimerPago.value = {{ datos_contratoCliente.montoPrimerPago }};
+    montoPrimerPago.value = {{ datos_contratoCliente.montoPrimerPago }}.toFixed(2);
 
 
     tasaInteresVieja = tasaInteres.value;
@@ -1560,13 +1705,52 @@ const inputsStep3 = document.querySelectorAll('.step-3 input');
 
   console.log(originalValues);
 
-  revision_contrato();
+   form = revision_contrato();
+   
 
 
   });
 
 
+  document.getElementById("montoSolicitado").addEventListener("change", function (){
 
+    console.log("Cambio en monto solicitado");
+
+    let DivchckbxAumentoPrestamo = document.getElementById("DivchckbxAumentoPrestamo");
+    DivchckbxAumentoPrestamo.hidden = false;
+
+});
+
+
+document.getElementById("chckbxAumentoPrestamo").addEventListener("change", function(){
+
+  let chckbxAumentoPrestamo = document.getElementById("chckbxAumentoPrestamo");
+
+  let linkProcdmtoModal = document.getElementById("linkProcdmtoModal");
+
+  // Aquí pones tus condiciones para determinar el nombre del modal
+  nombreModal = "ModalThree"; // Nombre del modal que deseas abrir
+
+  if (chckbxAumentoPrestamo.checked){
+
+    // Aquí pones tus condiciones para determinar el nombre del modal
+    let nombreModal = "modalCalculoPrimerPagoSumaCapital"; // Nombre del modal que deseas abrir
+
+
+  
+  }
+  else
+  {
+
+    nombreModal = "ModalThree"; // Nombre del modal que deseas abrir
+
+
+
+  }
+          
+    // Actualizar el atributo data-bs-target del enlace con el nuevo nombre del modal
+    document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#" + nombreModal);
+});
 
 
   // Función para comparar los valores originales con los nuevos
