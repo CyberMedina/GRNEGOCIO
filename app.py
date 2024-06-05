@@ -14,6 +14,7 @@ from datetime import datetime
 from babel.dates import format_date
 import weasyprint
 import smtplib
+import subprocess
 
 
 # Importando desde archivos locales
@@ -911,6 +912,32 @@ def busqueda_capital(nombres):
     result = db_session.execute(query, {"nombres": nombres}).fetchone()
 
     return result
+
+
+@app.route('/backup')
+def backup():
+    try:
+        # Define los detalles de la base de datos
+        db_host = "localhost"
+        db_user = "root"
+        db_password = "1233456"
+        db_name = "GRNEGOCIO"
+
+        # Define la ruta y el nombre del archivo de respaldo
+        backup_file = os.path.join(os.getcwd(), "backup.sql").replace("\\", "/")
+
+        # Crea el comando de respaldo
+        command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
+
+        # Ejecuta el comando
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        # Sube el archivo de respaldo a Google Drive
+        upload_to_drive(backup_file)
+
+        return "Respaldo realizado con éxito", 200
+    except Exception as e:
+        return str(e), 500
 
 
 @app.route('/api/obtener_capital', methods=['GET', 'POST'])
