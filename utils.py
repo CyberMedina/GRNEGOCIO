@@ -18,6 +18,8 @@ from selenium.webdriver.chrome.options import Options
 import random
 import time
 import datetime
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive 
 
 
 
@@ -226,3 +228,30 @@ def enviar_correo(destinatario, asunto, cuerpo):
     mensaje = Message(asunto, recipients=[destinatario])
     mensaje.body = cuerpo
     mail.send(mensaje)
+
+
+
+def upload_to_drive(filename):
+    gauth = GoogleAuth()
+
+    # Intenta cargar las credenciales de autenticación de un archivo
+    gauth.LoadCredentialsFile("mycreds.txt")
+
+    # Si el archivo no existe o no contiene credenciales válidas, inicia el flujo de autenticación
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()
+    elif gauth.access_token_expired:
+        gauth.Refresh()
+    else:
+        gauth.Authorize()
+
+    # Guarda las credenciales para la próxima ejecución
+    gauth.SaveCredentialsFile("mycreds.txt")
+
+    drive = GoogleDrive(gauth)
+
+    # Crea y sube un archivo de texto.
+    backup_file = drive.CreateFile({'title': filename})
+    backup_file.SetContentFile(filename)
+    backup_file.Upload()
+    print('El archivo de respaldo ha sido subido con éxito.')
