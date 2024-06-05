@@ -1,2 +1,4 @@
 env
 .env
+client_secrets.json
+mycreds.txt
