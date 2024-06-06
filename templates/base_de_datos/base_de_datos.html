@@ -1,0 +1,243 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Clientes{% endblock %}
+{% block body %}
+
+<style>
+  .dropdown-toggle::after {
+    display: none !important;
+    content: 0 !important;
+  }
+
+  #backupBaseDeDatos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0px !important;
+  }
+
+  @media (max-width: 767px) {
+    #backupBaseDeDatos .kanban-header-members {
+      margin-bottom: -0px !important;
+    }
+  }
+</style>
+
+<section class="section">
+  <div class="container-fluid">
+    <!-- ========== title-wrapper start ========== -->
+    <div class="title-wrapper pt-30">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="title">
+            <h2>Configuración</h2>
+          </div>
+        </div>
+        <!-- end col -->
+        <div class="col-md-6">
+          <div class="breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                  <a href="#0"> Dashboard </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  Kanban Dashboard
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+        <!-- end col -->
+      </div>
+      <!-- end row -->
+    </div>
+    <!-- ========== title-wrapper end ========== -->
+
+    <!-- ========== kanban header start ========== -->
+    <div class="kanban-header">
+      <div class="kanban-header-members">
+        <button class="add-member-button text-gray">
+          <i class="fa-solid fa-database"></i>
+          Backup de base de datos
+        </button>
+      </div>
+      <div class="add-task-button">
+        <button class="btn primary-btn" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Gestionar
+        </button>
+      </div>
+    </div>
+    <!-- ========== kanban header end ========== -->
+
+    <!-- ======== add task modal start =========== -->
+    <div class="add-task-modal">
+      <div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="false">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+
+              <div class="row gx-0">
+                <div class="col-lg-8">
+                  <div class="task-modal-left">
+                    <h5 class="modal-title">Gestión de base de datos</h5>
+
+                    <div class="select-style-1">
+                      <label>Tipo de gestión</label>
+                      <div class="select-position">
+                        <select class="light-bg" id="comboTipoGestion">
+                          <option value="">Seleccione la gestión</option>
+                          <option value="Exportar">Exportar</option>
+                          <option value="Importar/restaurar">Importar/restaurar</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- INICIA SECCION DE EXPORTAR -->
+
+                    <section id="seccionExportar" hidden>
+                      <!-- ========== kanban header start ========== -->
+                      <div class="kanban-header" id="backupBaseDeDatos">
+                        <div class="kanban-header-members">
+                          <div class="add-member-button text-gray">
+                            <i class="fa-solid fa-database"></i>
+                            Backup de base de datos
+                          </div>
+                        </div>
+                        <div class="add-task-button">
+                          <div class="more-btn-wrapper">
+                            <button class="more-btn dropdown-toggle border-0 bg-transparent" id="moreAction"
+                              data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="lni lni-more-alt"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
+                              <li class="dropdown-item">
+                                <a href="#0" class="text-gray text-sm">
+                                  <i class="fa-solid fa-rotate-right"></i> Nuevo respaldo
+                                </a>
+                              </li>
+                              <li class="dropdown-item">
+                                <a id="a_descargarBackup" href="#0" class="text-gray text-sm"
+                                  style="margin-right: 1px !important;">
+                                  <i class="fa-solid fa-download"></i>
+                                  Descargar
+                                </a>
+                              </li>
+                              <li class="dropdown-item">
+                                <a href="#0" class="text-gray text-sm">
+                                  <i class="fa-solid fa-trash"></i>
+                                  Eliminar
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      <p style="font-size: small; margin-left:20px; margin-bottom: 20px">Fecha y hora de creación: <span
+                          id="spanfechaHoraBackupCreacionBd"></span> </p>
+
+                      <!-- ========== kanban header end ========== -->
+                    </section>
+
+                    <!-- TERMINA SECCION DE EXPORTAR -->
+                    <form action="/importar_backup" method="POST" enctype="multipart/form-data">
+                      <!-- INICIA SECCION IMPORTAR -->
+                      <section id="seccionImportar" hidden>
+                        <div class="col-12">
+                          <div class="input-style-3">
+                            <label>Importar backup SQL</label>
+                            <input type="file" placeholder="" accept="" name="sql_backup" id="sql_backup" />
+                            <span class="icon"><i class="fa-solid fa-database"></i></span>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-6">
+                            <button type="button" data-bs-dismiss="modal" class="btn btn-danger w-100">
+                              Cancelar
+                            </button>
+                          </div>
+                          <div class="col-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                              <i class="lni lni-plus me-1 text-sm text-bold"></i>
+                              Realizar
+                            </button>
+                          </div>
+                      </section>
+                      <!-- TERMINA SECCION IMPORTAR -->
+
+
+
+                    </form>
+
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="task-modal-right">
+                    <button type="button" class="border-0 bg-transparent ms-auto close-button" data-bs-dismiss="modal">
+                      <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M14.9999 13.2324L21.1874 7.04492L22.9549 8.81242L16.7674 14.9999L22.9549 21.1874L21.1874 22.9549L14.9999 16.7674L8.81242 22.9549L7.04492 21.1874L13.2324 14.9999L7.04492 8.81242L8.81242 7.04492L14.9999 13.2324Z"
+                          fill="currentColor" />
+                      </svg>
+                    </button>
+
+                    <div class="select-style-1">
+                      <label>Priority</label>
+                      <div class="select-position">
+                        <select class="light-bg">
+                          <option value="">Select Priority</option>
+                          <option value="">Low</option>
+                          <option value="">Medium</option>
+                          <option value="">High</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="select-style-1">
+                      <label>Assign To</label>
+                      <div class="select-position">
+                        <select class="light-bg">
+                          <option value="">Assign to</option>
+                          <option value="">Shafiq Hammad</option>
+                          <option value="">Naimur Rahman</option>
+                          <option value="">Mahbub Hasan</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="input-style-1">
+                      <label>Due Date</label>
+                      <input class="light-bg" type="date" placeholder="Enter Title" />
+                    </div>
+                    <div class="row">
+                      <div class="col-6">
+                        <button type="button" data-bs-dismiss="modal" class="btn btn-danger w-100">
+                          Cancel
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <button type="button" data-bs-dismiss="modal" class="btn btn-primary w-100">
+                          <i class="lni lni-plus me-1 text-sm text-bold"></i>
+                          Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ======== add task modal end =========== -->
+
+    <script src="{{ url_for('static', filename= 'assets/js/base_de_datos/base_de_datos.js') }}"></script>
+
+    {% block customJS %}
+
+
+    {% endblock %}
+
+
+
+
+    {% endblock %}

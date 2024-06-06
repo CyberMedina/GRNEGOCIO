@@ -16,6 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `backupsbd`
+--
+
+DROP TABLE IF EXISTS `backupsbd`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `backupsbd` (
+  `id_backupsBD` int NOT NULL,
+  `nombre_backup` varchar(100) NOT NULL,
+  `ruta_backup` varchar(255) NOT NULL,
+  `fechaHora` datetime NOT NULL,
+  PRIMARY KEY (`id_backupsBD`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `backupsbd`
+--
+
+LOCK TABLES `backupsbd` WRITE;
+/*!40000 ALTER TABLE `backupsbd` DISABLE KEYS */;
+/*!40000 ALTER TABLE `backupsbd` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `cliente`
 --
 
@@ -178,7 +203,7 @@ CREATE TABLE `detalle_pagos` (
 
 LOCK TABLES `detalle_pagos` WRITE;
 /*!40000 ALTER TABLE `detalle_pagos` DISABLE KEYS */;
-INSERT INTO `detalle_pagos` VALUES (1,1,1,53.90,NULL,1),(2,2,1,706.13,NULL,1),(3,2,2,25773.88,36.50,2),(4,3,1,21.86,NULL,1),(5,3,2,800.00,36.60,2),(6,4,1,58.92,NULL,1),(7,5,1,60.11,NULL,1),(8,5,2,2200.00,36.60,2),(9,6,1,20.67,NULL,1),(10,7,1,35.52,NULL,1),(11,7,2,1300.00,36.60,2),(12,8,1,45.26,NULL,1),(13,9,1,35.52,NULL,1),(14,9,2,1300.00,36.60,2),(15,10,1,45.26,NULL,1),(16,11,1,80.78,NULL,1),(17,12,1,19.13,NULL,1),(18,12,2,700.00,36.60,2),(19,13,1,61.65,NULL,1),(20,14,1,21.24,NULL,1),(21,15,1,53.10,NULL,1),(22,16,1,23.40,NULL,1),(23,17,1,27.00,NULL,1);
+INSERT INTO `detalle_pagos` VALUES (1,1,1,53.90,NULL,1),(2,2,1,706.13,NULL,1),(3,2,2,25773.88,36.50,2),(4,3,1,21.86,NULL,1),(5,3,2,800.00,36.60,2),(6,4,1,58.92,NULL,1),(7,5,1,60.11,NULL,1),(8,5,2,2200.00,36.60,2),(9,6,1,20.67,NULL,1),(10,7,1,35.52,NULL,1),(11,7,2,1300.00,36.60,2),(12,8,1,45.26,NULL,1),(13,9,1,35.52,NULL,1),(14,9,2,1300.00,36.60,2),(15,10,1,45.26,NULL,1),(16,11,1,80.78,NULL,1),(17,12,1,19.13,NULL,1),(18,12,2,700.00,36.60,2),(19,13,1,61.65,NULL,1),(20,14,1,21.24,NULL,1),(21,15,1,53.10,NULL,1),(22,16,1,23.40,NULL,1),(23,17,1,27.00,NULL,1),(24,18,1,24.59,NULL,1),(25,18,2,900.00,36.60,2),(26,19,1,56.19,NULL,1),(27,20,1,80.78,NULL,1);
 /*!40000 ALTER TABLE `detalle_pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -292,7 +317,7 @@ CREATE TABLE `pagos` (
 
 LOCK TABLES `pagos` WRITE;
 /*!40000 ALTER TABLE `pagos` DISABLE KEYS */;
-INSERT INTO `pagos` VALUES (1,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-02-17','2024-04-27 10:45:32',3),(2,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-01-31','2024-04-27 15:58:01',0),(3,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:58:46',2),(4,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:59:15',0),(5,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:00:37',2),(6,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:01:00',0),(7,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:02',2),(8,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:35',0),(9,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:35',2),(10,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:49',0),(11,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-15','2024-04-27 16:11:05',0),(12,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:25',2),(13,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:46',0),(14,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-01','2024-04-27 17:28:37',3),(15,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-27','2024-04-27 17:28:45',1),(16,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-03','2024-05-03 21:57:03',3),(17,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-04','2024-06-04 17:21:59',1);
+INSERT INTO `pagos` VALUES (1,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-02-17','2024-04-27 10:45:32',3),(2,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-01-31','2024-04-27 15:58:01',0),(3,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:58:46',2),(4,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:59:15',0),(5,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:00:37',2),(6,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:01:00',0),(7,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:02',2),(8,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:35',0),(9,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:35',2),(10,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:49',0),(11,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-15','2024-04-27 16:11:05',0),(12,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:25',2),(13,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:46',0),(14,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-01','2024-04-27 17:28:37',3),(15,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-27','2024-04-27 17:28:45',1),(16,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-03','2024-05-03 21:57:03',3),(17,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-04','2024-06-04 17:21:59',1),(18,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-11','2024-06-05 11:50:21',2),(19,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-14','2024-06-05 11:50:58',0),(20,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-30','2024-06-05 11:51:24',0);
 /*!40000 ALTER TABLE `pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -381,7 +406,7 @@ CREATE TABLE `saldos_pagos` (
 
 LOCK TABLES `saldos_pagos` WRITE;
 /*!40000 ALTER TABLE `saldos_pagos` DISABLE KEYS */;
-INSERT INTO `saldos_pagos` VALUES (1,13,1,-1018.67,'2024-04-27 16:11:46',1);
+INSERT INTO `saldos_pagos` VALUES (1,13,1,-1155.64,'2024-06-05 11:51:24',1);
 /*!40000 ALTER TABLE `saldos_pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -526,7 +551,7 @@ CREATE TABLE `transacciones_saldos` (
 
 LOCK TABLES `transacciones_saldos` WRITE;
 /*!40000 ALTER TABLE `transacciones_saldos` DISABLE KEYS */;
-INSERT INTO `transacciones_saldos` VALUES (1,1,2,2,-706.13,'Disminucion','2024-04-27 15:58:01'),(2,1,4,1,-58.92,'Disminucion','2024-04-27 15:59:15'),(3,1,6,1,-20.67,'Disminucion','2024-04-27 16:01:00'),(4,1,8,1,-45.26,'Disminucion','2024-04-27 16:05:35'),(5,1,10,1,-45.26,'Disminucion','2024-04-27 16:09:49'),(6,1,11,1,-80.78,'Disminucion','2024-04-27 16:11:05'),(7,1,13,1,-61.65,'Disminucion','2024-04-27 16:11:46');
+INSERT INTO `transacciones_saldos` VALUES (1,1,2,2,-706.13,'Disminucion','2024-04-27 15:58:01'),(2,1,4,1,-58.92,'Disminucion','2024-04-27 15:59:15'),(3,1,6,1,-20.67,'Disminucion','2024-04-27 16:01:00'),(4,1,8,1,-45.26,'Disminucion','2024-04-27 16:05:35'),(5,1,10,1,-45.26,'Disminucion','2024-04-27 16:09:49'),(6,1,11,1,-80.78,'Disminucion','2024-04-27 16:11:05'),(7,1,13,1,-61.65,'Disminucion','2024-04-27 16:11:46'),(8,1,19,1,-56.19,'Disminucion','2024-06-05 11:50:58'),(9,1,20,1,-80.78,'Disminucion','2024-06-05 11:51:24');
 /*!40000 ALTER TABLE `transacciones_saldos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -539,4 +564,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-05  2:05:33
+-- Dump completed on 2024-06-05 22:25:03
