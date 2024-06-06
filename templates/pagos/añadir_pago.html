@@ -47,10 +47,24 @@
                         <div
                             class="title d-flex flex-wrap pl-30 pr-30 mb-10 align-items-center justify-content-between">
                             <div class="row">
-
                                 {% for dataCliente in datos_cliente %}
-
-                                <h3 class="mb-3">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
+                                <div class="col-12 d-flex align-items-center mb-3">
+                                    <h3 class="mb-0">{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h3>
+                                    <div class="dropdown ms-3">
+                                        <button class="more-btn dropdown-toggle" type="button" id="moreAction1"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="lni lni-more-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1">
+                                            <li class="dropdown-item">
+                                                <a href="#0" class="text-gray">Ver contrato</a>
+                                            </li>
+                                            <li class="dropdown-item">
+                                                <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}" class="text-gray">Editar contrato</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <input type="date" value="12-04-22" id="fechaPrestamoInput" name="fechaPrestamoInput"
                                     hidden>
                                 <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual"
@@ -67,11 +81,14 @@
                                     <div class="row">
                                         <div class="col-12">
                                             {% if estado_pago_corte.estado == 0 %}
-                                            <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No ha pagado</span>
+                                            <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No ha
+                                                pagado</span>
                                             {% elif estado_pago_corte.estado == 1 %}
-                                            <span class="main-badge success-badge rounded-full mb-2 fs-6 p-3">Al día</span>
+                                            <span class="main-badge success-badge rounded-full mb-2 fs-6 p-3">Al
+                                                día</span>
                                             {% elif estado_pago_corte.estado == 2 %}
-                                            <span class="main-badge warning-badge rounded-full mb-2 fs-6 p-3">Pago incompleto</span>
+                                            <span class="main-badge warning-badge rounded-full mb-2 fs-6 p-3">Pago
+                                                incompleto</span>
                                             {% elif estado_pago_corte.estado == 3 %}
                                             <span class="text-danger">No pagó</span>
                                             {% endif %}
@@ -688,7 +705,8 @@
                                     <div class="select-position" id="divSelectcomboCorreoElectronicoImpresion" hidden>
                                         <select class="light-bg" required name="comboCorreoElectronicoImpresion"
                                             id="comboCorreoElectronicoImpresion">
-                                            <option value="medinajhonatan02@gmail.com">medinajhonatan02@gmail.com</option selected>
+                                            <option value="medinajhonatan02@gmail.com">medinajhonatan02@gmail.com
+                                            </option selected>
                                             <option value="germanmayorga58@gmail.com">germanmayorga58@gmail.com</option>
 
                                         </select>

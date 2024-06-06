@@ -17,7 +17,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import random
 import time
-import datetime
+from datetime import datetime
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive 
 
 
 
@@ -226,3 +228,73 @@ def enviar_correo(destinatario, asunto, cuerpo):
     mensaje = Message(asunto, recipients=[destinatario])
     mensaje.body = cuerpo
     mail.send(mensaje)
+
+
+
+
+
+def get_or_create_folder_id(drive, folder_path):
+    folder_names = folder_path.split('/')
+    parent_id = 'root'
+    for folder_name in folder_names:
+        query = f"'{parent_id}' in parents and title='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+        file_list = drive.ListFile({'q': query}).GetList()
+        if file_list:
+            folder_id = file_list[0]['id']
+        else:
+            # Create the folder if it doesn't exist
+            folder_metadata = {
+                'title': folder_name,
+                'parents': [{'id': parent_id}],
+                'mimeType': 'application/vnd.google-apps.folder'
+            }
+            folder = drive.CreateFile(folder_metadata)
+            folder.Upload()
+            folder_id = folder['id']
+        parent_id = folder_id
+    return parent_id
+
+
+
+def auth_to_drive():
+    gauth = GoogleAuth()
+
+    # Configura el tipo de acceso en 'offline' para obtener un refresh_token
+    gauth.DEFAULT_SETTINGS['oauth_scope'] = ['https://www.googleapis.com/auth/drive.file']
+    gauth.DEFAULT_SETTINGS['access_type'] = 'offline'
+    gauth.DEFAULT_SETTINGS['include_granted_scopes'] = 'true'
+
+    # Intenta cargar las credenciales de autenticación de un archivo
+    try:
+        gauth.LoadCredentialsFile("mycreds.txt")
+    except Exception as e:
+        print("No se pudo cargar el archivo de credenciales. Iniciando autenticación...")
+
+    # Si el archivo no existe o no contiene credenciales válidas, inicia el flujo de autenticación
+    if gauth.credentials is None:
+        gauth.LocalWebserverAuth()
+    elif gauth.access_token_expired:
+        try:
+            gauth.Refresh()
+        except Exception as e:
+            print("No se pudo refrescar el token. Iniciando autenticación...")
+            gauth.LocalWebserverAuth()
+    else:
+        gauth.Authorize()
+
+    # Guarda las credenciales para la próxima ejecución
+    gauth.SaveCredentialsFile("mycreds.txt")
+
+    # Retorna una instancia de GoogleDrive autenticada
+    return GoogleDrive(gauth)
+
+def upload_to_drive(drive, filepath, folder_id):
+    # Extrae solo el nombre del archivo del camino completo
+    filename = os.path.basename(filepath)
+
+    # Crea y sube un archivo de texto.
+    backup_file = drive.CreateFile({'title': filename, 'parents': [{'id': folder_id}]})
+    backup_file.SetContentFile(filepath)
+    backup_file.Upload()
+    print('El archivo de respaldo ha sido subido con éxito.')
+   

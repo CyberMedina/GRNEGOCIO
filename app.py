@@ -14,6 +14,8 @@ from datetime import datetime
 from babel.dates import format_date
 import weasyprint
 import smtplib
+import subprocess
+import glob
 
 
 # Importando desde archivos locales
@@ -23,6 +25,8 @@ from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
+from models.contratos import *
+from models.base_de_datos import *
 from flask_cors import CORS
 from serverEmail import mail
 
@@ -456,10 +460,9 @@ def anadir_prestamo(id_cliente):
                 checkbox_no_deudor = request.form['chckbxNoDeudor']
                 id_contrato_fiador = insertar_contrato_fiador(
                     db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, no_fiador)
-
             else:
                 id_contrato_fiador = insertar_contrato_fiador(
-                    db_session, id_cliente, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
+                    db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
 
             if tipoCliente == cliente_normal:
 
@@ -856,7 +859,53 @@ def prueba_extraer_plata():
 
     return 'Si entró!'
 
+########### Empieza el modulo de contrato ##########
+
+@app.route('/visualizar_contrato/<int:id_cliente>', methods=['GET', 'POST'])
+def visualizar_contrato(id_cliente):
+
+
+    id_contratoActual = obtener_IdContrato(db_session, id_cliente)
+    datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
+    datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
+
+    datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
+    datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
+
+
+
+
+
+
+    
+    print(datos_cliente)
+
+    datos_formulario_anadir_prestamo = {
+        "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "tipos_monedas": obtener_tipos_monedas(db_session),
+        "datos_cliente": datos_cliente,
+        "datos_contratoCliente": datos_contratoCliente,
+        "datos_contratoFiador": datos_contratoFiador,
+        "datos_fiador" : datos_fiador,
+    }
+
+    return render_template('contrato/visualizar_contrato.html', **datos_formulario_anadir_prestamo)
+
+
+
+
 ########### Empieza el modulo de capital ###########
+
+########### EMPIZA MODOULO DE CONFIGURACION ###########
+
+########### EMPIZA MODULO DE BASE DE DATOS ###########
+@app.route('/base_de_datos', methods=['GET', 'POST'])
+def base_de_datos():
+
+
+    return render_template('base_de_datos/base_de_datos.html')
+
+########### TERMINA MODLU DE CONFIGURACION ###########
 
 
 @app.route('/modals', methods=['GET', 'POST'])
@@ -877,6 +926,85 @@ def busqueda_capital(nombres):
 
     return result
 
+
+@app.route('/backup')
+def backup():
+    try:
+        # Define los detalles de la base de datos
+        db_host = "localhost"
+        db_user = "root"
+        db_password = "1233456"
+        db_name = "GRNEGOCIO"
+
+        # Define la ruta y el nombre del archivo de respaldo
+        backup_dir = os.path.join(os.getcwd(), "static/bd/backups")
+        os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
+
+        # Obtiene la fecha y hora actual y la formatea como una cadena
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+
+        backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
+
+        # Crea el comando de respaldo
+        command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
+
+        # Ejecuta el comando
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+        crear_reespaldoBD(db_session, backup_file)
+
+        # Crea una instancia de GoogleDrive con las credenciales de autenticación
+        drive = auth_to_drive()
+
+        # Sube el archivo de respaldo a Google Drive
+        folder_id = get_or_create_folder_id(drive, 'GRNEGOCIO/Bd/Backups')
+        if folder_id is not None:
+            upload_to_drive(drive, backup_file, folder_id)
+        else:
+            print('No se encontró o no se pudo crear la carpeta especificada en Google Drive.')
+
+        return "Respaldo realizado con éxito", 200
+    except Exception as e:
+        return str(e), 500
+
+
+@app.route('/importar_backup', methods=['GET', 'POST'])
+def importar_backup():
+    if request.method == 'POST':
+        try:
+            sql_backup = request.files['sql_backup']
+            # Define los detalles de la base de datos
+            db_host = "localhost"
+            db_user = "root"
+            db_password = "1233456"
+            db_name = "GRNEGOCIO"
+            try:
+                sql_commands = sql_backup.read().decode()
+                subprocess.run(['mysql', '-u'+db_user, '-p'+db_password, '-h'+db_host, '-P'+str(3306), '-D'+db_name], input=sql_commands, text=True, check=True)
+
+                print("Importación exitosa.")
+            except subprocess.CalledProcessError as e:
+                print("Hubo un error durante la importación:", str(e))
+            return "Importación exitosa", 200
+
+        except Exception as e:
+            return str(e), 500
+
+        finally:
+            db_session.close()
+    
+    return 'entró al GET'
+    
+
+
+@app.route('/obtener_datos_ultimo_backup' , methods=['GET', 'POST'])
+def obtener_datos_ultimo_backup():
+    try:
+        backup = seleccionar_ultimo_backup(db_session)
+        return jsonify({"backup": backup}), 200
+    except Exception as e:
+        return str(e), 500
 
 @app.route('/api/obtener_capital', methods=['GET', 'POST'])
 @cross_origin()
