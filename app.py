@@ -1,11 +1,11 @@
 from logging import getLogger
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
 from flask_mail import Mail, Message
 from flask_socketio import SocketIO, emit
 from io import BytesIO
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
 from sqlalchemy.exc import SQLAlchemyError
@@ -16,6 +16,7 @@ import weasyprint
 import smtplib
 import subprocess
 import glob
+import io
 
 
 # Importando desde archivos locales
@@ -927,74 +928,105 @@ def busqueda_capital(nombres):
     return result
 
 
+
+# Obtener metadatos
+metadata = MetaData()
+metadata.reflect(bind=engine)
+
+def generate_insert_statements(table):
+    """Genera sentencias INSERT para todos los datos de una tabla."""
+    insert_statements = []
+    with engine.connect() as connection:
+        result = connection.execute(table.select())
+        for row in result:
+            columns = ', '.join(table.columns.keys())
+            values = ', '.join("'{}'".format(str(value).replace("'", "\\'")) if value is not None else 'NULL' for value in row)
+            insert_statement = "INSERT INTO {} ({}) VALUES ({});".format(table.name, columns, values)
+            insert_statements.append(insert_statement)
+    return insert_statements
+
+
 @app.route('/backup')
-def backup():
-    try:
-        # Define los detalles de la base de datos
-        db_host = "localhost"
-        db_user = "root"
-        db_password = "1233456"
-        db_name = "GRNEGOCIO"
-
-        # Define la ruta y el nombre del archivo de respaldo
-        backup_dir = os.path.join(os.getcwd(), "static/bd/backups")
-        os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
-
-        # Obtiene la fecha y hora actual y la formatea como una cadena
-        now = datetime.now()
-        timestamp = now.strftime("%Y%m%d_%H%M%S")
-
-        backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
-
-        # Crea el comando de respaldo
-        command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
-
-        # Ejecuta el comando
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-        crear_reespaldoBD(db_session, backup_file)
-
-        # Crea una instancia de GoogleDrive con las credenciales de autenticación
-        drive = auth_to_drive()
-
-        # Sube el archivo de respaldo a Google Drive
-        folder_id = get_or_create_folder_id(drive, 'GRNEGOCIO/Bd/Backups')
-        if folder_id is not None:
-            upload_to_drive(drive, backup_file, folder_id)
-        else:
-            print('No se encontró o no se pudo crear la carpeta especificada en Google Drive.')
-
-        return "Respaldo realizado con éxito", 200
-    except Exception as e:
-        return str(e), 500
-
-
-@app.route('/importar_backup', methods=['GET', 'POST'])
-def importar_backup():
-    if request.method == 'POST':
-        try:
-            sql_backup = request.files['sql_backup']
-            # Define los detalles de la base de datos
-            db_host = "localhost"
-            db_user = "root"
-            db_password = "1233456"
-            db_name = "GRNEGOCIO"
-            try:
-                sql_commands = sql_backup.read().decode()
-                subprocess.run(['mysql', '-u'+db_user, '-p'+db_password, '-h'+db_host, '-P'+str(3306), '-D'+db_name], input=sql_commands, text=True, check=True)
-
-                print("Importación exitosa.")
-            except subprocess.CalledProcessError as e:
-                print("Hubo un error durante la importación:", str(e))
-            return "Importación exitosa", 200
-
-        except Exception as e:
-            return str(e), 500
-
-        finally:
-            db_session.close()
+def backup_database_to_insert_statements():
+    """Genera un backup de la base de datos en forma de sentencias INSERT y lo guarda en un archivo."""
+    backup_statements = []
+    for table_name, table in metadata.tables.items():
+        backup_statements.extend(generate_insert_statements(table))
     
-    return 'entró al GET'
+    with open('backup.sql', 'w') as backup_file:
+        backup_file.write('\n'.join(backup_statements))
+    
+    return "Backup completed", 200
+
+
+# @app.route('/backup')
+# def backup():
+#     try:
+#         # Define los detalles de la base de datos
+#         db_host = "localhost"
+#         db_user = "root"
+#         db_password = "1233456"
+#         db_name = "GRNEGOCIO"
+
+#         # Define la ruta y el nombre del archivo de respaldo
+#         backup_dir = os.path.join(os.getcwd(), "static/bd/backups")
+#         os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
+
+#         # Obtiene la fecha y hora actual y la formatea como una cadena
+#         now = datetime.now()
+#         timestamp = now.strftime("%Y%m%d_%H%M%S")
+
+#         backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
+
+#         # Crea el comando de respaldo
+#         command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
+
+#         # Ejecuta el comando
+#         result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+#         crear_reespaldoBD(db_session, backup_file)
+
+#         # Crea una instancia de GoogleDrive con las credenciales de autenticación
+#         drive = auth_to_drive()
+
+#         # Sube el archivo de respaldo a Google Drive
+#         folder_id = get_or_create_folder_id(drive, 'GRNEGOCIO/Bd/Backups')
+#         if folder_id is not None:
+#             upload_to_drive(drive, backup_file, folder_id)
+#         else:
+#             print('No se encontró o no se pudo crear la carpeta especificada en Google Drive.')
+
+#         return "Respaldo realizado con éxito", 200
+#     except Exception as e:
+#         return str(e), 500
+
+
+# @app.route('/importar_backup', methods=['GET', 'POST'])
+# def importar_backup():
+#     if request.method == 'POST':
+#         try:
+#             sql_backup = request.files['sql_backup']
+#             # Define los detalles de la base de datos
+#             db_host = "localhost"
+#             db_user = "root"
+#             db_password = "1233456"
+#             db_name = "GRNEGOCIO"
+#             try:
+#                 sql_commands = sql_backup.read().decode()
+#                 subprocess.run(['mysql', '-u'+db_user, '-p'+db_password, '-h'+db_host, '-P'+str(3306), '-D'+db_name], input=sql_commands, text=True, check=True)
+
+#                 print("Importación exitosa.")
+#             except subprocess.CalledProcessError as e:
+#                 print("Hubo un error durante la importación:", str(e))
+#             return "Importación exitosa", 200
+
+#         except Exception as e:
+#             return str(e), 500
+
+#         finally:
+#             db_session.close()
+    
+#     return 'entró al GET'
     
 
 

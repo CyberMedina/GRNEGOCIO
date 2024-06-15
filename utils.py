@@ -195,24 +195,24 @@ def obtener_fechaIncioYFin_con_año(año):
     # Verificar si el año es un entero
     if isinstance(año, int):
         # Crear un objeto datetime con el año
-        año = datetime.datetime(año, 1, 1)
+        año = datetime(año, 1, 1)
     elif isinstance(año, str):
         # Si la entrada es una cadena, convertirla a datetime
-        año = datetime.datetime.strptime(año, "%Y")
+        año = datetime.strptime(año, "%Y")
     else:
         # Si el tipo de dato no es ni int ni str, mostrar un mensaje de error
         raise ValueError("El año debe ser un entero o una cadena en formato 'YYYY'.")
 
     # Obtener la fecha de inicio y fin del año
-    fecha_inicio = datetime.datetime(año.year, 1, 1)
-    fecha_fin = datetime.datetime(año.year, 12, 31)
+    fecha_inicio = datetime(año.year, 1, 1)
+    fecha_fin = datetime(año.year, 12, 31)
 
     return fecha_inicio, fecha_fin
 
 
 def sumar_dias(fecha_inicio, dias_a_sumar):
     # Convertir la fecha de inicio a un objeto datetime
-    fecha_inicio_obj = datetime.datetime.strptime(fecha_inicio, '%Y-%m-%d')
+    fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d')
 
     # Sumar los días especificados
     fecha_fin_obj = fecha_inicio_obj + datetime.timedelta(days=dias_a_sumar)
