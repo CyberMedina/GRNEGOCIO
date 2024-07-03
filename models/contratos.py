@@ -72,3 +72,39 @@ WHERE cf.id_contrato_fiador = :id_contrato_fiador;""")
     finally:
         db_session.close()
 
+
+def cambiar_estado_contrato(db_session, id_contrato, estado):
+    try:
+        query = text("""
+        UPDATE contrato
+        SET estado = :estado
+        WHERE id_contrato = :id_contrato;
+        """)
+        db_session.execute(query, {"id_contrato": id_contrato, "estado": estado})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+
+def cambiar_estado_contrato_fiador(db_session, id_contrato_fiador, estado):
+    try:
+        query = text("""
+        UPDATE contrato_fiador
+        SET estado = :estado
+        WHERE id_contrato_fiador = :id_contrato_fiador;
+        """)
+        db_session.execute(query, {"id_contrato_fiador": id_contrato_fiador, "estado": estado})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+

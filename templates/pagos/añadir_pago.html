@@ -63,7 +63,8 @@
                                                 <a href="#0" class="text-gray">Ver contrato</a>
                                             </li>
                                             <li class="dropdown-item">
-                                                <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}" class="text-gray">Editar contrato</a>
+                                                <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}"
+                                                    class="text-gray">Editar contrato</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -248,6 +249,7 @@
                                             <h6>{{ meses[i-1] }}</h6>
                                         </th>
                                     </tr>
+
                                     {% set pagos_mes = pagos | selectattr('id_mes', 'equalto', i) | list %}
                                     {% if pagos_mes %}
                                     {% for pago in pagos_mes %}
@@ -302,6 +304,9 @@
                                             </ul>
                                         </td>
                                     </tr>
+
+
+
 
                                     {% endfor %}
                                     {% else %}

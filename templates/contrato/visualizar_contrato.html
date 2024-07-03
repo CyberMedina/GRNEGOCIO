@@ -121,6 +121,10 @@
                     Verificación de datos personales
                   </h3>
                   <div class="col-sm-6">
+                    <input name="id_contratoActual" id="id_contratoActual" type="text" value="{{ id_contratoActual }}" hidden>
+                    <input name="id_cliente" id="id_cliente" type="text" value="{{ id_cliente }}" hidden>
+                    <input name="id_contrato_fiador" id="id_contrato_fiador" type="text" value="{{ datos_contratoFiador.id_contrato_fiador }}" hidden>
+                    <input name="id_persona" id="id_persona" type="text" value="{{ datos_cliente.id_persona }}" hidden>
                     <div class="input-style-3">
                       <label>Nombre(s)*</label>
                       <input type="text" value="{{ datos_cliente.nombres }}" placeholder="Nombres" name="nombres"
@@ -1234,7 +1238,7 @@
                           <input type="text" placeholder="0" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
                             name="pagoMensualRevisionContrato" id="pagoMensualRevisionContrato" readonly />
                           <span class="icon"><i class="fa-solid fa-star"></i></span>
-                          <a id="verConversionPagoMensual" class="inactive" href="#" data-bs-toggle="modal"
+                          <a id="" class="inactive" href="#" data-bs-toggle="modal"
                             data-bs-target="#ModalThree">Ver procedimiento</a>
                         </div>
                         <!-- end select -->
@@ -1566,18 +1570,23 @@
         </div>
         <div class="modal-body px-0">
           <div class="content mb-30">
+            <h6 class="mb-2">Cambios realizados:</h6>
             <p class="text-sm" id="body-modal-modalConfirmarEdicionContrato">
+
+              
+
+              
 
             </p>
           </div>
         </div>
         <div class="modal-footer">
           <div class="action d-flex flex-wrap justify-content-end">
-            <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
-              Cancel
+            <button id="actualizarContrato" class="main-btn btn-sm secondary-btn-outline btn-hover m-1">
+              Actualizar contrato
             </button>
-            <button data-bs-dismiss="modal" class="main-btn btn-sm primary-btn btn-hover m-1">
-              Send Message
+            <button id="realizarNuevoContrato" onclick="realizarNuevoContrato();" class="main-btn btn-sm danger-btn btn-hover m-1">
+              Realizar nuevo contrato
             </button>
           </div>
         </div>
@@ -1649,6 +1658,7 @@
   let modalConfirmarEdicionContrato = new bootstrap.Modal(document.getElementById('modalConfirmarEdicionContrato'));
 
   const nombresDescriptivos = {
+    nombres: 'Cliente',
     montoSolicitado: 'Monto solicitado',
     pagoMensual: 'Pago mensual',
     pagoQuincenal: 'Pago quincenal',
@@ -1656,7 +1666,7 @@
     pagoMensualModal: 'Pago mensual (modal)',
     // Agrega más campos según sea necesario
 };
-const camposExcluidos = ['pagoMensualModal', 'resultadoPagoDiarioModal', 'pagoDiario2Modal',
+const camposExcluidos = ['id_cliente', 'id_contratoActual','pagoMensualModal', 'resultadoPagoDiarioModal', 'pagoDiario2Modal',
  'diasHastaProximoCorte', 'resultadoModal', 'igualresultadoModal', 'montoPrimerPagoModal']; // Lista de nombres de campos a excluir
 
 
@@ -1806,7 +1816,42 @@ document.getElementById("chckbxAumentoPrestamo").addEventListener("change", func
 
 
 
+
   }
+
+  function realizarNuevoContrato()
+  {
+    let idcliente = {{ id_cliente }};
+
+    let formContrato = document.getElementById("multi-step-form");
+
+    // crea un fetch que envié mi siguiente formulario a mi backend para que se cree un nuevo contrato con la siguiente url /crear_nuevo_contrato
+    fetch('/crear_nuevo_contrato', {
+      method: 'POST',
+      body: new FormData(formContrato)
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      if (data.status === 'success') {
+        //window.location.href = `/contrato/crear/${idcliente}`;
+        window.alert("Se ha creado un nuevo contrato");
+      }
+    })
+    .catch(error => console.error(error));
+
+   
+
+
+  }
+
+
+
+
+
+
+  
+
 
   function stringToDate(dateString) {
     let dateParts = dateString.split("-");

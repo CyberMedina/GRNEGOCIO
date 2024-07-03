@@ -882,6 +882,8 @@ def visualizar_contrato(id_cliente):
     print(datos_cliente)
 
     datos_formulario_anadir_prestamo = {
+        "id_cliente": id_cliente,
+        "id_contratoActual" : id_contratoActual,
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
         "tipos_monedas": obtener_tipos_monedas(db_session),
         "datos_cliente": datos_cliente,
@@ -1028,6 +1030,175 @@ def backup_database_to_insert_statements():
     
 #     return 'entró al GET'
     
+
+
+@app.route('/crear_nuevo_contrato', methods=['GET', 'POST'])
+def crear_nuevo_contrato():
+
+
+    ### DATOS DE LOS CONTRATOS Y CLIENTE
+    id_contratoActual = request.form['id_contratoActual']
+    id_cliente = request.form['id_cliente']
+    id_contrato_fiador = request.form['id_contrato_fiador']
+    id_persona = request.form['id_persona']
+
+
+    ## Step-1 form ###
+    
+    nombres = request.form['nombres']
+    apellidos = request.form['apellidos']
+    cedula = request.form['cedula']
+    fechaNac = request.form['fechaNac']
+    genero = request.form['genero']
+    direccion = request.form['direccion']
+    direccionMaps = request.form['direccionMaps']
+    nombreDireccion = request.form['nombreDireccion']
+    idCompaniTelefonica = request.form['idCompaniTelefonica']
+    telefono = request.form['telefono']
+    nombreTelefono = request.form['nombreTelefono']
+    fotoCliente = request.files['fotoCliente']
+    foto_cedula = request.files['foto_cedula']
+
+    ### Step-2 form ###
+    estadoCivil = request.form['estadoCivil']
+    nombreDelegacion = request.form['nombreDelegacion']
+    dptoArea = request.form['dptoArea']
+    ftoColillaINSS = request.files['fotoCopiaColillaInss']
+    tipoClienteString = request.form['tipoCliente']
+    tipoCliente = int(tipoClienteString)
+    montoSolicitado = request.form['montoSolicitado']
+    tipoMonedaMontoSolictado = request.form['tipoMonedaMontoSolicitado']
+    tasaInteres = request.form['tasaInteres']
+    pagoMensual = request.form['pagoMensual']
+    pagoQuincenal = request.form['pagoQuincenal']
+    fechaPrestamo = request.form['fechaPrestamo']
+    fechaPago = request.form['fechaPago']
+    # Solo para clientes especiales
+    intervalo_tiempoPago = request.form['IntervaloPagoClienteEspecial']
+    montoPrimerPago = request.form['montoPrimerPago']
+
+    #### Step-3 form ####
+    nombresFiador = request.form['nombresFiador']
+    apellidosFiador = request.form['apellidosFiador']
+    cedulaFiador = request.form['cedulaFiador']
+    fechaNacFiador = request.form['fechaNacFiador']
+    generoFiador = request.form['generoFiador']
+    estadoCivilFiador = request.form['estadoCivilFiador']
+    nombreDelegacionFiador = request.form['nombreDelegacionFiador']
+    dptoAreaFiador = request.form['dptoAreaFiador']
+    direccionFiador = request.form['direccionFiador']
+    direccionMapsFiador = request.form['direccionMapsFiador']
+    nombreDireccionFiador = request.form['nombreDireccionFiador']
+    idCompaniTelefonicaFiador = request.form['idCompaniTelefonicaFiador']
+    telefonoFiador = request.form['telefonoFiador']
+    nombreTelefonoFiador = request.form['nombreTelefonoFiador']
+    fotoFiador = request.files['fotoFiador']
+    foto_cedulaFiador = request.files['foto_cedulaFiador']
+    fotoCopiaColillaInssFiador = request.files['fotoCopiaColillaInssFiador']
+
+    db_session.begin()
+
+    try:
+
+        ## Step-1 form ###
+
+        #### Actualizar datos del cliente ####
+        actualizar_persona(db_session, id_persona, nombres, apellidos, genero,
+                            cedula, fechaNac, activo)  # Actualizar datos del cliente y cambiar activo
+
+        id_direccionYtelefono = obtenerID_direccionYtelefono(
+            db_session, id_persona)
+        actualizar_direccion(db_session, id_direccionYtelefono.id_direccion,
+                                nombreDireccion, direccion, direccionMaps, activo)
+        actualizar_telefono(db_session, id_direccionYtelefono.id_telefono,
+                            idCompaniTelefonica, nombreTelefono, telefono, activo)
+        actualizar_cliente(db_session, id_cliente, id_persona, tipoCliente,
+                            fotoCliente, foto_cedula, activo)  # Actualizar datos del cliente y cambiar activo
+
+        #### Terminar de actualizar datos del cliente ####
+
+        ## Step-2 form ###
+
+        #### Insertamos al fiador ####
+
+        # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
+        if 'chckbxNoDeudor' in request.form:
+            id_persona = insertar_persona(
+                db_session, sin_especificar, sin_especificar, sin_especificar, sin_especificar, sin_especificar, activo)
+            id_direccion = insertar_direccion(
+                db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+            id_telefono = insertar_telefono(
+                db_session, sin_especificar, sin_especificar, sin_especificar, activo)
+            id_persona_direccion = insertar_persona_direccion(
+                db_session, sin_especificar, sin_especificar, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(
+                db_session, sin_especificar, sin_especificar, activo)
+            id_insertar_clienteFiador = insertar_cliente(
+                db_session, id_persona, fiador, sin_especificar, sin_especificar, activo)
+        else:
+            id_persona = insertar_persona(
+                db_session, nombresFiador, apellidosFiador, generoFiador, cedulaFiador, fechaNacFiador, activo)
+            id_direccion = insertar_direccion(
+                db_session, nombreDireccionFiador, direccionFiador, direccionMapsFiador, activo)
+            id_telefono = insertar_telefono(
+                db_session, idCompaniTelefonicaFiador, nombreTelefonoFiador, telefonoFiador, activo)
+            id_persona_direccion = insertar_persona_direccion(
+                db_session, id_persona, id_direccion, activo)
+            id_direccion_telefono = insertar_direccion_telelfono(
+                db_session, id_direccion, id_telefono, activo)
+            id_insertar_clienteFiador = insertar_cliente(
+                db_session, id_persona, fiador, fotoFiador, foto_cedulaFiador, activo)
+
+        #### Terminamos de insertar al fiador ####
+
+        ##### Insertamos el contrato especificamente datos del fiador #######
+
+        # Si el checbox se encuentra en el formulario quiere decir que no hay deudor
+        if 'chckbxNoDeudor' in request.form:
+            # Revisar si el fiador es no deudor se recibirá un valor de 5 en el checkbox
+            checkbox_no_deudor = request.form['chckbxNoDeudor']
+            id_contrato_fiador = insertar_contrato_fiador(
+                db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, no_fiador)
+        else:
+            id_contrato_fiador = insertar_contrato_fiador(
+                db_session, id_insertar_clienteFiador, estadoCivilFiador, nombreDelegacionFiador, dptoAreaFiador, fotoCopiaColillaInssFiador, activo)
+
+        if tipoCliente == cliente_normal:
+
+            id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
+                                            montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
+                                            fechaPago, prestamo_cliente_normal, montoPrimerPago, activo)
+
+        elif tipoCliente == cliente_especial:
+
+            id_contrato = insertar_contrato(db_session, id_cliente, estadoCivil, nombreDelegacion, dptoArea, ftoColillaINSS,
+                                            montoSolicitado, tipoMonedaMontoSolictado, tasaInteres, pagoMensual, pagoQuincenal, fechaPrestamo,
+                                            fechaPago, intervalo_tiempoPago, montoPrimerPago, activo)
+
+        # Le decimos que el contrato actual pasa a ser inactivo para darle al nuevo contrato!
+        cambiar_estado_contrato(db_session, id_contratoActual, inactivo)
+        cambiar_estado_contrato_fiador(db_session, id_contrato_fiador, inactivo)
+        db_session.commit()
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {str(e)}")
+        return redirect(url_for('prestamos', error="Error en la base de datos"))
+
+    except Exception as e:
+        db_session.rollback()
+        print(f"Unexpected error: {str(e)}")
+        return render_template('error.html', error="Unexpected error occurred"), 500
+
+    finally:
+        db_session.close()
+
+
+    return jsonify({'status': 'success'}), 200
+
+    
+
+
 
 
 @app.route('/obtener_datos_ultimo_backup' , methods=['GET', 'POST'])

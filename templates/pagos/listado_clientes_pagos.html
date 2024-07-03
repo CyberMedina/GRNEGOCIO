@@ -89,8 +89,8 @@
                                     {% if cliente.id_tipoCliente == 2 %}
                                     <tr>
                                         <td class="min-width">
-                                            <p>{{ cliente.nombres }} {{ cliente.apellidos }}</p>
-                                            {% if cliente.estado == 1 %}
+                                            <p>{{ cliente.nombres }} A{{ cliente.apellidos }}</p>
+                                            {% if cliente.estado == 1 OR cliente.estado == 0 %}
                                             <span class="status-btn close-btn">Al día</span>
                                             {% elif cliente.estado == 2 %}
                                             <span class="status-btn close-btn">No ha pagado</span>
@@ -98,7 +98,6 @@
                                             <span class="status-btn close-btn">No pagó</span>
                                             {% elif cliente.estado == 4 %}
                                             {% endif %}
-
                                         </td>
                                         <td class="min-width">
                                             <div class="action">
