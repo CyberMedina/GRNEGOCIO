@@ -379,46 +379,59 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
 #         db_session.close()
 
 def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
-    
     try:
-        query = text(""" SELECT 
-    p.id_pagos,
-    p.observacion, 
-    p.evidencia_pago, 
-    p.fecha_pago, 
-    p.fecha_realizacion_pago,
-    p.estado AS estado_pago, 
-    m.codigoMoneda, 
-    m.nombreMoneda, 
-    dp.cifraPago, 
-    dp.tasa_conversion,
-    dp.estado AS estado_detalle_pago,
-    c.estado as estado_contrato,
-    CASE 
-        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-    END AS descripcion_quincena,
-    MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
-    c.estado
-FROM 
-    pagos p
-JOIN 
-    detalle_pagos dp ON p.id_pagos = dp.id_pagos
-JOIN 
-    moneda m ON dp.id_moneda = m.id_moneda
-JOIN 
-    contrato c ON p.id_contrato = c.id_contrato
-WHERE 
-    p.id_cliente = :id_cliente 
-    AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
-    AND dp.estado = :estado_detalle_pago
-ORDER BY 
-    p.fecha_pago, p.id_pagos ASC;
-""")
+        query = text(""" 
+        SELECT 
+            c.id_contrato,
+            p.id_pagos,
+            p.observacion, 
+            p.evidencia_pago, 
+            p.fecha_pago, 
+            p.fecha_realizacion_pago,
+            p.estado AS estado_pago, 
+            m.codigoMoneda, 
+            m.nombreMoneda, 
+            dp.cifraPago, 
+            dp.tasa_conversion,
+            dp.estado AS estado_detalle_pago,
+            c.estado as estado_contrato,
+            CASE 
+                WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+                ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+            END AS descripcion_quincena,
+            MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+            c.estado
+        FROM 
+            pagos p
+        JOIN 
+            detalle_pagos dp ON p.id_pagos = dp.id_pagos
+        JOIN 
+            moneda m ON dp.id_moneda = m.id_moneda
+        JOIN 
+            contrato c ON p.id_contrato = c.id_contrato
+        WHERE 
+            p.id_cliente = :id_cliente 
+            AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
+            AND dp.estado = :estado_detalle_pago
+        ORDER BY 
+            p.fecha_pago, p.id_pagos ASC;
+        """)
 
         result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
-                                    "estado_detalle_pago": estado_detalle_pago}).fetchall()
+                                            "estado_detalle_pago": estado_detalle_pago}).fetchall()
+        
+        new_result = []
+        last_id_contrato = None
+        for row in result:
+            row_tuple = tuple(row)
+            if row_tuple[0] != last_id_contrato:
+                new_row = row_tuple + (1,)
+                last_id_contrato = row_tuple[0]
+            else:
+                new_row = row_tuple + (None,)
+            new_result.append(new_row)
         return result
+
 
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -426,6 +439,7 @@ ORDER BY
         return None
     finally:
         db_session.close()
+
 
 
 def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):

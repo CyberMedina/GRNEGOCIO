@@ -703,6 +703,7 @@ def añadir_pago(id_cliente):
         "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
     }
 
+
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
