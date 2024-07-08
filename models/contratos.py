@@ -5,6 +5,25 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import timeit
 
+
+def listarContratos_comboBox(db_session, id_cliente):
+    try:
+        query = text("""
+        SELECT id_contrato, id_cliente
+        FROM contrato
+        WHERE estado = 1;
+        """)
+        result = db_session.execute(query).fetchall()
+
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
 def listar_datosClienteContratoCompleto(db_session, id_cliente):
     try:
         query = text("""

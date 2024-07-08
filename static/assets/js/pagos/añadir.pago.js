@@ -348,6 +348,38 @@ function fechaLetras(event) {
 }
 
 
+function fechaLetrasFuncion(fecha) {
+  var fechaPagoValue = fecha;
+  console.log(fechaPagoValue);
+
+  // Parseamos la fecha desde el formato de string
+  const fechaPago = new Date(fechaPagoValue);
+  const year = fechaPago.getUTCFullYear();
+  const month = fechaPago.getUTCMonth() + 1; // Los meses en JavaScript van de 0 a 11
+  const day = fechaPago.getUTCDate();
+
+  const meses = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  const nombreMes = meses[month - 1]; // Restamos 1 porque los índices de los arrays empiezan en 0
+
+  let primeraSegundaQuincena = "";
+
+  if (day <= 15) {
+    primeraSegundaQuincena = "Primera quincena de " + nombreMes + " de " + year;
+  } else {
+    primeraSegundaQuincena = "Segunda quincena de " + nombreMes + " de " + year;
+  }
+
+  console.log(primeraSegundaQuincena);
+
+
+
+  return primeraSegundaQuincena + " (" + day + " de " + nombreMes + " de " + year + ")";
+}
+
+
 
 function validacionDolares(event) {
   let value = event.target.value.replace(/\D/g, '');
@@ -568,20 +600,37 @@ function obtenerInformacionPagoBorrar(id_pago) {
   fetchInformacionPago(id_pago)
     .then(pago => {
       // Filtrar los pagos con estado 1
-      let pagosDolares = pago.filter(p => p.estado_detallePagos === 1);
+      console.log(pago);
+
+      if (pago.tasa_conversion)
+      {
+
+        modalInformacionPago.innerHTML = `
+          <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
+          <br>
+          <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
+          <br>
+          <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago$} ${pago.nombreMoneda}</span>
+        `;
+
+      }
+      else
+      {
+        modalInformacionPago.innerHTML = `
+          <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
+          <br>
+          <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
+          <br>
+          <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
+        `;
+      }
 
 
-      modalInformacionPago.innerHTML = pagosDolares.map(pago => `
-      <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
-      <br>
-      <strong></strong><span>(${formatoFecha(pago.fecha_pago)})</span>
-      <br>
-      <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago} ${pago.nombreMoneda}</span>
-    `).join('');
 
-      pagosDolares.map(pago => {
+
+
         btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
-      })
+
 
 
       let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
@@ -600,8 +649,22 @@ function obtenerInformacionPagoBorrar(id_pago) {
 
 function obtenerInformacionPagoEspecifico(id_pago) {
 
-  let modalInformacionPago = document.getElementById('modalInformacionPago');
-  let btnBorrarPago = document.getElementById('btnBorrarPago');
+  let modalVisualizarPago = new bootstrap.Modal(document.getElementById('modalVisualizarPago'));
+  let tasaCambioRowVP = document.getElementById('tasaCambioRowVP');
+  let cantidadPagoCordobasRowVP = document.getElementById('cantidadPagoCordobasRowVP');
+  
+
+  let tipoMonedaPagoVP = document.getElementById('tipoMonedaPagoVP');
+  let cantidadPagoCordobasVP = document.getElementById('cantidadPagoCordobasVP');
+  let lblPagoC$VP = document.getElementById('lblPagoC$VP');
+  let cantidadPagar$VP = document.getElementById('cantidadPagar$VP');
+  let lblPago$VP = document.getElementById('lblPago$VP');
+  let inputTasaCambioPagoVP = document.getElementById('inputTasaCambioPagoVP');
+  let fechaPagoVP = document.getElementById('fechaPagoVP');
+  let observacionPagoVP = document.getElementById('observacionPagoVP');
+  let evidenciaPagoVP = document.getElementById('evidenciaPagoVP');
+
+
 
   fetch('/informacion_pagoEspecifico', {
     method: 'POST',
@@ -620,7 +683,41 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       if (data.error) {
         throw new Error(data.error);
       }
+      
       let pago = data.pago;
+      fechaPagoLetras = fechaLetrasFuncion(pago.fecha_pago)
+      console.log(pago);
+
+      if (pago.tasa_conversion)
+      {
+        cantidadPagoCordobasRowVP.hidden = false;
+        lblPagoC$VP.innerHTML = 'Pagó en córdobas';
+        lblPago$VP.innerHTML = 'Tasa de cambio: ' + pago.tasa_conversion;
+
+      inputTasaCambioPagoVP.value = pago.tasa_conversion;
+      cantidadPagar$VP.value = pago.cifraPago$;
+      cantidadPagoCordobasVP.value = pago.cifraPagoC$;
+      }
+      else
+      {
+        cantidadPagoCordobasRowVP.hidden = true;
+        lblPago$VP.innerHTML = 'Pagó en dólares';
+        
+        inputTasaCambioPagoVP.value = pago.tasa_conversion;
+        cantidadPagar$VP.value = pago.codigoMoneda + ' ' + pago.cifraPago;
+      }
+
+      
+      
+      fechaPagoVP.value = fechaPagoLetras;
+      if (pago.observacion) {
+        observacionPagoVP.value = pago.observacion;
+      } else {
+        observacionPagoVP.value = 'No hay observaciones';
+      }
+      
+
+      modalVisualizarPago.show();
 
 
 
@@ -629,9 +726,7 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       console.error('Error al obtener la información del pago:', error);
     });
 
-  pagosDolares.forEach(pago => {
-  }
-  );
+
 
 }
 

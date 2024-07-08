@@ -824,6 +824,7 @@ def informacion_pagoEspecifico():
         id_pagos = data.get('id_pagos')
 
         pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
+        print(pago)
 
         return jsonify({"pago": pago}), 200
     except SQLAlchemyError as e:

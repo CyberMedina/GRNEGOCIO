@@ -17,7 +17,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive 
 
@@ -176,7 +176,7 @@ def convertir_string_a_decimal(input_str):
 def obtener_quincenaActual_letras(date):
     # Si la entrada es una cadena, convertirla a datetime
     if isinstance(date, str):
-        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        date = datetime.strptime(date, "%Y-%m-%d")
 
     # Obtener el mes y el año de la fecha
     mes = calendar.month_name[date.month]
@@ -215,7 +215,7 @@ def sumar_dias(fecha_inicio, dias_a_sumar):
     fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d')
 
     # Sumar los días especificados
-    fecha_fin_obj = fecha_inicio_obj + datetime.timedelta(days=dias_a_sumar)
+    fecha_fin_obj = fecha_inicio_obj + timedelta(days=dias_a_sumar)
 
     # Convertir la fecha resultante a una cadena en el formato deseado
     fecha_fin_totalSaldo = fecha_fin_obj.strftime('%Y-%m-%d')

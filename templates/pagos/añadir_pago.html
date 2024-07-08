@@ -3,7 +3,19 @@
 
 {% block title %}Pago de cliente{% endblock %}
 
-{% block customCSS %}{% endblock %}
+{% block customCSS %}
+
+<style>
+    @media (max-width: 576px) {
+        #tooltip-iconPersonalize {
+            font-size: 1rem; /* Ajusta este valor según tus necesidades */
+            display: flex;
+            
+        }
+    }
+</style>
+
+{% endblock %}
 
 {% block body %}
 
@@ -152,7 +164,23 @@
                                     </div>
 
                                 </div>
-
+                                <div class="d-flex align-items-center">
+                                    <h6>Contrato:</h6>
+                                    <div class="select-style-1 mb-0 ml-10">
+                                        <div class="select-position">
+                                            <select id="filtro-comboBoxContrato" class="p-0 pe-5 border-0">
+                                                <option value="1">Todos</option>
+                                                <!-- {% for año in años_pagos %}
+                                                {% if año[0] == session['año_seleccionado'] %}
+                                                <option value="{{ año[0] }}" selected>{{ año[0] }}</option>
+                                                {% else %}
+                                                <option value="{{ año[0] }}">{{ año[0] }}</option>
+                                                {% endif %}
+                                                {% endfor %} -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="d-flex align-items-center">
                                     <h6>Año:</h6>
                                     <div class="select-style-1 mb-0 ml-10">
@@ -243,34 +271,45 @@
                                 <tbody>
                                     {% set last_id_contrato = namespace(value=None) %}
                                     {% set meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] %}
+                                    
                                     {% for i in range(1, 13) %}
-                                        <tr>
-                                            <th style="border-style: none !important; padding-bottom:0 !important">
-                                                <h6>{{ meses[i-1] }}</h6>
-                                            </th>
-                                        </tr>
-                                        
                                         {% set pagos_mes = pagos | selectattr('id_mes', 'equalto', i) | list %}
                                         
                                         {% if pagos_mes %}
                                             {% for pago in pagos_mes %}
                                                 {% if pago.id_contrato != last_id_contrato.value %}
-                                                    <!-- Mostrar encabezado de nuevo contrato -->     
+                                                    <!-- Mostrar encabezado de nuevo contrato antes del mes -->     
+      
+                                                    
                                                     <tr>
-                                                        <td colspan="4">
-                                                            <h6 class="text-center">Nuevo Contrato: {{ pago.id_contrato }}</h6>
+                                                        <td colspan="4" class="text-center">
+                                                            <span id="tooltip-iconPersonalize" class="tooltip-icon text-secondary fw-bolder" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ pago.fechaPrestamo }}">
+                                                                Pagos del préstamo de: ${{ pago.monto_solicitado }}
+                                                            </span>
+                                                            
                                                         </td>
                                                     </tr>
+                                                    
                                                     {% set last_id_contrato.value = pago.id_contrato %}
                                                 {% endif %}
+                                                
+                                                <!-- Mostrar el nombre del mes una vez -->
+                                                {% if loop.first %}
+                                                    <tr>
+                                                        <th style="border-style: none !important; padding-bottom:0 !important">
+                                                            <h6>{{ meses[i-1] }}</h6>
+                                                        </th>
+                                                    </tr>
+                                                {% endif %}
+                                                
                                                 <!-- Insertar aquí la estructura de la fila con los detalles del pago -->
                                                 <tr>
                                                     <td class="min-width">
                                                         <p>{{ pago.descripcion_quincena }}</p>
                                                         <p>({{ pago.fecha_pago }})</p>
                                                         {% if pago.observacion %}
-                                                            <a href="#" onclick="">
-                                                                <span class="main-badge danger-badge rounded-full">Observación</span>
+                                                            <a href="#VerPago" onclick="">
+                                                                <span onclick="obtenerInformacionPagoEspecifico({{pago.id_pagos}})" class="main-badge danger-badge rounded-full">Observación</span>
                                                             </a>
                                                         {% endif %}
                                                     </td>
@@ -296,7 +335,7 @@
                                                         </button>
                                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1">
                                                             <li class="dropdown-item">
-                                                                <a href="#0" class="text-gray">Ver</a>
+                                                                <a href="#0" onclick="obtenerInformacionPagoEspecifico({{pago.id_pagos}})" class="text-gray">Ver</a>
                                                             </li>
                                                             <li class="dropdown-item">
                                                                 <a href="#0" onclick="obtenerInformacionPagoBorrar({{pago.id_pagos}})" class="text-gray">Eliminar</a>
@@ -307,6 +346,11 @@
                                             {% endfor %}
                                         {% else %}
                                             <tr>
+                                                <th style="border-style: none !important; padding-bottom:0 !important">
+                                                    <h6>{{ meses[i-1] }}</h6>
+                                                </th>
+                                            </tr>
+                                            <tr>
                                                 <td class="min-width" colspan="4">
                                                     <p>No hay pagos realizados</p>
                                                 </td>
@@ -314,9 +358,8 @@
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>
-
+                                
                                 {% endfor %}
-
 
 
 
@@ -518,7 +561,8 @@
         </form>
     </div>
 </div>
-</div>
+
+
 
 
 <div class="modal fade" id="modalVisualizarPago" tabindex="-1" aria-hidden="true">
@@ -534,15 +578,13 @@
             </div>
             <div class="modal-body px-0">
                 <div class="content mb-30">
-                    {% for dataCliente in datos_cliente %}
-
                     <div class="row">
 
-                        <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
+                        <div id="tasaCambioRowVP" class="col-6 col-sm-4" hidden>
                             <div class="input-style-3">
                                 <label>Tasa de cambio</label>
                                 <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                                    name="inputTasaCambioPago" id="inputTasaCambioPago" />
+                                    name="inputTasaCambioPagoVP" id="inputTasaCambioPagoVP" readonly />
                                 <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
                                 <!-- Aquí se mostrará el porcentaje -->
                             </div>
@@ -552,50 +594,29 @@
 
                     </div>
                     <div class="row">
-                        <div class="col-4 col-sm-2 col-md-2">
-                            <div class="select-style-1">
-                                <label class="">Moneda</label>
-                                <div class="select-position">
-                                    <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
-                                        <option value="1">$</option selected>
-                                        <option value="2">C$</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- end select -->
-                        </div>
-                        <div id="cantidadPagoCordobasRow" class="col-7 col-sm-6" hidden>
+                        <div id="cantidadPagoCordobasRowVP" class="col-6 col-sm-6" hidden>
                             <div class="input-style-3">
-                                <label for="">Pago en C$</label>
-                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
-                                    id="cantidadPagoCordobas" />
+                                <label for="">Pago realizado en C$</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobasVP"
+                                    id="cantidadPagoCordobasVP" readonly/>
                                 <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                <p style="font-size: small;">Cifra a pagar: C$<span id="lblCantidadPagarC$"></span>
+                                <p id="lblPagoC$VP" style="font-size: small;"><span id="lblCantidadPagarC$VP"></span>
                                 </p>
-                                <input id="cantidadPagarVerificarC$" type="text" hidden>
                             </div>
                             <!-- end select -->
                         </div>
 
-                        <div class="col-8 col-sm-6">
+                        <div class="col-6 col-sm-6">
                             <div class="input-style-3">
-                                <label for="">Pago en $</label>
-                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
-                                    id="cantidadPagar$" required />
+                                <label for="">Pago realizado en $</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$VP"
+                                    id="cantidadPagar$VP" readonly />
                                 <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
-                                dataCliente.pagoQuincenal %}
-
-                                <p style="font-size: small;">Cifra a pagar: {{ dataCliente.codigoMoneda }} {{
-                                    cantidad_pagar }}</p>
-                                <input id="cantidadPagarVerificar$" type="text" value="{{ cantidad_pagar }}" hidden>
+                                <p id="lblPago$VP" style="font-size: small;"></p>
 
                             </div>
                             <!-- end select -->
                         </div>
-
-
-                        {% endfor %}
 
                     </div>
 
@@ -604,24 +625,24 @@
                     <div class="col-12">
                         <div class="input-style-1">
                             <label class="text-bold">Fecha del pago*</label>
-                            <input type="date" required name="fechaPago" id="fechaPago" />
-                            <p id="tiempoPagoLetras"></p>
+                            <input type="text" name="fechaPagoVP" id="fechaPagoVP" readonly />
+                            <p id="tiempoPagoLetrasVP"></p>
                         </div>
                     </div>
 
 
                     <div class="input-style-3">
                         <label>Observación</label>
-                        <textarea placeholder="Descripción de la observación" rows="5" name="observacionPago"
-                            id="observacionPago"></textarea>
+                        <textarea placeholder="Descripción de la observación" rows="10" name="observacionPagoVP"
+                            id="observacionPagoVP" readonly></textarea>
                         <span class="icon"><i class="fa-solid fa-eye"></i></span>
                     </div>
 
                     <div class="col-12">
                         <div class="input-style-3">
                             <label>Evidencia del pago</label>
-                            <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
-                                id="evidenciaPago" />
+                            <input type="file" placeholder="" accept="image/*" name="evidenciaPagoVP"
+                                id="evidenciaPagoVP" />
                             <span class="icon"><i class="fa-solid fa-receipt"></i></span>
                         </div>
                     </div>

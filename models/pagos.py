@@ -381,8 +381,7 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
 def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
     try:
         query = text(""" 
-        SELECT 
-            c.id_contrato,
+        SELECT
             p.id_pagos,
             p.observacion, 
             p.evidencia_pago, 
@@ -394,7 +393,11 @@ def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contr
             dp.cifraPago, 
             dp.tasa_conversion,
             dp.estado AS estado_detalle_pago,
+            c.id_contrato,
+            c.monto_solicitado,
+            c.fechaPrestamo,
             c.estado as estado_contrato,
+            
             CASE 
                 WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
                 ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
@@ -705,11 +708,15 @@ WHERE
     p.id_pagos = :id_pagos""")
 
         result = db_session.execute(query, {'id_pagos': id_pagos}).fetchall()
+        
 
         result_list = []
 
-        for row in result:
-            result_dict = {
+        if len(result) == 1:
+            print("Solo hay un registro")
+            # Solo hay un registro
+            row = result[0]
+            result_list = {
                 'id_cliente': row[0],
                 'id_pagos': row[1],
                 'observacion': row[2],
@@ -724,9 +731,26 @@ WHERE
                 'estado_detallePagos': row[11],
                 'descripcion_quincena': row[12],
                 'id_mes': row[13],
-                'estado_contrato': row[14]
+                'estado_contrato': row[14],
             }
-            result_list.append(result_dict)
+        elif len(result) == 2:
+            # Hay dos registros
+            row1 = result[0]
+            row2 = result[1]
+            result_list = {
+                'id_cliente': row1[0],
+                'id_pagos': row1[1],
+                'observacion': row1[2],
+                'evidencia_pago': row1[3],
+                'fecha_pago': row1[4],
+                'fecha_realizacion_pago': row1[5],
+                'estado_pagos': row1[6],
+                'codigoMoneda': row1[7],
+                'nombreMoneda': row1[8],
+                'cifraPago$': row1[9],
+                'cifraPagoC$': row2[9],
+                'tasa_conversion': row2[10],
+            }
 
         return result_list
 
