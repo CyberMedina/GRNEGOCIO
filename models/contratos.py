@@ -130,11 +130,15 @@ def cambiar_estado_contrato_fiador(db_session, id_contrato_fiador, estado):
 def obtener_IdContrato(db_session, id_cliente):
     try:
         query = text("""
-                     SELECT id_contrato FROM contrato WHERE id_cliente = :id_cliente AND estado = :estado;
-                     """
+                     SELECT id_contrato
+FROM contrato
+WHERE id_cliente = :id_cliente
+  AND estado IN (:estado1, :estado2)
+ORDER BY fechaCreacionContrato DESC
+LIMIT 1;"""
                      )
         result = db_session.execute(
-            query, {'id_cliente': id_cliente, 'estado': activo}).fetchone()
+            query, {'id_cliente': id_cliente, 'estado1': activo, 'estado2': hijoContratoActivo}).fetchone()
         return result[0]
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -142,7 +146,6 @@ def obtener_IdContrato(db_session, id_cliente):
         return None
     finally:
         db_session.close()
-
 
 
 
