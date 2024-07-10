@@ -127,3 +127,60 @@ def cambiar_estado_contrato_fiador(db_session, id_contrato_fiador, estado):
     finally:
         db_session.close()
 
+def obtener_IdContrato(db_session, id_cliente):
+    try:
+        query = text("""
+                     SELECT id_contrato FROM contrato WHERE id_cliente = :id_cliente AND estado = :estado;
+                     """
+                     )
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente, 'estado': activo}).fetchone()
+        return result[0]
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
+
+
+
+def cambiar_estadoContrato_finalizado(db_session, id_cliente, estado):
+    try:
+        query = text("""
+        UPDATE contrato SET estado = :estado 
+        WHERE estado  IN (1, 3) AND id_cliente = :id_cliente;
+        """)
+        db_session.execute(query, {"id_cliente": id_cliente, "estado": estado})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+     
+
+def finalizacionContratoDescripcion(db_session, id_contrato, fechaFinalizacion, observacion):
+
+    idFinalizacionContrato = ObtenerIDTabla(db_session, "finalizacionContrato", "idFinalizacionContrato")
+
+    try:
+        query = text("""
+        INSERT INTO finalizacionContrato (idFinalizacionContrato, id_contrato, fechaFinalizacion, observacion, fechaRealizacionFinalizado)
+                     VALUES (:idFinalizacionContrato, :id_contrato, :fechaFinalizacion, :observacion, NOW());
+        """)
+        db_session.execute(query, {"idFinalizacionContrato": idFinalizacionContrato, "id_contrato": id_contrato, "fechaFinalizacion": fechaFinalizacion, "observacion": observacion})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+

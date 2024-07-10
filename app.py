@@ -693,6 +693,8 @@ def añadir_pago(id_cliente):
     else:
         pagos = []
 
+
+
     print(monto_pagoEspecial)
     formulario_añadir_pago = {
         "datos_cliente": pagos_cliente,
@@ -895,6 +897,30 @@ def visualizar_contrato(id_cliente):
     }
 
     return render_template('contrato/visualizar_contrato.html', **datos_formulario_anadir_prestamo)
+
+
+@app.route('/finalizar_pago/<int:id_cliente>', methods=['GET', 'POST'])
+def finalizar_contrato(id_cliente):
+
+    if request.method == 'POST':
+        db_session.begin()
+
+        try:
+            cambiar_estadoContrato_finalizado(db_session, id_cliente)
+
+            #finalizacionContratoDescripcion(db_session, id_contrato, fechaFinalizacion, observacion)
+
+
+
+            db_session.commit()
+
+            
+
+        except:
+            db_session.rollback()
+            return redirect(url_for('visualizar_contrato', id_cliente=id_cliente, error="Error en la base de datos"))
+
+
 
 
 

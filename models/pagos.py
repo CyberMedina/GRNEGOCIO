@@ -1,6 +1,7 @@
 from db import *
 from utils import *
 from models.constantes import *
+from models.contratos import *
 from datetime import datetime, timedelta
 from decimal import Decimal
 import timeit
@@ -226,21 +227,7 @@ def calcular_primerPago_quincenal(pago_mensual, fecha_prestamo):
         return None
 
 
-def obtener_IdContrato(db_session, id_cliente):
-    try:
-        query = text("""
-                     SELECT id_contrato FROM contrato WHERE id_cliente = :id_cliente AND estado = :estado;
-                     """
-                     )
-        result = db_session.execute(
-            query, {'id_cliente': id_cliente, 'estado': activo}).fetchone()
-        return result[0]
-    except SQLAlchemyError as e:
-        db_session.rollback()
-        print(f"Error: {e}")
-        return None
-    finally:
-        db_session.close()
+
 
 
 def comprobar_primerPago(db_session, id_cliente):
@@ -1595,3 +1582,6 @@ def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
         diferencia_a_saldo = None
 
     return diferencia_a_saldo
+
+
+

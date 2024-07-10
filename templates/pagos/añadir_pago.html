@@ -78,6 +78,9 @@
                                                 <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}"
                                                     class="text-gray">Editar contrato</a>
                                             </li>
+                                            <li class="dropdown-item">
+                                                <a href="#FinalizarDeuda" onclick="finalizarDeuda({{ dataCliente.id_cliente }})" class="text-gray">Finalizar deuda</a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -901,6 +904,54 @@
 </div>
 <!-- ModalThree End -->
 
+<!-- ModalThree start -->
+<div class="warning-modal">
+    <div class="modal fade" id="modalFinalizarDeuda" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-style">
+          <div class="modal-header px-0 border-0">
+            <h5 class="text-bold">Finalizar deuda</h5>
+            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+              <i class="lni lni-cross-circle"></i>
+            </button>
+          </div>
+          <div class="modal-body px-0">
+            <div class="content mb-30">
+              <p class="text-sm">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="input-style-1">
+                      <label class="text-bold">Fecha de finalización</label>
+                      <input type="date" required name="fechaFinalizacion" id="fechaFinalizacion" />
+                      <p id="tiempoLetrasFinalizacion"></p>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="input-style-3">
+                      <label>Observación</label>
+                      <textarea placeholder="Descripción de la observación" rows="5" name="observacionFinalizacion"
+                        id="observacionFinalizacion"></textarea>
+                      <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                    </div>
+                  </div>
+                </div>
+              </p>
+            </div>
+            <div class="action d-flex flex-wrap justify-content-end">
+              <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                Cancel
+              </button>
+              <button data-bs-dismiss="modal" class="main-btn btn-sm primary-btn btn-hover m-1">
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ModalThree End -->
+
 <!-- end col -->
 <!-- end input -->
 </div>
@@ -911,6 +962,7 @@
 {% block customJS %}
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
+
 <script>
 
 </script>

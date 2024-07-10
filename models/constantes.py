@@ -7,6 +7,7 @@ mensual = 30
 # Constantes para los estados
 activo = 1
 inactivo = 0
+hijoContratoActivo = 2
 
 # Constantes para los tipos de clientes
 cliente_en_proceso = 5

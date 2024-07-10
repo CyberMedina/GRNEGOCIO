@@ -759,4 +759,18 @@ btnOcultarDetallesCliente.addEventListener('click', function () {
 });
 
 
+function finalizarDeuda(id_cliente){
+
+  console.log(id_cliente);
+
+  let modalFinalizarDeuda = new bootstrap.Modal(document.getElementById('modalFinalizarDeuda'));
+
+  modalFinalizarDeuda.show();
+
+
+
+
+
+
+}
 
