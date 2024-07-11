@@ -1,13 +1,15 @@
+CREATE DATABASE  IF NOT EXISTS `grnegocio` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `grnegocio`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
--- Host: localhost    Database: GRNEGOCIO
+-- Host: localhost    Database: grnegocio
 -- ------------------------------------------------------
 -- Server version	8.0.34
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -37,6 +39,7 @@ CREATE TABLE `backupsbd` (
 
 LOCK TABLES `backupsbd` WRITE;
 /*!40000 ALTER TABLE `backupsbd` DISABLE KEYS */;
+INSERT INTO `backupsbd` VALUES (1,'backup_20240605_222717.sql','D:/Medina Jhonatan/Universidad/ProyectosProgramacion/GRNEGOCIO/static/bd/backups/backup_20240605_222717.sql','2024-06-05 22:27:17');
 /*!40000 ALTER TABLE `backupsbd` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -68,7 +71,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
-INSERT INTO `cliente` VALUES (1,1,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,2,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,3,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,4,3,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,5,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,6,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(7,7,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(8,8,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(9,9,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(10,10,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(11,11,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(12,12,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(13,13,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(14,14,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(15,15,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(16,16,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1);
+INSERT INTO `cliente` VALUES (1,1,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,2,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,3,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,4,3,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,5,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,6,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(7,7,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(8,8,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(9,9,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(10,10,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(11,11,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(12,12,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(13,13,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(14,14,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(15,15,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(16,16,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(17,18,2,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(18,19,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1),(19,20,5,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',5),(20,21,4,'<FileStorage: \'\' (\'application/octet-stream\')>','<FileStorage: \'\' (\'application/octet-stream\')>',1);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -140,7 +143,7 @@ CREATE TABLE `contrato` (
 
 LOCK TABLES `contrato` WRITE;
 /*!40000 ALTER TABLE `contrato` DISABLE KEYS */;
-INSERT INTO `contrato` VALUES (1,1,1,1,'4','Yucalteca','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-14','2024-09-26',15,7.16,'2024-03-14 23:10:54',1),(2,3,2,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-22','2024-12-11',15,16.20,'2024-03-22 00:14:01',1),(3,4,3,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',500.00,1,18.00,90.00,45.00,'2024-03-22','2025-07-25',30,27.00,'2024-03-22 00:16:16',1),(4,7,4,1,'1','','<FileStorage: \'\' (\'application/octet-stream\')>',590.00,1,18.00,106.20,53.10,'2024-03-25','2024-09-28',15,21.24,'2024-03-25 16:11:34',1),(5,9,5,2,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-26','2024-11-22',15,9.00,'2024-03-26 23:26:53',1),(6,11,6,1,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-21','2024-11-22',15,35.80,'2024-03-30 23:57:42',1),(7,13,7,2,'7','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',1077.00,1,15.00,161.55,80.78,'2023-02-21','2023-12-20',15,53.90,'2024-04-27 10:02:09',1),(8,15,8,2,'1','Atención al cliente','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-05-03','2024-11-23',15,23.40,'2024-05-03 21:56:47',1);
+INSERT INTO `contrato` VALUES (1,1,1,1,'4','Yucalteca','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-14','2024-09-26',15,7.16,'2024-03-14 23:10:54',1),(2,3,2,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-22','2024-12-11',15,16.20,'2024-03-22 00:14:01',1),(3,4,3,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',500.00,1,18.00,90.00,45.00,'2024-03-22','2025-07-25',30,27.00,'2024-03-22 00:16:16',1),(4,7,4,1,'1','','<FileStorage: \'\' (\'application/octet-stream\')>',590.00,1,18.00,106.20,53.10,'2024-03-25','2024-09-28',15,21.24,'2024-03-25 16:11:34',1),(5,9,5,2,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-03-26','2024-11-22',15,9.00,'2024-03-26 23:26:53',1),(6,11,6,1,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',596.00,1,18.00,107.28,53.64,'2024-03-21','2024-11-22',15,35.80,'2024-03-30 23:57:42',1),(7,13,7,2,'7','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',1077.00,1,15.00,161.55,80.78,'2023-02-21','2023-12-20',15,53.90,'2024-04-27 10:02:09',1),(8,15,8,2,'1','Atenci','<FileStorage: \'\' (\'application/octet-stream\')>',300.00,1,18.00,54.00,27.00,'2024-05-03','2024-11-23',15,23.40,'2024-05-03 21:56:47',2),(9,17,9,1,'6','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',809.00,1,18.00,145.62,72.81,'2024-05-14','2024-12-31',15,9.70,'2024-06-07 00:47:37',1),(10,15,10,2,'1','Atenci','<FileStorage: \'\' (\'application/octet-stream\')>',550.00,1,18.00,99.00,49.50,'2024-07-02','2024-11-23',15,46.20,'2024-07-02 01:29:19',1);
 /*!40000 ALTER TABLE `contrato` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -171,7 +174,7 @@ CREATE TABLE `contrato_fiador` (
 
 LOCK TABLES `contrato_fiador` WRITE;
 /*!40000 ALTER TABLE `contrato_fiador` DISABLE KEYS */;
-INSERT INTO `contrato_fiador` VALUES (1,1,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,3,2,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,4,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,7,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,9,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,11,1,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(7,13,1,'7','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(8,16,1,'3','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',1);
+INSERT INTO `contrato_fiador` VALUES (1,1,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(2,3,2,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(3,4,1,'5','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(4,7,2,'3','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(5,9,2,'2','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(6,11,1,'4','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(7,13,1,'7','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(8,16,1,'3','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',1),(9,18,4,'6','','<FileStorage: \'\' (\'application/octet-stream\')>',1),(10,20,1,'3','Informatica','<FileStorage: \'\' (\'application/octet-stream\')>',0);
 /*!40000 ALTER TABLE `contrato_fiador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,7 +206,7 @@ CREATE TABLE `detalle_pagos` (
 
 LOCK TABLES `detalle_pagos` WRITE;
 /*!40000 ALTER TABLE `detalle_pagos` DISABLE KEYS */;
-INSERT INTO `detalle_pagos` VALUES (1,1,1,53.90,NULL,1),(2,2,1,706.13,NULL,1),(3,2,2,25773.88,36.50,2),(4,3,1,21.86,NULL,1),(5,3,2,800.00,36.60,2),(6,4,1,58.92,NULL,1),(7,5,1,60.11,NULL,1),(8,5,2,2200.00,36.60,2),(9,6,1,20.67,NULL,1),(10,7,1,35.52,NULL,1),(11,7,2,1300.00,36.60,2),(12,8,1,45.26,NULL,1),(13,9,1,35.52,NULL,1),(14,9,2,1300.00,36.60,2),(15,10,1,45.26,NULL,1),(16,11,1,80.78,NULL,1),(17,12,1,19.13,NULL,1),(18,12,2,700.00,36.60,2),(19,13,1,61.65,NULL,1),(20,14,1,21.24,NULL,1),(21,15,1,53.10,NULL,1),(22,16,1,23.40,NULL,1),(23,17,1,27.00,NULL,1),(24,18,1,24.59,NULL,1),(25,18,2,900.00,36.60,2),(26,19,1,56.19,NULL,1),(27,20,1,80.78,NULL,1);
+INSERT INTO `detalle_pagos` VALUES (1,1,1,53.90,NULL,1),(2,2,1,706.13,NULL,1),(3,2,2,25773.88,36.50,2),(4,3,1,21.86,NULL,1),(5,3,2,800.00,36.60,2),(6,4,1,58.92,NULL,1),(7,5,1,60.11,NULL,1),(8,5,2,2200.00,36.60,2),(9,6,1,20.67,NULL,1),(10,7,1,35.52,NULL,1),(11,7,2,1300.00,36.60,2),(12,8,1,45.26,NULL,1),(13,9,1,35.52,NULL,1),(14,9,2,1300.00,36.60,2),(15,10,1,45.26,NULL,1),(16,11,1,80.78,NULL,1),(17,12,1,19.13,NULL,1),(18,12,2,700.00,36.60,2),(19,13,1,61.65,NULL,1),(20,14,1,21.24,NULL,1),(21,15,1,53.10,NULL,1),(22,16,1,23.40,NULL,1),(23,17,1,27.00,NULL,1),(24,18,1,9.70,NULL,1),(25,19,1,72.81,NULL,1),(26,19,2,2664.85,36.60,2),(27,20,1,72.81,NULL,1),(28,21,1,72.81,NULL,1),(29,22,1,80.78,NULL,1),(30,23,1,80.78,NULL,1),(31,24,1,80.78,NULL,1),(32,25,1,80.78,NULL,1),(33,26,1,46.20,NULL,1);
 /*!40000 ALTER TABLE `detalle_pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +233,7 @@ CREATE TABLE `direccion` (
 
 LOCK TABLES `direccion` WRITE;
 /*!40000 ALTER TABLE `direccion` DISABLE KEYS */;
-INSERT INTO `direccion` VALUES (1,'1','Semaforos de la julio martinez 2c al norte 2c al e','Semaforos de la julio martinez 2c al norte 2c al e',1),(2,'2','El chilamate ','Semaforos de la julio martinez 2c al norte 2c al e',1),(3,'1','dafsaf','',1),(4,'1','Del 5c al Este 3 c al Oeste','',1),(5,'1','No se xd','',1),(6,'1','NO SE 2','',1),(7,'1','DUDOSA PROCEDENCIA','',1),(8,'1','El chilamate','El chilamate',1),(9,'1','En el mero san judas','',1),(10,'1','El mero San Judas también','',1),(11,'1','Del chilamate 3 cuadras arriba','',1),(12,'1','No sé jaja','',1),(13,'1','Por el mercado oriental','',1),(14,'1','NO HAY','',1),(15,'1','Hasta el sur','',1),(16,'1','Me gusta el pan','',1),(17,'1','Me gusta el pan','',1);
+INSERT INTO `direccion` VALUES (1,'1','Semaforos de la julio martinez 2c al norte 2c al e','Semaforos de la julio martinez 2c al norte 2c al e',1),(2,'2','El chilamate ','Semaforos de la julio martinez 2c al norte 2c al e',1),(3,'1','dafsaf','',1),(4,'1','Del 5c al Este 3 c al Oeste','',1),(5,'1','No se xd','',1),(6,'1','NO SE 2','',1),(7,'1','DUDOSA PROCEDENCIA','',1),(8,'1','El chilamate','El chilamate',1),(9,'1','En el mero san judas','',1),(10,'1','El mero San Judas tambi','',1),(11,'1','Del chilamate 3 cuadras arriba','',1),(12,'1','No s','',1),(13,'1','Por el mercado oriental','',1),(14,'1','NO HAY','',1),(15,'1','Hasta el sur','',1),(16,'1','Me gusta el pan','',1),(17,'1','Me gusta el pan','',1),(18,'1','Praderas del doral 4ta Etapa, alueda 3c-633','',1),(19,'1','NO CUENTA CON FIADOR','',1),(20,'1','PRUEBA','',1),(21,'1','Me gusta el pan','',1);
 /*!40000 ALTER TABLE `direccion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -258,8 +261,36 @@ CREATE TABLE `direccion_telefono` (
 
 LOCK TABLES `direccion_telefono` WRITE;
 /*!40000 ALTER TABLE `direccion_telefono` DISABLE KEYS */;
-INSERT INTO `direccion_telefono` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1),(13,13,1),(14,14,1),(15,15,1),(16,16,1),(17,17,1);
+INSERT INTO `direccion_telefono` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1),(13,13,1),(14,14,1),(15,15,1),(16,16,1),(17,17,1),(18,18,1),(19,19,1),(20,20,1),(21,21,1);
 /*!40000 ALTER TABLE `direccion_telefono` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `finalizacioncontrato`
+--
+
+DROP TABLE IF EXISTS `finalizacioncontrato`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `finalizacioncontrato` (
+  `idFinalizacionContrato` int NOT NULL,
+  `id_contrato` int DEFAULT NULL,
+  `fechaFinalizacion` datetime DEFAULT NULL,
+  `observacion` varchar(255) DEFAULT NULL,
+  `fechaRealizacionFinalizado` datetime DEFAULT NULL,
+  PRIMARY KEY (`idFinalizacionContrato`),
+  KEY `id_contrato` (`id_contrato`),
+  CONSTRAINT `finalizacioncontrato_ibfk_1` FOREIGN KEY (`id_contrato`) REFERENCES `contrato` (`id_contrato`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `finalizacioncontrato`
+--
+
+LOCK TABLES `finalizacioncontrato` WRITE;
+/*!40000 ALTER TABLE `finalizacioncontrato` DISABLE KEYS */;
+/*!40000 ALTER TABLE `finalizacioncontrato` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -283,7 +314,7 @@ CREATE TABLE `moneda` (
 
 LOCK TABLES `moneda` WRITE;
 /*!40000 ALTER TABLE `moneda` DISABLE KEYS */;
-INSERT INTO `moneda` VALUES (1,'Dólares','$'),(2,'Córdobas','C$');
+INSERT INTO `moneda` VALUES (1,'D','$'),(2,'C','C$');
 /*!40000 ALTER TABLE `moneda` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -317,7 +348,7 @@ CREATE TABLE `pagos` (
 
 LOCK TABLES `pagos` WRITE;
 /*!40000 ALTER TABLE `pagos` DISABLE KEYS */;
-INSERT INTO `pagos` VALUES (1,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-02-17','2024-04-27 10:45:32',3),(2,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-01-31','2024-04-27 15:58:01',0),(3,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:58:46',2),(4,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:59:15',0),(5,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:00:37',2),(6,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:01:00',0),(7,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:02',2),(8,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:35',0),(9,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:35',2),(10,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:49',0),(11,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-15','2024-04-27 16:11:05',0),(12,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:25',2),(13,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:46',0),(14,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-01','2024-04-27 17:28:37',3),(15,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-27','2024-04-27 17:28:45',1),(16,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-03','2024-05-03 21:57:03',3),(17,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-04','2024-06-04 17:21:59',1),(18,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-11','2024-06-05 11:50:21',2),(19,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-14','2024-06-05 11:50:58',0),(20,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-30','2024-06-05 11:51:24',0);
+INSERT INTO `pagos` VALUES (1,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2023-02-17','2024-04-27 10:45:32',3),(2,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-01-31','2024-04-27 15:58:01',0),(3,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:58:46',2),(4,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-04','2024-04-27 15:59:15',0),(5,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:00:37',2),(6,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-02-20','2024-04-27 16:01:00',0),(7,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:02',2),(8,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-07','2024-04-27 16:05:35',0),(9,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:35',2),(10,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-03-25','2024-04-27 16:09:49',0),(11,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-15','2024-04-27 16:11:05',0),(12,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:25',2),(13,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-18','2024-04-27 16:11:46',0),(14,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-01','2024-04-27 17:28:37',3),(15,4,7,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-27','2024-04-27 17:28:45',1),(16,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-03','2024-05-03 21:57:03',3),(17,8,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-04','2024-06-04 17:21:59',1),(18,9,17,'Este pago es solamente simb�lico para el sistema, ya que este cuenta es vieja pero hasta ahora se est� ingresando al sistema.','<FileStorage: \'\' (\'application/octet-stream\')>','2023-01-01','2024-06-07 00:48:47',3),(19,9,17,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-15','2024-06-07 00:51:21',1),(20,9,17,'Est� pago se realiz� el d�a 06 de Junio de 2024','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-30','2024-06-07 00:53:18',1),(21,9,17,'T� pagaste $600 d�lares - $400 del capital d�lares \n\nTe quedan $200 d�lares \n\nMenos los intereses al 12 de Mayo $109 d�lares por lo tanto los $91 d�lares que sobran te lo resto a t� deuda que era de $900 d�lares \n\n Saldo a la fecha:�$809','<FileStorage: \'\' (\'application/octet-stream\')>','2024-04-30','2024-06-07 00:59:06',1),(22,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-15','2024-07-08 23:22:13',0),(23,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-05-30','2024-07-08 23:22:41',0),(24,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-15','2024-07-08 23:23:15',0),(25,7,13,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-06-30','2024-07-08 23:23:32',0),(26,10,15,'','<FileStorage: \'\' (\'application/octet-stream\')>','2024-07-10','2024-07-10 00:40:22',3);
 /*!40000 ALTER TABLE `pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -346,7 +377,7 @@ CREATE TABLE `persona` (
 
 LOCK TABLES `persona` WRITE;
 /*!40000 ALTER TABLE `persona` DISABLE KEYS */;
-INSERT INTO `persona` VALUES (1,'Jhonatan','Medina',1,'001-150902-1014A','2024-03-14',1),(2,'Germán René ','Medina Mayorga ',1,'201-311045-0008S','2024-03-14',1),(3,'Matilda','Louis',1,'001-211185-003214','2024-03-18',1),(4,'Lidia Celina','Aguirre Santos',2,'201-311045-0008S','2024-03-21',1),(5,'Gloria Del Carmen','Rodriguez Canales',2,'201-311045-0008S','2024-03-22',1),(6,'Ana Gabriel','Montoya Canales',2,'201-311045-0008S','2024-03-22',1),(7,'Marlen del Rosario','Guevara Canales',2,'201-311045-0008S','2024-03-23',1),(8,'Germán René','Medina Mayorga',1,'201-311045-0008S','2024-03-25',1),(9,'Denise Nayely ','Marchena Aburto ',1,'','2024-03-25',1),(10,'Gloria Del Carmen','Sobervia',2,'201-150902-1014D','2024-03-26',1),(11,'Chihiro ','Carmona',1,'001-150902-1014A','2024-03-30',1),(12,'Muñeca','Del carmen',2,'001-150902-1013S','2024-03-30',1),(13,'Juan','Ramón',1,'001-000000-0000A','1988-02-10',1),(14,'NO HAY','NO HAY',1,'001-000000-000A','2024-04-27',1),(15,'Marta Gabriela','Lucia Cano',1,'001-189547-002S','2024-05-03',1),(16,'Juan Carlos','García de baile',1,'001-150289-008F','2024-05-03',1),(17,'Juan Carlos','García de baile',1,'001-150289-008F','2024-05-03',1);
+INSERT INTO `persona` VALUES (1,'Jhonatan','Medina',1,'001-150902-1014A','2024-03-14',1),(2,'Germ','Medina Mayorga ',1,'201-311045-0008S','2024-03-14',1),(3,'Matilda','Louis',1,'001-211185-003214','2024-03-18',1),(4,'Lidia Celina','Aguirre Santos',2,'201-311045-0008S','2024-03-21',1),(5,'Gloria Del Carmen','Rodriguez Canales',2,'201-311045-0008S','2024-03-22',1),(6,'Ana Gabriel','Montoya Canales',2,'201-311045-0008S','2024-03-22',1),(7,'Marlen del Rosario','Guevara Canales',2,'201-311045-0008S','2024-03-23',1),(8,'Germ','Medina Mayorga',1,'201-311045-0008S','2024-03-25',1),(9,'Denise Nayely ','Marchena Aburto ',1,'','2024-03-25',1),(10,'Gloria Del Carmen','Sobervia',2,'201-150902-1014D','2024-03-26',1),(11,'Chihiro ','Carmona',1,'001-150902-1014A','2024-03-30',1),(12,'Mu','Del carmen',2,'001-150902-1013S','2024-03-30',1),(13,'Juan','Ram',1,'001-000000-0000A','1988-02-10',1),(14,'NO HAY','NO HAY',1,'001-000000-000A','2024-04-27',1),(15,'Marta Gabriela','Lucia Cano',1,'001-189547-002S','2024-05-03',1),(16,'Juan Carlos','Garc',1,'001-150289-008F','2024-05-03',1),(17,'Juan Carlos','Garc',1,'001-150289-008F','2024-05-03',1),(18,'Claudia Jarquin','Martinez',2,'001-281079-0009Y','1979-10-28',1),(19,'NO CUENTA CON FIADOR','NO CUENTA CON FIADOR',3,'000-000000-0000A','2024-06-07',1),(20,'Prueb','Prueba',1,'001-000000-0000A','2024-07-02',1),(21,'Juan Carlos','Garc',1,'001-150289-008F','2024-05-03',1);
 /*!40000 ALTER TABLE `persona` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -374,7 +405,7 @@ CREATE TABLE `persona_direccion` (
 
 LOCK TABLES `persona_direccion` WRITE;
 /*!40000 ALTER TABLE `persona_direccion` DISABLE KEYS */;
-INSERT INTO `persona_direccion` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1),(13,13,1),(14,14,1),(15,15,1),(16,16,1),(17,17,1);
+INSERT INTO `persona_direccion` VALUES (1,1,1),(2,2,1),(3,3,1),(4,4,1),(5,5,1),(6,6,1),(7,7,1),(8,8,1),(9,9,1),(10,10,1),(11,11,1),(12,12,1),(13,13,1),(14,14,1),(15,15,1),(16,16,1),(17,17,1),(18,18,1),(19,19,1),(20,20,1),(21,21,1);
 /*!40000 ALTER TABLE `persona_direccion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -406,7 +437,7 @@ CREATE TABLE `saldos_pagos` (
 
 LOCK TABLES `saldos_pagos` WRITE;
 /*!40000 ALTER TABLE `saldos_pagos` DISABLE KEYS */;
-INSERT INTO `saldos_pagos` VALUES (1,13,1,-1155.64,'2024-06-05 11:51:24',1);
+INSERT INTO `saldos_pagos` VALUES (1,13,1,-1341.79,'2024-07-08 23:23:32',1),(2,15,1,0.00,'2024-07-08 21:29:45',1);
 /*!40000 ALTER TABLE `saldos_pagos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -467,7 +498,7 @@ CREATE TABLE `telefono` (
 
 LOCK TABLES `telefono` WRITE;
 /*!40000 ALTER TABLE `telefono` DISABLE KEYS */;
-INSERT INTO `telefono` VALUES (1,2,'2',81719517,1),(2,1,'2',87393929,1),(3,1,'1',76785562,1),(4,1,'1',76785562,1),(5,1,'1',85920121,1),(6,1,'1',85920121,1),(7,1,'2',85513587,1),(8,2,'1',87393929,1),(9,2,'2',85920121,1),(10,1,'1',81719517,1),(11,2,'2',85920121,1),(12,2,'2',76789975,1),(13,2,'2',85636879,1),(14,1,'3',87979879,1),(15,1,'1',85920121,1),(16,1,'2',85920125,1),(17,1,'2',85920125,1);
+INSERT INTO `telefono` VALUES (1,2,'2',81719517,1),(2,1,'2',87393929,1),(3,1,'1',76785562,1),(4,1,'1',76785562,1),(5,1,'1',85920121,1),(6,1,'1',85920121,1),(7,1,'2',85513587,1),(8,2,'1',87393929,1),(9,2,'2',85920121,1),(10,1,'1',81719517,1),(11,2,'2',85920121,1),(12,2,'2',76789975,1),(13,2,'2',85636879,1),(14,1,'3',87979879,1),(15,1,'1',85920121,1),(16,1,'2',85920125,1),(17,1,'2',85920125,1),(18,2,'2',85130836,1),(19,1,'3',0,1),(20,1,'1',11111111,1),(21,1,'2',85920125,1);
 /*!40000 ALTER TABLE `telefono` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -551,7 +582,7 @@ CREATE TABLE `transacciones_saldos` (
 
 LOCK TABLES `transacciones_saldos` WRITE;
 /*!40000 ALTER TABLE `transacciones_saldos` DISABLE KEYS */;
-INSERT INTO `transacciones_saldos` VALUES (1,1,2,2,-706.13,'Disminucion','2024-04-27 15:58:01'),(2,1,4,1,-58.92,'Disminucion','2024-04-27 15:59:15'),(3,1,6,1,-20.67,'Disminucion','2024-04-27 16:01:00'),(4,1,8,1,-45.26,'Disminucion','2024-04-27 16:05:35'),(5,1,10,1,-45.26,'Disminucion','2024-04-27 16:09:49'),(6,1,11,1,-80.78,'Disminucion','2024-04-27 16:11:05'),(7,1,13,1,-61.65,'Disminucion','2024-04-27 16:11:46'),(8,1,19,1,-56.19,'Disminucion','2024-06-05 11:50:58'),(9,1,20,1,-80.78,'Disminucion','2024-06-05 11:51:24');
+INSERT INTO `transacciones_saldos` VALUES (1,1,2,2,-706.13,'Disminucion','2024-04-27 15:58:01'),(2,1,4,1,-58.92,'Disminucion','2024-04-27 15:59:15'),(3,1,6,1,-20.67,'Disminucion','2024-04-27 16:01:00'),(4,1,8,1,-45.26,'Disminucion','2024-04-27 16:05:35'),(5,1,10,1,-45.26,'Disminucion','2024-04-27 16:09:49'),(6,1,11,1,-80.78,'Disminucion','2024-04-27 16:11:05'),(7,1,13,1,-61.65,'Disminucion','2024-04-27 16:11:46'),(8,1,22,1,-80.78,'Disminucion','2024-07-08 23:22:13'),(9,1,23,1,-80.78,'Disminucion','2024-07-08 23:22:41'),(10,1,24,1,-80.78,'Disminucion','2024-07-08 23:23:15'),(11,1,25,1,-80.78,'Disminucion','2024-07-08 23:23:32');
 /*!40000 ALTER TABLE `transacciones_saldos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -564,4 +595,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-06-05 22:25:03
+-- Dump completed on 2024-07-10 21:56:11

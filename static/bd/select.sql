@@ -158,6 +158,13 @@ INNER JOIN moneda m1 ON t.moneda_origen = m1.id_moneda
 INNER JOIN moneda m2 ON t.moneda_destino = m2.id_moneda;
 
 
+UPDATE contrato
+SET estado = '1'
+WHERE id_contrato = '9'
+
+UPDATE
+
+
 UPDATE tasaCambioMoneda
 SET cifraTasaCambioAnterior = cifraTasaCambio,
     cifraTasaCambio = <nuevo_valor_tasa_cambio>,
@@ -231,7 +238,7 @@ WHERE
 
 SELECT COUNT (*) FROM historial_pagos WHERE id_contrato = '1' AND estado = '1';
 
-SELECT id_contrato FROM contrato WHERE id_cliente = '1' AND estado = '1';
+SELECT id_contrato FROM contrato WHERE id_cliente = '15' AND estado = '1';
 
 SELECT montoPrimerPago FROM contrato WHERE id_contrato = '1';
 
@@ -407,13 +414,15 @@ WHERE id_cliente = '9'
 SELECT * FROM saldos_pagos WHERE id_cliente = '9'
 
 
-SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos, c.id_contrato, c.pagoMensual, c.pagoQuincenal
+SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos, c.id_contrato, c.pagoMensual, c.pagoQuincenal, cl.estado, c.estado
 FROM cliente cl
 JOIN persona p ON cl.id_persona = p.id_persona
 JOIN contrato c ON cl.id_cliente = c.id_cliente
 WHERE cl.estado = '1' AND
+c.estado = '1' AND
 cl.id_tipoCliente = '2' OR
 cl.id_tipoCliente = '3';
+
 
 SELECT SUM(cifraPago) 
 FROM detalle_pagos dp 
@@ -490,7 +499,7 @@ cl.id_cliente = '11'
 
 -- SELECT PARA LOS DATOS DEL CONTRATO
 SELECT c.id_contrato_fiador, c.id_cliente, c.estado_civil, c.nombre_delegacion, c.dptoArea_trabajo, c.ftoColillaINSS,
-c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes,
+c.monto_solicitado, c.tipo_monedaMonto_solicitado, c.tasa_interes, c.pagoMensual, c.pagoQuincenal,
 c.fechaPrestamo, c.fechaPago, c.montoPrimerPago
 FROM contrato c
 WHERE id_contrato = '7'
@@ -518,5 +527,206 @@ cl.id_cliente = '13'
 
 
 
+SELECT * FROM backupsbd 
+GROUP BY fechaHora
 
+
+CREATE TABLE backupsBD(
+  id_backupsBD INT PRIMARY KEY,
+  nombre_backup VARCHAR(100) NOT NULL,
+  ruta_backup VARCHAR(255) NOT NULL,
+  fechaHora DATETIME NOT NULL
+);
+
+SELECT *
+FROM backupsBD
+ORDER BY fechaHora DESC
+LIMIT 1;
+
+
+SELECT 
+    cl.id_cliente, 
+    cl.id_tipoCliente,
+    tp.nombre_tipoCliente,
+    p.nombres, 
+    p.apellidos, 
+    m.codigoMoneda,
+    c.intervalo_tiempoPago,
+    c.monto_solicitado, 
+    c.tasa_interes, 
+    c.pagoMensual, 
+    c.pagoQuincenal,
+    c.fechaPrestamo,
+    CASE 
+        WHEN TIMESTAMPDIFF(HOUR, c.fechaPrestamo, NOW()) < 1 THEN CONCAT(TIMESTAMPDIFF(MINUTE, c.fechaPrestamo, NOW()), ' minutos')
+        WHEN TIMESTAMPDIFF(DAY, c.fechaPrestamo, NOW()) = 1 THEN 'hace ayer'
+        WHEN TIMESTAMPDIFF(HOUR, c.fechaPrestamo, NOW()) < 24 THEN CONCAT(TIMESTAMPDIFF(HOUR, c.fechaPrestamo, NOW()), ' horas')
+        WHEN TIMESTAMPDIFF(DAY, c.fechaPrestamo, NOW()) = 2 THEN 'hace 2 días'
+        WHEN TIMESTAMPDIFF(DAY, c.fechaPrestamo, NOW()) < 30 THEN CONCAT(TIMESTAMPDIFF(DAY, c.fechaPrestamo, NOW()), ' días')
+        WHEN TIMESTAMPDIFF(MONTH, c.fechaPrestamo, NOW()) = 1 THEN 'hace 1 mes'
+        WHEN TIMESTAMPDIFF(MONTH, c.fechaPrestamo, NOW()) < 12 THEN CONCAT(TIMESTAMPDIFF(MONTH, c.fechaPrestamo, NOW()), ' meses')
+        WHEN TIMESTAMPDIFF(YEAR, c.fechaPrestamo, NOW()) = 1 THEN 'hace 1 año'
+        ELSE CONCAT(TIMESTAMPDIFF(YEAR, c.fechaPrestamo, NOW()), ' años')
+    END as fecha_prestamo_desde,
+    CASE c.intervalo_tiempoPago
+           WHEN 15 THEN 'Quincenal'
+           WHEN 30 THEN 'Mensual'
+           ELSE 'Desconocido' -- Manejar otros casos si es necesario
+       END as tiempo_pago
+FROM 
+    cliente cl
+JOIN 
+    contrato c ON cl.id_cliente = c.id_cliente
+JOIN 
+    persona p ON cl.id_persona = p.id_persona
+JOIN 
+    moneda m ON c.tipo_monedaMonto_solicitado = m.id_moneda
+JOIN
+		tipo_cliente tp ON cl.id_tipoCliente = tp.id_tipoCliente
+WHERE
+    cl.id_cliente = '15'
+    AND 
+    c.estado = '1';
+
+
+
+
+SELECT COUNT(*) 
+FROM pagos p
+JOIN cliente cl ON p.id_cliente = cl.id_cliente
+JOIN contrato c ON cl.id_cliente = c.id_cliente
+WHERE
+cl.id_cliente = '15' AND
+c.estado = '1';
+
+SELECT COUNT(*) 
+FROM pagos p
+JOIN contrato c ON p.id_contrato = c.id_contrato
+WHERE c.id_cliente = '17' AND c.estado = '1';
+
+SELECT COUNT(*) 
+        FROM pagos p
+        JOIN contrato c ON p.id_contrato = c.id_contrato
+        WHERE c.id_cliente = '17' AND c.estado = '1';
+
+
+SELECT 
+    p.id_pagos,
+    p.observacion, 
+    p.evidencia_pago, 
+    p.fecha_pago, 
+    p.fecha_realizacion_pago,
+    p.estado AS estado_pago, 
+    m.codigoMoneda, 
+    m.nombreMoneda, 
+    dp.cifraPago, 
+    dp.tasa_conversion,
+    dp.estado AS estado_detalle_pago,
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+    c.estado
+FROM 
+    pagos p
+JOIN 
+    detalle_pagos dp ON p.id_pagos = dp.id_pagos
+JOIN 
+    moneda m ON dp.id_moneda = m.id_moneda
+JOIN 
+    contrato c ON p.id_contrato = c.id_contrato
+WHERE 
+    p.id_cliente = :id_cliente 
+    AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
+    AND dp.estado = '1'
+ORDER BY 
+    p.fecha_pago, p.id_pagos ASC;
+
+
+SELECT cl.id_cliente, cl.id_tipoCliente, p.nombres, p.apellidos, c.id_contrato, c.pagoMensual, c.pagoQuincenal, cl.estado, c.estado
+FROM cliente cl
+JOIN persona p ON cl.id_persona = p.id_persona
+JOIN contrato c ON cl.id_cliente = c.id_cliente
+WHERE cl.estado = '1' AND
+c.estado = '1' AND
+cl.id_tipoCliente = '2' OR
+cl.id_tipoCliente = '3';
+
+
+SELECT
+    p.id_cliente, 
+    p.id_pagos,
+    p.observacion, 
+    p.evidencia_pago, 
+    p.fecha_pago, 
+    p.fecha_realizacion_pago,
+    p.estado AS 'estado_pagos', 
+    m.codigoMoneda, 
+    m.nombreMoneda, 
+    dp.cifraPago, 
+    dp.tasa_conversion, 
+    dp.estado AS 'estado_detallePagos',
+    CASE 
+        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+    END AS descripcion_quincena,
+    MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+    c.estado AS 'estado_contrato'
+FROM 
+    pagos p
+JOIN 
+    detalle_pagos dp ON p.id_pagos = dp.id_pagos
+JOIN 
+    moneda m ON dp.id_moneda = m.id_moneda
+JOIN 
+    contrato c ON p.id_contrato = c.id_contrato
+WHERE 
+    p.id_pagos = '22'
+    
+    
+    
+    
+UPDATE contrato SET estado = 0 
+WHERE estado IN (1, 3) AND id_cliente = tu_id_cliente;
+
+
+SELECT
+            p.id_pagos,
+            p.observacion, 
+            p.evidencia_pago, 
+            p.fecha_pago, 
+            p.fecha_realizacion_pago,
+            p.estado AS estado_pago, 
+            m.codigoMoneda, 
+            m.nombreMoneda, 
+            dp.cifraPago, 
+            dp.tasa_conversion,
+            dp.estado AS estado_detalle_pago,
+            c.id_contrato,
+            c.monto_solicitado,
+            c.fechaPrestamo,
+            c.estado as estado_contrato,
+            
+            CASE 
+                WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+                ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+            END AS descripcion_quincena,
+            MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+            c.estado
+        FROM 
+            pagos p
+        JOIN 
+            detalle_pagos dp ON p.id_pagos = dp.id_pagos
+        JOIN 
+            moneda m ON dp.id_moneda = m.id_moneda
+        JOIN 
+            contrato c ON p.id_contrato = c.id_contrato
+        WHERE 
+            p.id_cliente = '15' 
+            AND p.fecha_pago BETWEEN '2024-01-01' AND '2024-12-31'
+            AND c.estado = 1 OR c.estado =2
+       
+        ORDER BY 
+            p.fecha_pago, p.id_pagos ASC;
 

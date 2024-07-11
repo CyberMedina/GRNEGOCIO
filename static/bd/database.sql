@@ -1,7 +1,9 @@
 CREATE DATABASE grnegocio;
 
+
 USE grnegocio;
 
+-- DROP DATABASE grnegocio;
 
 
 
@@ -123,11 +125,20 @@ CREATE TABLE contrato(
   intervalo_tiempoPago INT NOT NULL,
   montoPrimerPago DECIMAL(10,2) NOT NULL,
   fechaCreacionContrato DATETIME NOT NULL,
-  estado INT NOT NULL, -- 1 activo: 0 inactivo
+  estado INT NOT NULL, -- 2: reduccion o aumento del prestamo 1 activo: 0 inactivo
   FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
   FOREIGN KEY (id_contrato_fiador) REFERENCES contrato_fiador(id_contrato_fiador),
   FOREIGN KEY (tipo_monedaMonto_solicitado) REFERENCES moneda(id_moneda)
 );
+
+
+SELECT id_contrato
+FROM contrato
+WHERE id_cliente = '15'
+  AND estado IN (1, 3)
+ORDER BY fechaCreacionContrato DESC
+LIMIT 1;
+
 
 
 
@@ -193,26 +204,25 @@ CREATE TABLE transacciones_saldos (
 );
 
 
-SELECT sp.id_saldos_pagos, m.nombreMoneda, m.codigoMoneda, sp.cifraSaldo 
-FROM saldos_pagos sp
-JOIN moneda m ON m.id_moneda = sp.id_moneda
-JOIN cliente c ON c.id_cliente = sp.id_cliente
-WHERE id_tipoSaldos_pagos = 2 AND c.id_cliente = '11'
 
 
+CREATE TABLE backupsBD(
+  id_backupsBD INT PRIMARY KEY,
+  nombre_backup VARCHAR(100) NOT NULL,
+  ruta_backup VARCHAR(255) NOT NULL,
+  fechaHora DATETIME NOT NULL
+);
 
-SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
-    CASE 
-        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-    END AS descripcion_quincena,
-    MONTH(p.fecha_pago) AS id_mes -- Se eliminó la coma aquí
-FROM transacciones_saldos ts
-INNER JOIN detalle_pagos dp ON ts.id_pagos = dp.id_pagos
-INNER JOIN pagos p ON dp.id_pagos = p.id_pagos
-INNER JOIN contrato c ON p.id_contrato = c.id_contrato
-WHERE p.id_cliente = 13
-AND p.fecha_pago BETWEEN '2024-01-01' AND '2024-12-31'
-AND c.estado = 1
-AND dp.estado = 1;
+
+CREATE TABLE finalizacionContrato(
+  idFinalizacionContrato INT PRIMARY KEY,
+  id_contrato INT,
+  fechaFinalizacion DATETIME,
+  observacion VARCHAR(255),
+  fechaRealizacionFinalizado DATETIME,
+  FOREIGN KEY (id_contrato) REFERENCES contrato(id_contrato)
+  
+);
+
+
 
