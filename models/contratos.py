@@ -148,6 +148,26 @@ LIMIT 1;"""
         db_session.close()
 
 
+def obtener_IdContratoActivo(db_session, id_cliente):
+    try:
+        query = text("""
+                     SELECT id_contrato
+FROM contrato
+WHERE id_cliente = :id_cliente
+AND estado = :estado
+LIMIT 1;"""
+                     )
+        result = db_session.execute(
+            query, {'id_cliente': id_cliente, 'estado': activo}).fetchone()
+        return result[0]
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
 
 
 def cambiar_estadoContrato_finalizado(db_session, id_cliente, estado):

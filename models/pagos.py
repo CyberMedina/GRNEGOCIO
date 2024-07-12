@@ -431,6 +431,71 @@ def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contr
         db_session.close()
 
 
+def ultimo_pago_contrato(db_session, id_cliente):
+    try:
+        query = text(""" 
+        SELECT
+            p.id_pagos,
+            p.observacion, 
+            p.evidencia_pago, 
+            p.fecha_pago, 
+            p.fecha_realizacion_pago,
+            p.estado AS estado_pago, 
+            m.codigoMoneda, 
+            m.nombreMoneda, 
+            dp.cifraPago, 
+            dp.tasa_conversion,
+            dp.estado AS estado_detalle_pago,
+            c.id_contrato,
+            c.monto_solicitado,
+            c.fechaPrestamo,
+            c.estado as estado_contrato,
+            
+            CASE 
+                WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+                ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
+            END AS descripcion_quincena,
+            MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+            c.estado
+        FROM 
+            pagos p
+        JOIN 
+            detalle_pagos dp ON p.id_pagos = dp.id_pagos
+        JOIN 
+            moneda m ON dp.id_moneda = m.id_moneda
+        JOIN 
+            contrato c ON p.id_contrato = c.id_contrato
+        WHERE 
+            p.id_cliente = :id_cliente 
+            AND p.estado = :estado_detalle_pago1 OR p.estado = :estado_detalle_pago2
+        ORDER BY 
+            p.fecha_pago DESC
+        LIMIT 1;
+        """)
+
+        result = db_session.execute(query, {'id_cliente': id_cliente, "estado_detalle_pago1": pago_completo, 'estado_detalle_pago2': pago_incompleto}).fetchall()
+        
+        new_result = []
+        last_id_contrato = None
+        for row in result:
+            row_tuple = tuple(row)
+            if row_tuple[0] != last_id_contrato:
+                new_row = row_tuple + (1,)
+                last_id_contrato = row_tuple[0]
+            else:
+                new_row = row_tuple + (None,)
+            new_result.append(new_row)
+        return result
+
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
 
 def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):
     try:
@@ -1503,8 +1568,6 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
     print(num_pagos)
 
     if num_pagos[0] == 0:
-        print("El cliente con id " + str(id_cliente) +
-              " no tiene pagos registrados" + str(num_pagos))
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
 

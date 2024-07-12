@@ -27,6 +27,7 @@ from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
 from models.contratos import *
+from models.API_Alexa import *
 from models.base_de_datos import *
 from flask_cors import CORS
 from serverEmail import mail
@@ -903,12 +904,24 @@ def visualizar_contrato(id_cliente):
 def finalizar_contrato(id_cliente):
 
     if request.method == 'POST':
+
+        fechaFinalizacion = request.form['fechaFinalizacion']
+        observacionFinalizacion = request.form['observacionFinalizacion']
+
+
+
         db_session.begin()
 
         try:
-            cambiar_estadoContrato_finalizado(db_session, id_cliente)
+            cambiar_estadoContrato_finalizado(db_session, id_cliente, inactivo)
 
-            #finalizacionContratoDescripcion(db_session, id_contrato, fechaFinalizacion, observacion)
+            id_contratoActivo = obtener_IdContratoActivo(db_session, id_cliente)
+
+            finalizacionContratoDescripcion(db_session, id_contratoActivo, fechaFinalizacion, observacionFinalizacion)
+
+            actualizarEstadoCliente(db_session, id_cliente, inactivo)
+
+
 
 
 
@@ -1258,6 +1271,121 @@ def obtener_capital():
             return jsonify({"message": "Error en la base de datos"}), 500
     else:
         return jsonify({"message": "Metodo no permitido"}), 400
+
+
+
+
+########### Empieza API ###########
+
+@app.route('/api/obtener_estadoCliente', methods=['GET', 'POST'])
+@cross_origin()
+def obtener_estadoCliente():
+    if request.method == 'POST':
+        data = request.json
+
+        nombre_cliente = data['person']
+
+       
+
+
+        try:
+            cadena_respuesta = crear_cadena_respuesta(db_session, nombre_cliente)
+            return jsonify({"respuesta": cadena_respuesta}), 200
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return jsonify({"message": "Error en la base de datos"}), 500
+    else:
+        return jsonify({"message": "Metodo no permitido"}), 400
+    
+
+@app.route('/api/imprimir_pago_alexa', methods=['GET', 'POST'])
+def imprimir_pago_alexa():
+
+
+
+        data = request.json
+
+        nombre_cliente = data['person']
+
+        try:
+
+            # Obtener ID del cliente por nombre
+            id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
+
+            mes_estatico, dia_estatico = 1, 1  # Mes: enero, Día: 15
+            fecha_inicio = datetime.now().replace(month=mes_estatico, day=dia_estatico).strftime('%Y-%m-%d')
+
+            fecha_fin = datetime.now().strftime('%Y-%m-%d')
+
+
+
+            fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
+
+            fecha_inicio_totalSaldo = '2010-01-01'
+            fecha_fin_totalSaldo = fecha_inicio
+
+            if not all([id_cliente, fecha_inicio, fecha_fin]):
+                return jsonify({"error": "No se está obteniendo toda la información requerida"}), 400
+            
+            suma_saldo = transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio_totalSaldo, fecha_fin_totalSaldo, activo, monedaOriginal, consulta_sumatoria_total, 0)
+
+            quincenaFechaFinTs, mesFechaFinTs, anioFechaFinTs = obtener_quincenaActual_letras(fecha_fin_totalSaldo)
+            fecha_fin_totalSaldoFormateado = f"{quincenaFechaFinTs} quincena de {mesFechaFinTs} del {anioFechaFinTs}"
+
+            quincenaFechaFin, mesFechaFin, anioFechaFin = obtener_quincenaActual_letras(fecha_fin)
+            fecha_finFormateado = f"{quincenaFechaFin} quincena de {mesFechaFin} del {anioFechaFin}"
+
+            dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+
+            datos_pago = {
+                'dataPagos_cliente' : dataPagos_cliente,
+                'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
+                                    añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
+                'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal, suma_saldo),
+                'suma_saldo' : suma_saldo,
+                'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
+                'fecha_saldo_final': f'{fecha_finFormateado} ({fecha_fin})',
+                'saldo_pendiente' : validar_existencia_saldo(db_session, id_cliente),
+            }
+
+            html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
+
+            
+            correo_electronico = os.getenv('CORREO_ELECTRONICO_ALEXA_API')
+            print(correo_electronico)
+            cuerpo = html_formulario
+
+            # Genera el PDF desde tu HTML (ya lo tienes)
+            pdf_binario = generar_pdf_desde_html(html_formulario)
+
+            with app.app_context():
+                print(dataPagos_cliente)
+                mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
+                mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
+
+                # Adjuntar el PDF en formato binario
+                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
+
+                # Enviar el correo electrónico
+                mail.send(mensaje)
+
+            return jsonify({"respuesta": "Listo, he enviado el historial de pagos a tu teléfono"}), 200
+
+        except SQLAlchemyError as e:
+            print(f"Error: {e}")
+            return jsonify({"error": "Error en la base de datos"}), 500
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            return jsonify({"error": "Error desconocido"}), 500
+        
+        finally:
+            db_session.close()
+
+
+
+########### Termina API ###########
 
 
 @app.route('/pruebita', methods=['GET', 'POST'])

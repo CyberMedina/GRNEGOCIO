@@ -253,6 +253,27 @@ def actualizar_cliente(db_session, id_cliente, id_persona, id_tipoCliente, image
         return False
 
 
+def actualizarEstadoCliente(db_session, id_cliente, estado):
+    try:
+        query = text("""
+        UPDATE cliente
+        SET estado = :estado
+        WHERE id_cliente = :id_cliente;
+        """)
+
+        db_session.execute(query, {"id_cliente": id_cliente, "estado": estado})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
+
 def listar_clientes(db_session, estado):
     try:
         estado = estado[0]
@@ -327,3 +348,6 @@ AND p.estado = '1';
         return None
     finally:
         db_session.close()
+
+
+
