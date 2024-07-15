@@ -270,31 +270,6 @@
 
 <script>
 
-    window.onpageshow = function (event) {
-        if (event.persisted) {
-            window.location.reload();
-        }
-    };
-
-
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
-
-    // Escucha el evento 'pago_realizado' desde el servidor
-    socket.on('pago_realizado', function (data) {
-        console.log('Pago realizado para el cliente ID:', data.cliente_id);
-        // Aquí puedes realizar acciones adicionales, como recargar la página
-        window.location.reload();
-    });
-
-    // Escucha el evento 'pago_realizado' desde el servidor
-    socket.on('Se eliminó un pago', function (data) {
-        console.log('Pago realizado para el cliente ID:', data.cliente_id);
-        // Aquí puedes realizar acciones adicionales, como recargar la página
-        window.location.reload();
-    });
-
-
-
     /*
     const dataTable = new simpleDatatables.DataTable("#tableNormal", {
         searchable: true,

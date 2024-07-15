@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
 from flask_mail import Mail, Message
-from flask_socketio import SocketIO, emit
 from io import BytesIO
 from sqlalchemy import create_engine, text, MetaData
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -34,7 +33,6 @@ from serverEmail import mail
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
-socketio = SocketIO(app, cors_allowed_origins='*')
 CORS(app)
 
 # Si no hay un número seleccionado en sesión, simplemente se asigna 1
@@ -52,9 +50,6 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL_USER')
 mail.init_app(app)
 
 
-@socketio.on('cliente_conectado')
-def handle_message():
-    print('Cliente conectado')
 
 
 def initialize_session_variable(key, default_value):
@@ -650,8 +645,7 @@ def añadir_pago(id_cliente):
 
         db_session.commit()
 
-        # Emite un evento personalizado a los clientes conectados
-        socketio.emit('pago_realizado', {'cliente_id': id_cliente})
+
 
         return redirect(url_for('añadir_pago', id_cliente=id_cliente))
 
@@ -803,7 +797,6 @@ def eliminar_pago():
         eliminar_pago_idPagos(db_session, id_pagos, estado_pago)
         db_session.commit()
         # Emite un evento personalizado a los clientes conectados
-        socketio.emit('Se eliminó un pago', {'id_pago': id_pagos})
         return jsonify({'message': 'Pago eliminado'}), 200
 
     except SQLAlchemyError as e:
@@ -1525,5 +1518,4 @@ def pruebita():
 
 
 if __name__ == '__main__':
-    socketio.run(app)
     app.run(host='127.0.0.1', port=8000, debug=True)
