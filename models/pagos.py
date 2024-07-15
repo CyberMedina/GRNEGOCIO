@@ -72,9 +72,10 @@ JOIN
 JOIN
 		tipo_cliente tp ON cl.id_tipoCliente = tp.id_tipoCliente
 WHERE
-    cl.id_cliente = :id_cliente;
-                     """
-                     )
+    cl.id_cliente = :id_cliente
+    AND
+    c.estado = '1';
+                     """)
         result = db_session.execute(
             query, {'id_cliente': id_cliente}).fetchall()
 
@@ -703,7 +704,7 @@ JOIN pagos p ON dp.id_pagos = p.id_pagos
 WHERE id_contrato = :id_contrato 
 AND fecha_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
 AND dp.estado = :estadoMoneda
-AND P.estado = :estadoPago1;""")
+AND p.estado = :estadoPago1;""")
 
         result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
                                     'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1': primer_pago_del_prestamo}).fetchone()

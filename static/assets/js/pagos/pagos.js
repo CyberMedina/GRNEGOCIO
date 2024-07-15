@@ -29,7 +29,7 @@ async function ver_datosClientes(id_cliente) {
         console.log(data);
 
         const cliente = data.datos_prestamo[0];
-        const tasa_interes = data.datos_prestamo[1];
+        const tasa_cambio = data.datos_prestamo[1];
 
         nombre_cliente.textContent = cliente.nombres + ' ' + cliente.apellidos;
         tipo_cliente.textContent = cliente.nombre_tipoCliente;
@@ -48,7 +48,7 @@ async function ver_datosClientes(id_cliente) {
         inputPagoQuincenalDolares.value = cliente.pagoQuincenal;
         codigoMonedaPagoQuincenalDolares.textContent = cliente.codigoMoneda;
 
-        inputTasaCambio.value = tasa_interes.cifraTasaCambio;
+        inputTasaCambio.value = tasa_cambio.cifraTasaCambio;
 
         gestionarPago.href = '/añadir_pago/' + cliente.id_cliente;
 
