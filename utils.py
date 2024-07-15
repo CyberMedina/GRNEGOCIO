@@ -7,9 +7,10 @@ from bs4 import BeautifulSoup
 import requests
 import calendar
 import locale
+import pytz
 
-# Cambiar la configuración regional a español
-locale.setlocale(locale.LC_TIME, 'es_ES.utf8')
+# Establecer el locale a español para formatear los nombres de días y meses
+locale.setlocale(locale.LC_TIME, 'es_ES')
 
 import time
 from selenium import webdriver
@@ -288,6 +289,8 @@ def auth_to_drive():
     # Retorna una instancia de GoogleDrive autenticada
     return GoogleDrive(gauth)
 
+
+
 def upload_to_drive(drive, filepath, folder_id):
     # Extrae solo el nombre del archivo del camino completo
     filename = os.path.basename(filepath)
@@ -297,4 +300,47 @@ def upload_to_drive(drive, filepath, folder_id):
     backup_file.SetContentFile(filepath)
     backup_file.Upload()
     print('El archivo de respaldo ha sido subido con éxito.')
-   
+
+
+def get_latest_sql_file(drive, folder_id):
+    # Listar todos los archivos en la carpeta
+    file_list = drive.ListFile({'q': f"'{folder_id}' in parents and trashed=false"}).GetList()
+    
+    # Filtrar solo archivos .sql
+    sql_files = [file for file in file_list if file['title'].endswith('.sql')]
+    
+    # Ordenar los archivos por fecha de modificación (más reciente primero)
+    sql_files.sort(key=lambda x: x['modifiedDate'], reverse=True)
+    
+    # Retornar el archivo más reciente, si existe
+    if sql_files:
+        return sql_files[0]
+    else:
+        return None
+    
+
+def get_all_sql_files(drive, folder_id):
+    # Listar todos los archivos en la carpeta
+    file_list = drive.ListFile({'q': f"'{folder_id}' in parents and trashed=false"}).GetList()
+    
+    # Filtrar solo archivos .sql
+    sql_files = [file for file in file_list if file['title'].endswith('.sql')]
+    
+    # Ordenar los archivos por fecha de modificación (más reciente primero)
+    sql_files.sort(key=lambda x: x['modifiedDate'], reverse=True)
+    
+    # Retornar el archivo más reciente, si existe
+    if sql_files:
+        return sql_files
+    else:
+        return None
+
+def convertir_fecha(fecha_str):
+    # Parsear la fecha y hora original
+    fecha_utc = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+    # Convertir a zona horaria local o a una específica
+    fecha_local = fecha_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Mexico_City'))
+    # Ajustar manualmente la hora si es necesario
+    # Formatear la fecha y hora al formato deseado
+    fecha_formateada = fecha_local.strftime('%A %d de %B de %Y a las %I:%M:%S %p')
+    return fecha_formateada.replace('AM', 'a.m.').replace('PM', 'p.m.')

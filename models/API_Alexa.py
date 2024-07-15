@@ -244,7 +244,27 @@ def imprimirPagoAlexa(db_session, id_cliente, fecha_inicio, fecha_fin, correo_el
         print("Conexión cerrada")
 
 
+def obtener_pagoClienteTexto(db_session, nombre_cliente):
 
 
+    # Obtener ID del cliente por nombre
+    id_cliente = obtenerIdClientePorNombre(db_session, nombre_cliente)
 
+    monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
+    print(monto_pagoEspecial)
+
+    tasa_cambio = obtener_tasa_cambio_local()
+    print(tasa_cambio)
+
+    cifra_dolares = monto_pagoEspecial['cifra']
+
+    cifra_cordobas = cifra_dolares * tasa_cambio['cifraTasaCambio']
+
+    cadena_texto_respuesta = f"El cliente {nombre_cliente} tiene que pagar la cifra de {cifra_dolares} dólares, que al cambio serían {cifra_cordobas} córdobas."
+
+    return cadena_texto_respuesta
+
+### estado 3 = Ya se ha pagado el monto total de la quincena
+### estado 2 = Pago quincenal
+### estado 1  = El resto a pagar de la Primera quincena de julio de 2024
 

@@ -5,10 +5,10 @@
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
 import logging
-import requests
 import ask_sdk_core.utils as ask_utils
 
-from requests.exception import Timeout
+import requests
+from requests.exceptions import Timeout
 from ask_sdk_core.skill_builder import SkillBuilder
 from ask_sdk_core.dispatch_components import AbstractRequestHandler
 from ask_sdk_core.dispatch_components import AbstractExceptionHandler
@@ -19,7 +19,6 @@ from ask_sdk_model import Response
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
     def can_handle(self, handler_input):
@@ -29,10 +28,10 @@ class LaunchRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
         speak_output = ""
-        reprompt_text = "Por favor, dime qué necesitas."
+        reprompt_text = "¿Necesitas algo más?"
 
         try:
-            response = requests.get('https://jqh8k6b4-5000.use.devtunnels.ms/pruebita', timeout=60)
+            response = requests.get('https://qq37ws9m-5000.use.devtunnels.ms/pruebita', timeout=60)
             if response.status_code == 200:
                 speak_output = "¡Hola!, Bienvenido al negocio, ¿en qué puedo ayudarte hoy?"
             else:
@@ -59,40 +58,84 @@ class GetCapitalIntentHandler(AbstractRequestHandler):
 
         # Aquí es donde haces la solicitud POST a tu API
         data = {'person': person}
-        url = 'https://jqh8k6b4-5000.use.devtunnels.ms/api/obtener_capital'
+        url = 'https://qq37ws9m-5000.use.devtunnels.ms/api/obtener_estadoCliente'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, headers=headers, json=data)
         
+        reprompt_text = "¿Necesitas algo más?"
         if response.status_code == 200:
-            capital = response.json()  # Asume que la respuesta es JSON
-            speak_output = f"El capital de {person} es {capital}."
+            data_json = response.json()  # Asume que la respuesta es JSON
+            speak_output = data_json['respuesta']
         else:
-            speak_output = "Lo siento, hubo un error al buscar el capital."
+            speak_output = f"Lo siento, no encuentro a {person} en la base de datos.  <break time='1s'/> ¿Necesitas algo más?"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
+                .ask(reprompt_text)
                 .response
         )
 
-
-
-class HelloWorldIntentHandler(AbstractRequestHandler):
-    """Handler for Hello World Intent."""
+class enviar_correo_intent(AbstractRequestHandler):
+    """Handler for Get Capital Intent."""
     def can_handle(self, handler_input):
         # type: (HandlerInput) -> bool
-        return ask_utils.is_intent_name("HelloWorldIntent")(handler_input)
+        return ask_utils.is_intent_name("enviar_correo_intent")(handler_input)
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Hello World!"
+        person = handler_input.request_envelope.request.intent.slots["cliente"].value
+
+        # Aquí es donde haces la solicitud POST a tu API
+        data = {'person': person}
+        url = 'https://qq37ws9m-5000.use.devtunnels.ms/api/imprimir_pago_alexa'
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(url, headers=headers, json=data)
+        
+        reprompt_text = "¿Necesitas algo más?"
+        if response.status_code == 200:
+            data_json = response.json()  # Asume que la respuesta es JSON
+            speak_output = data_json['respuesta']
+        else:
+            speak_output = f"Lo siento, no encuentro a {person} en la base de datos.  <break time='1s'/> ¿Necesitas algo más?"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                # .ask("add a reprompt if you want to keep the session open for the user to respond")
+                .ask(reprompt_text)
                 .response
         )
+
+class consultaPagoIntent(AbstractRequestHandler):
+    """Handler for Get Capital Intent."""
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("consultaPagoIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        person = handler_input.request_envelope.request.intent.slots["cliente"].value
+
+        # Aquí es donde haces la solicitud POST a tu API
+        data = {'person': person}
+        url = 'https://qq37ws9m-5000.use.devtunnels.ms/api/obtener_pago'
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(url, headers=headers, json=data)
+        
+        reprompt_text = "¿Necesitas algo más?"
+        if response.status_code == 200:
+            data_json = response.json()  # Asume que la respuesta es JSON
+            speak_output = data_json['respuesta']
+        else:
+            speak_output = f"Lo siento, no encuentro a {person} en la base de datos.  <break time='1s'/> ¿Necesitas algo más?"
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(reprompt_text)
+                .response
+        )
+
 
 
 class HelpIntentHandler(AbstractRequestHandler):
@@ -122,7 +165,7 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Goodbye!"
+        speak_output = "Está bien, que pases un lindo día!"
 
         return (
             handler_input.response_builder
@@ -202,6 +245,10 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
                 .ask(speak_output)
                 .response
         )
+        
+        
+        
+
 
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
@@ -211,7 +258,9 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 sb = SkillBuilder()
 
 sb.add_request_handler(LaunchRequestHandler())
-sb.add_request_handler(HelloWorldIntentHandler())
+sb.add_request_handler(GetCapitalIntentHandler())
+sb.add_request_handler(enviar_correo_intent())
+sb.add_request_handler(consultaPagoIntent())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())

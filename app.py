@@ -946,8 +946,46 @@ def finalizar_contrato(id_cliente):
 @app.route('/base_de_datos', methods=['GET', 'POST'])
 def base_de_datos():
 
+    # Autenticación con Google Drive
+    drive = auth_to_drive()
 
-    return render_template('base_de_datos/base_de_datos.html')
+    # ID de la carpeta de Google Drive donde están los backups
+    folder_id = '1Qdrdj9sshZMoV61eNjbFcS-u_SJTrn5U'  # Reemplaza con tu ID de carpeta
+
+    # Obtener el archivo SQL más reciente de la carpeta
+    all_sql_files = get_all_sql_files(drive, folder_id)
+
+    
+    backups_files = []
+
+    if all_sql_files:
+        for file in all_sql_files:
+            download_link = file['alternateLink']
+            delete_link = f"/delete_backup/{file['id']}"
+            filedate = convertir_fecha(file['modifiedDate'])
+            response = {
+            "filename": file['title'],
+            "fileDate" : filedate,
+            "download_link": download_link,
+            "delete_link": delete_link
+            }
+            backups_files.append(response)
+    else:
+        backups_files = []
+
+
+    print(backups_files)
+
+        
+
+
+
+    template_info = {
+        "backups_files": backups_files
+    }
+
+
+    return render_template('base_de_datos/base_de_datos.html', **template_info)
 
 ########### TERMINA MODLU DE CONFIGURACION ###########
 
@@ -972,7 +1010,6 @@ def busqueda_capital(nombres):
 
 
 
-# Obtener metadatos
 metadata = MetaData()
 metadata.reflect(bind=engine)
 
@@ -988,19 +1025,80 @@ def generate_insert_statements(table):
             insert_statements.append(insert_statement)
     return insert_statements
 
-
-@app.route('/backup')
+@app.route('/backup', methods=['GET', 'POST'])
 def backup_database_to_insert_statements():
-    """Genera un backup de la base de datos en forma de sentencias INSERT y lo guarda en un archivo."""
+    """Genera un backup de la base de datos en forma de sentencias INSERT, lo guarda en un archivo y lo sube a Google Drive."""
     backup_statements = []
-    for table_name, table in metadata.tables.items():
+
+    # Obtener las tablas ordenadas por dependencias de claves foráneas
+    ordered_tables = metadata.sorted_tables
+
+    for table in ordered_tables:
         backup_statements.extend(generate_insert_statements(table))
     
-    with open('backup.sql', 'w') as backup_file:
+    backup_filepath = 'backup.sql'
+    with open(backup_filepath, 'w', encoding='utf-8') as backup_file:
         backup_file.write('\n'.join(backup_statements))
     
-    return "Backup completed", 200
+    # Autenticación con Google Drive
+    drive = auth_to_drive()
 
+    # ID de la carpeta de Google Drive donde quieres subir el archivo
+    folder_id = os.getenv("ID_FOLDER")  # Reemplaza con tu ID de carpeta
+
+    # Subir el archivo a Google Drive
+    upload_to_drive(drive, backup_filepath, folder_id)
+    
+    return "Backup completed and uploaded to Google Drive", 200
+
+@app.route('/get_latest_backup', methods=['GET'])
+def get_latest_backup():
+    # Autenticación con Google Drive
+    drive = auth_to_drive()
+
+    # ID de la carpeta de Google Drive donde están los backups
+    folder_id = os.getenv("ID_FOLDER")   # Reemplaza con tu ID de carpeta
+
+    # Obtener el archivo SQL más reciente de la carpeta
+    latest_file = get_latest_sql_file(drive, folder_id)
+    print(latest_file)
+    
+    if latest_file:
+        download_link = latest_file['alternateLink']
+        delete_link = f"/delete_backup/{latest_file['id']}"
+        response = {
+            "filename": latest_file['title'],
+            "fileDate" : latest_file['modifiedDate'],
+            "download_link": download_link,
+            "delete_link": delete_link
+        }
+    else:
+        response = {
+            "message": "No SQL files found in the specified folder."
+        }
+
+    return jsonify(response)
+
+
+
+
+
+
+
+@app.route('/delete_backup/<file_id>', methods=['GET'])
+def delete_backup(file_id):
+    # Autenticación con Google Drive
+    drive = auth_to_drive()
+
+    # Eliminar el archivo especificado por file_id
+    try:
+        file = drive.CreateFile({'id': file_id})
+        file.Delete()
+        response = {"message": "File deleted successfully."}
+    except Exception as e:
+        response = {"message": f"An error occurred: {str(e)}"}
+
+    return jsonify(response)
 
 # @app.route('/backup')
 # def backup():
@@ -1383,6 +1481,34 @@ def imprimir_pago_alexa():
         finally:
             db_session.close()
 
+from flask import request, jsonify
+
+@app.route('/api/registrar_pago_completo', methods=['POST'])
+def registrar_pago_completo():
+    # Aquí puedes obtener datos de la solicitud si es necesario
+    # data = request.json
+
+    # Lógica para registrar el pago completo
+    # Por ejemplo, actualizar una base de datos o realizar otra operación de backend
+    # Este es un paso ficticio, reemplázalo con la lógica real de tu aplicación
+    pago_registrado = True  # Simula la lógica de registro de pago
+
+    if pago_registrado:
+        # Si el pago se registró correctamente, devuelve una respuesta positiva
+        return jsonify({"mensaje": "Pago completo registrado con éxito"}), 200
+    else:
+        # Si hubo un problema registrando el pago, devuelve un error
+        return jsonify({"error": "No se pudo registrar el pago completo"}), 500
+
+@app.route('/api/obtener_pago', methods=['GET', 'POST'])
+def obtener_pago():
+    data = request.json
+
+    nombre_cliente = data['person']
+
+    cadena_texto_respuesta = obtener_pagoClienteTexto(db_session, nombre_cliente)
+
+    return jsonify({"respuesta": cadena_texto_respuesta}), 200
 
 
 ########### Termina API ###########

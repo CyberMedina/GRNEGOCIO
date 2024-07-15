@@ -6,46 +6,46 @@ const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBack
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBackupCreacionBd');
-    const downloadButton = document.getElementById('a_descargarBackup');
+// document.addEventListener('DOMContentLoaded', () => {
+//     const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBackupCreacionBd');
+//     const downloadButton = document.getElementById('a_descargarBackup');
 
-    fetch('/obtener_datos_ultimo_backup')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            spanfechaHoraBackupCreacionBd.textContent = data.backup.fechaHora;
+//     fetch('/obtener_datos_ultimo_backup')
+//         .then(response => response.json())
+//         .then(data => {
+//             console.log(data);
+//             spanfechaHoraBackupCreacionBd.textContent = data.backup.fechaHora;
 
-            // Agregar URL y nombre del archivo como atributos data-* en el botón
-            downloadButton.setAttribute('data-url', data.backup.ruta_backup);
-            downloadButton.setAttribute('data-filename', data.backup.nombre_backup);
-        })
-        .catch(error => console.error('Error:', error));
+//             // Agregar URL y nombre del archivo como atributos data-* en el botón
+//             downloadButton.setAttribute('data-url', data.backup.ruta_backup);
+//             downloadButton.setAttribute('data-filename', data.backup.nombre_backup);
+//         })
+//         .catch(error => console.error('Error:', error));
 
-    downloadButton.addEventListener('click', () => {
-        const url = downloadButton.getAttribute('data-url');
-        const filename = downloadButton.getAttribute('data-filename');
+//     downloadButton.addEventListener('click', () => {
+//         const url = downloadButton.getAttribute('data-url');
+//         const filename = downloadButton.getAttribute('data-filename');
 
-        if (url && filename) {
-            // Crear un enlace temporal
-            const tempLink = document.createElement('a');
-            tempLink.href = url;
-            tempLink.download = filename;
-            tempLink.style.display = 'none';
+//         if (url && filename) {
+//             // Crear un enlace temporal
+//             const tempLink = document.createElement('a');
+//             tempLink.href = url;
+//             tempLink.download = filename;
+//             tempLink.style.display = 'none';
 
-            // Agregar el enlace temporal al cuerpo del documento
-            document.body.appendChild(tempLink);
+//             // Agregar el enlace temporal al cuerpo del documento
+//             document.body.appendChild(tempLink);
 
-            // Simular clic en el enlace
-            tempLink.click();
+//             // Simular clic en el enlace
+//             tempLink.click();
 
-            // Eliminar el enlace temporal
-            document.body.removeChild(tempLink);
-        } else {
-            console.error('URL o nombre de archivo no están definidos');
-        }
-    });
-});
+//             // Eliminar el enlace temporal
+//             document.body.removeChild(tempLink);
+//         } else {
+//             console.error('URL o nombre de archivo no están definidos');
+//         }
+//     });
+// });
 
 
 comboTipoGestion.addEventListener('change', function() {
