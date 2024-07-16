@@ -939,35 +939,35 @@ def finalizar_contrato(id_cliente):
 @app.route('/base_de_datos', methods=['GET', 'POST'])
 def base_de_datos():
 
-    # Autenticación con Google Drive
-    drive = auth_to_drive()
+
 
     # ID de la carpeta de Google Drive donde están los backups
-    folder_id = '1Qdrdj9sshZMoV61eNjbFcS-u_SJTrn5U'  # Reemplaza con tu ID de carpeta
+    folder_id = "/GRNEGOCIO/Backups"# Reemplaza con tu ID de carpeta
 
     # Obtener el archivo SQL más reciente de la carpeta
-    all_sql_files = get_all_sql_files(drive, folder_id)
+    all_sql_files = get_all_sql_files(dbx, folder_id)
+    print(all_sql_files)
 
     
     backups_files = []
 
     if all_sql_files:
         for file in all_sql_files:
-            download_link = file['alternateLink']
-            delete_link = f"/delete_backup/{file['id']}"
-            filedate = convertir_fecha(file['modifiedDate'])
+            download_link = obtener_enlace_descarga(dbx, file.path_lower)
+            delete_link = f"/delete_backup/{file.id}"
+            filedate = convertir_fecha(file.client_modified)
             response = {
-            "filename": file['title'],
-            "fileDate" : filedate,
-            "download_link": download_link,
-            "delete_link": delete_link
+                "filename": file.name,
+                "fileDate": filedate,
+                "download_link": download_link,
+                "delete_link": delete_link
             }
             backups_files.append(response)
     else:
         backups_files = []
 
 
-    print(backups_files)
+        print(backups_files)
 
         
 
@@ -1018,9 +1018,12 @@ def generate_insert_statements(table):
             insert_statements.append(insert_statement)
     return insert_statements
 
+# Inicializa el cliente de Dropbox
+dbx = dropbox.Dropbox(os.getenv("DROPBOX_ACCESS_TOKEN"))
+
 @app.route('/backup', methods=['GET', 'POST'])
 def backup_database_to_insert_statements():
-    """Genera un backup de la base de datos en forma de sentencias INSERT, lo guarda en un archivo y lo sube a Google Drive."""
+    """Genera un backup de la base de datos en forma de sentencias INSERT y lo sube a Dropbox."""
     backup_statements = []
 
     # Obtener las tablas ordenadas por dependencias de claves foráneas
@@ -1029,31 +1032,35 @@ def backup_database_to_insert_statements():
     for table in ordered_tables:
         backup_statements.extend(generate_insert_statements(table))
     
-    backup_filepath = 'backup.sql'
-    with open(backup_filepath, 'w', encoding='utf-8') as backup_file:
-        backup_file.write('\n'.join(backup_statements))
-    
-    # Autenticación con Google Drive
-    drive = auth_to_drive()
+    str_fechahora = obtener_str_fecha_hora(datetime.now())
+    backup_filename = f'backup{str_fechahora}.sql'
+    backup_file_content = '\n'.join(backup_statements)
 
-    # ID de la carpeta de Google Drive donde quieres subir el archivo
-    folder_id = os.getenv("ID_FOLDER")  # Reemplaza con tu ID de carpeta
+    # Crear un archivo en memoria
+    backup_file = io.StringIO(backup_file_content)
 
-    # Subir el archivo a Google Drive
-    upload_to_drive(drive, backup_filepath, folder_id)
+    # Ruta de destino en Dropbox donde quieres subir el archivo
+    dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'  # Reemplaza con la ruta deseada
+
+    # Intentar subir el archivo desde memoria y obtener el resultado
+    success, error_message = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
     
-    return "Backup completed and uploaded to Google Drive", 200
+    if success:
+        print("Backup completed and uploaded to Dropbox")
+        return redirect(url_for('base_de_datos'))
+    else:
+        print(f"Error uploading to Dropbox: {error_message}")
+        return f"Error uploading to Dropbox: {error_message}", 500
 
 @app.route('/get_latest_backup', methods=['GET'])
 def get_latest_backup():
     # Autenticación con Google Drive
-    drive = auth_to_drive()
 
     # ID de la carpeta de Google Drive donde están los backups
     folder_id = os.getenv("ID_FOLDER")   # Reemplaza con tu ID de carpeta
 
     # Obtener el archivo SQL más reciente de la carpeta
-    latest_file = get_latest_sql_file(drive, folder_id)
+    latest_file = get_latest_sql_file(dbx, folder_id)
     print(latest_file)
     
     if latest_file:
@@ -1073,25 +1080,42 @@ def get_latest_backup():
     return jsonify(response)
 
 
-
-
-
-
-
-@app.route('/delete_backup/<file_id>', methods=['GET'])
-def delete_backup(file_id):
-    # Autenticación con Google Drive
-    drive = auth_to_drive()
-
-    # Eliminar el archivo especificado por file_id
+@app.route('/delete_backup/<path:file_path>', methods=['GET'])
+def delete_backup(file_path):
     try:
-        file = drive.CreateFile({'id': file_id})
-        file.Delete()
-        response = {"message": "File deleted successfully."}
-    except Exception as e:
-        response = {"message": f"An error occurred: {str(e)}"}
+        # Obtener la ruta del archivo utilizando su ID
+        metadata = dbx.files_get_metadata(file_path)
+        correct_path = metadata.path_lower
 
-    return jsonify(response)
+        print(f"Attempting to delete file at path: {correct_path}")
+        dbx.files_delete_v2(correct_path)
+        response = {
+            "message": "File deleted successfully."
+        }
+    except dropbox.exceptions.ApiError as err:
+        response = {
+            "message": "Failed to delete file.",
+            "error": str(err)
+        }
+    
+    return redirect(url_for('base_de_datos'))
+
+
+
+# @app.route('/delete_backup/<file_id>', methods=['GET'])
+# def delete_backup(file_id):
+#     # Autenticación con Google Drive
+#     drive = auth_to_drive()
+
+#     # Eliminar el archivo especificado por file_id
+#     try:
+#         file = drive.CreateFile({'id': file_id})
+#         file.Delete()
+#         response = {"message": "File deleted successfully."}
+#     except Exception as e:
+#         response = {"message": f"An error occurred: {str(e)}"}
+
+#     return jsonify(response)
 
 # @app.route('/backup')
 # def backup():

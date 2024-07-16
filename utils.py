@@ -8,6 +8,7 @@ import requests
 import calendar
 import locale
 import pytz
+import dropbox
 
 # Establecer el locale a español para formatear los nombres de días y meses
 locale.setlocale(locale.LC_TIME, 'es_ES')
@@ -256,91 +257,119 @@ def get_or_create_folder_id(drive, folder_path):
     return parent_id
 
 
-
-def auth_to_drive():
-    gauth = GoogleAuth()
-
-    # Configura el tipo de acceso en 'offline' para obtener un refresh_token
-    gauth.DEFAULT_SETTINGS['oauth_scope'] = ['https://www.googleapis.com/auth/drive.file']
-    gauth.DEFAULT_SETTINGS['access_type'] = 'offline'
-    gauth.DEFAULT_SETTINGS['include_granted_scopes'] = 'true'
-
-    # Intenta cargar las credenciales de autenticación de un archivo
-    try:
-        gauth.LoadCredentialsFile("mycreds.txt")
-    except Exception as e:
-        print("No se pudo cargar el archivo de credenciales. Iniciando autenticación...")
-
-    # Si el archivo no existe o no contiene credenciales válidas, inicia el flujo de autenticación
-    if gauth.credentials is None:
-        gauth.LocalWebserverAuth()
-    elif gauth.access_token_expired:
-        try:
-            gauth.Refresh()
-        except Exception as e:
-            print("No se pudo refrescar el token. Iniciando autenticación...")
-            gauth.LocalWebserverAuth()
-    else:
-        gauth.Authorize()
-
-    # Guarda las credenciales para la próxima ejecución
-    gauth.SaveCredentialsFile("mycreds.txt")
-
-    # Retorna una instancia de GoogleDrive autenticada
-    return GoogleDrive(gauth)
+# Configura tu token de acceso
 
 
 
-def upload_to_drive(drive, filepath, folder_id):
-    # Extrae solo el nombre del archivo del camino completo
-    filename = os.path.basename(filepath)
-
-    # Crea y sube un archivo de texto.
-    backup_file = drive.CreateFile({'title': filename, 'parents': [{'id': folder_id}]})
-    backup_file.SetContentFile(filepath)
-    backup_file.Upload()
-    print('El archivo de respaldo ha sido subido con éxito.')
 
 
-def get_latest_sql_file(drive, folder_id):
+def get_latest_sql_file(dbx, folder_path):
     # Listar todos los archivos en la carpeta
-    file_list = drive.ListFile({'q': f"'{folder_id}' in parents and trashed=false"}).GetList()
+    response = dbx.files_list_folder(folder_path)
+    file_list = response.entries
     
     # Filtrar solo archivos .sql
-    sql_files = [file for file in file_list if file['title'].endswith('.sql')]
+    sql_files = [file for file in file_list if file.name.endswith('.sql')]
     
     # Ordenar los archivos por fecha de modificación (más reciente primero)
-    sql_files.sort(key=lambda x: x['modifiedDate'], reverse=True)
+    sql_files.sort(key=lambda x: x.client_modified, reverse=True)
     
     # Retornar el archivo más reciente, si existe
     if sql_files:
         return sql_files[0]
     else:
         return None
-    
 
-def get_all_sql_files(drive, folder_id):
+def get_all_sql_files(dbx, folder_path):
     # Listar todos los archivos en la carpeta
-    file_list = drive.ListFile({'q': f"'{folder_id}' in parents and trashed=false"}).GetList()
+    response = dbx.files_list_folder(folder_path)
+    file_list = response.entries
     
     # Filtrar solo archivos .sql
-    sql_files = [file for file in file_list if file['title'].endswith('.sql')]
+    sql_files = [file for file in file_list if file.name.endswith('.sql')]
     
     # Ordenar los archivos por fecha de modificación (más reciente primero)
-    sql_files.sort(key=lambda x: x['modifiedDate'], reverse=True)
+    sql_files.sort(key=lambda x: x.client_modified, reverse=True)
     
-    # Retornar el archivo más reciente, si existe
-    if sql_files:
-        return sql_files
-    else:
-        return None
+    return sql_files if sql_files else None
 
-def convertir_fecha(fecha_str):
-    # Parsear la fecha y hora original
-    fecha_utc = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
-    # Convertir a zona horaria local o a una específica
-    fecha_local = fecha_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Mexico_City'))
-    # Ajustar manualmente la hora si es necesario
-    # Formatear la fecha y hora al formato deseado
-    fecha_formateada = fecha_local.strftime('%A %d de %B de %Y a las %I:%M:%S %p')
-    return fecha_formateada.replace('AM', 'a.m.').replace('PM', 'p.m.')
+# def convertir_fecha(fecha_str):
+#     # Parsear la fecha y hora original
+#     fecha_utc = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+#     # Convertir a zona horaria local o a una específica
+#     fecha_local = fecha_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Mexico_City'))
+#     # Ajustar manualmente la hora si es necesario
+#     # Formatear la fecha y hora al formato deseado
+#     fecha_formateada = fecha_local.strftime('%A %d de %B de %Y a las %I:%M:%S %p')
+#     return fecha_formateada.replace('AM', 'a.m.').replace('PM', 'p.m.')
+
+
+# Asegúrate de que el locale esté configurado a español
+try:
+    locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+except locale.Error:
+    locale.setlocale(locale.LC_TIME, 'es_ES')
+
+def convertir_fecha(fecha, zona_horaria_local='America/Managua'):
+    """Convierte la fecha del servidor a la hora local en un formato más legible"""
+    # Zona horaria del servidor (asumido como UTC)
+    server_timezone = pytz.utc
+    
+    # Zona horaria local
+    local_timezone = pytz.timezone(zona_horaria_local)
+    
+    # Localizar la fecha del servidor
+    server_time_with_tz = server_timezone.localize(fecha)
+    
+    # Convertir a la zona horaria local
+    local_time = server_time_with_tz.astimezone(local_timezone)
+    
+    # Formatear la fecha y hora en el formato deseado sin AM/PM
+    fecha_formateada = local_time.strftime("%A %d de %B de %Y a las %I:%M:%S")
+    
+    # Capitalizar el primer carácter de la cadena formateada para una mejor presentación
+    fecha_formateada = fecha_formateada.capitalize()
+    
+    # Añadir manualmente el formato de AM/PM en español
+    hora = local_time.hour
+    if hora < 12:
+        am_pm = "am"
+    else:
+        am_pm = "pm"
+    
+    # Agregar AM/PM a la fecha formateada
+    fecha_formateada += f" {am_pm}"
+    
+    return fecha_formateada
+
+# Función para subir archivo a Dropbox
+def upload_to_dropbox(dbx, file, dropbox_destination_path):
+    """Sube el archivo a Dropbox."""
+    try:
+        file.seek(0)  # Asegurarse de que el puntero de lectura del archivo esté al inicio
+        dbx.files_upload(file.read().encode('utf-8'), dropbox_destination_path)
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+
+
+def obtener_enlace_descarga(dbx, file_path):
+    """Genera un enlace de descarga para el archivo de Dropbox, reutilizando el existente si ya existe"""
+    try:
+        # Verificar si ya existe un enlace compartido
+        shared_links = dbx.sharing_list_shared_links(path=file_path, direct_only=True).links
+        if shared_links:
+            shared_link_metadata = shared_links[0]
+        else:
+            shared_link_metadata = dbx.sharing_create_shared_link_with_settings(file_path)
+        
+        return shared_link_metadata.url.replace("?dl=0", "?dl=1")
+    except dropbox.exceptions.ApiError as e:
+        print(f"Error creating or retrieving shared link: {e}")
+        return None
+    
+
+def obtener_str_fecha_hora(datetime):
+    """Obtiene la fecha y hora actual en formato de cadena"""
+    return datetime.now().strftime("%Y%m%d%H%M%S")

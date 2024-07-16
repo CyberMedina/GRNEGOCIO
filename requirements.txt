@@ -13,10 +13,11 @@ colorama
 cryptography
 cssselect2
 docopt
+dropbox
 Flask
 Flask-Cors
 Flask-Mail
-Flask-SocketI
+Flask-SocketIO
 fonttools
 fuzzywuzzy
 google-api-core
@@ -29,7 +30,7 @@ h11
 html5lib
 httplib2
 idna
-itsdangerous=
+itsdangerous
 Jinja2
 Levenshtein
 MarkupSafe
@@ -39,8 +40,9 @@ oauth2client
 outcome
 packaging
 pillow
+ply
 proto-plus
-protobu
+protobuf
 psycopg2
 pyasn1
 pyasn1_modules
@@ -68,6 +70,7 @@ sniffio
 sortedcontainers
 soupsieve
 SQLAlchemy
+stone
 tinycss2
 trio
 trio-websocket
