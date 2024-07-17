@@ -951,7 +951,7 @@ def login():
         "response_type": "code",
         "redirect_uri": url_for('callback', _external=True),
         "token_access_type": "offline",
-        "scope": "files.content.write sharing.read"
+        "scope": "files.content.write sharing.read sharing.write files.metadata.write files.content.read"
     }
     return redirect(auth_url + "?" + urlencode(params))
 
@@ -978,7 +978,8 @@ def callback():
 
     session['access_token'] = tokens['access_token']
     session['refresh_token'] = tokens['refresh_token']
-    return 'Tokens saved!'
+    print("Tokens saved!")
+    return redirect(url_for('base_de_datos'))
 
 def refresh_access_token(refresh_token):
     token_url = "https://api.dropboxapi.com/oauth2/token"
