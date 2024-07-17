@@ -2,6 +2,7 @@ from serverEmail import mail
 from flask_mail import Message
 from decimal import Decimal
 import re
+from app import *
 from db import *
 from bs4 import BeautifulSoup
 import requests
@@ -373,3 +374,5 @@ def obtener_enlace_descarga(dbx, file_path):
 def obtener_str_fecha_hora(datetime):
     """Obtiene la fecha y hora actual en formato de cadena"""
     return datetime.now().strftime("%Y%m%d%H%M%S")
+
+

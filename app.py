@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
+from urllib.parse import urlencode
 import weasyprint
 import smtplib
 import subprocess
@@ -928,7 +929,11 @@ def finalizar_contrato(id_cliente):
 
 
 
-
+@app.route('/borrar_sesion', methods=['GET', 'POST'])
+def borrar_sesion():
+    session.pop("access_token", None)
+    session.pop("refresh_token", None)
+    return "listo!"
 
 
 ########### Empieza el modulo de capital ###########
@@ -936,8 +941,73 @@ def finalizar_contrato(id_cliente):
 ########### EMPIZA MODOULO DE CONFIGURACION ###########
 
 ########### EMPIZA MODULO DE BASE DE DATOS ###########
+app.secret_key = 'your_secret_key'
+
+@app.route('/login')
+def login():
+    auth_url = "https://www.dropbox.com/oauth2/authorize"
+    params = {
+        "client_id": os.getenv("DROPBOX_APP_KEY"),
+        "response_type": "code",
+        "redirect_uri": url_for('callback', _external=True),
+        "token_access_type": "offline",
+        "scope": "files.content.write sharing.read"
+    }
+    return redirect(auth_url + "?" + urlencode(params))
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+    token_url = "https://api.dropboxapi.com/oauth2/token"
+    response = requests.post(token_url, data={
+        "code": code,
+        "grant_type": "authorization_code",
+        "client_id": os.getenv("DROPBOX_APP_KEY"),
+        "client_secret": os.getenv("DROPBOX_APP_SECRET"),
+        "redirect_uri": url_for('callback', _external=True)
+    })
+
+    try:
+        # Intenta decodificar la respuesta JSON
+        tokens = response.json()
+    except ValueError:
+        # Imprime el contenido de la respuesta si no es un JSON válido
+        print("Error: no se pudo decodificar la respuesta JSON")
+        print("Contenido de la respuesta:", response.text)
+        return "Error: no se pudo decodificar la respuesta JSON"
+
+    session['access_token'] = tokens['access_token']
+    session['refresh_token'] = tokens['refresh_token']
+    return 'Tokens saved!'
+
+def refresh_access_token(refresh_token):
+    token_url = "https://api.dropboxapi.com/oauth2/token"
+    response = requests.post(token_url, data={
+        "refresh_token": refresh_token,
+        "grant_type": "refresh_token",
+        "client_id": os.getenv("DROPBOX_APP_KEY"),
+        "client_secret": os.getenv("DROPBOX_APP_SECRET")
+    })
+    try:
+        tokens = response.json()
+    except ValueError:
+        print("Error: no se pudo decodificar la respuesta JSON")
+        print("Contenido de la respuesta:", response.text)
+        return None
+    return tokens['access_token']
+
+
 @app.route('/base_de_datos', methods=['GET', 'POST'])
 def base_de_datos():
+
+
+    access_token = session.get('access_token')
+    if not access_token:
+        return redirect(url_for('login'))
+    
+    
+    # Inicializa el cliente de Dropbox
+    dbx = dropbox.Dropbox(access_token)
 
 
 
@@ -1018,12 +1088,21 @@ def generate_insert_statements(table):
             insert_statements.append(insert_statement)
     return insert_statements
 
-# Inicializa el cliente de Dropbox
-dbx = dropbox.Dropbox(os.getenv("DROPBOX_ACCESS_TOKEN"))
 
 @app.route('/backup', methods=['GET', 'POST'])
 def backup_database_to_insert_statements():
     """Genera un backup de la base de datos en forma de sentencias INSERT y lo sube a Dropbox."""
+
+
+    access_token = session.get('access_token')
+    if not access_token:
+        return redirect(url_for('login'))
+    
+    
+    # Inicializa el cliente de Dropbox
+    dbx = dropbox.Dropbox(access_token)
+
+
     backup_statements = []
 
     # Obtener las tablas ordenadas por dependencias de claves foráneas
@@ -1059,6 +1138,14 @@ def get_latest_backup():
     # ID de la carpeta de Google Drive donde están los backups
     folder_id = os.getenv("ID_FOLDER")   # Reemplaza con tu ID de carpeta
 
+    access_token = session.get('access_token')
+    if not access_token:
+        return redirect(url_for('login'))
+    
+    
+    # Inicializa el cliente de Dropbox
+    dbx = dropbox.Dropbox(access_token)
+
     # Obtener el archivo SQL más reciente de la carpeta
     latest_file = get_latest_sql_file(dbx, folder_id)
     print(latest_file)
@@ -1083,6 +1170,17 @@ def get_latest_backup():
 @app.route('/delete_backup/<path:file_path>', methods=['GET'])
 def delete_backup(file_path):
     try:
+
+        
+        access_token = session.get('access_token')
+        if not access_token:
+            return redirect(url_for('login'))
+        
+        
+        # Inicializa el cliente de Dropbox
+        dbx = dropbox.Dropbox(access_token)
+
+
         # Obtener la ruta del archivo utilizando su ID
         metadata = dbx.files_get_metadata(file_path)
         correct_path = metadata.path_lower
