@@ -99,7 +99,7 @@ def obtener_tasa_cambio_local():
     tcm.cifraTasaCambioAnterior,
     tcm.fechaModificacion
 FROM 
-    tasaCambioMoneda tcm
+    tasacambiomoneda tcm
 INNER JOIN 
     moneda mc ON tcm.moneda_origen = mc.id_moneda
 INNER JOIN 
@@ -135,7 +135,7 @@ def actualizar_tasa_cambio_oficial(db_session, id_tasa_cambio, crifra_nueva, cif
 
 
         query= text(""" 
-UPDATE tasaCambioMoneda
+UPDATE tasacambiomoneda
 SET cifraTasaCambioAnterior = cifraTasaCambio,
     cifraTasaCambio = :cifra_nueva,
     fechaModificacion = NOW()
