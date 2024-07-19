@@ -306,10 +306,7 @@ def get_all_sql_files(dbx, folder_path):
 
 
 # Asegúrate de que el locale esté configurado a español
-try:
-    locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_TIME, 'es_ES')
+
 
 def convertir_fecha(fecha, zona_horaria_local='America/Managua'):
     """Convierte la fecha del servidor a la hora local en un formato más legible"""

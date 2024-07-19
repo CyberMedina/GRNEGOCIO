@@ -99,14 +99,25 @@
                         <div class="select-position">
                           <select class="light-bg" id="comboTipoGestion">
                             <option value="">Seleccione la gestión</option>
-                            <option value="Exportar">Exportar</option>
-                            <option value="Importar/restaurar">Importar/restaurar</option>
+                            <option value="Exportar">Exportar / Importar en línea</option>
+                            <option value="Importar/restaurar">Exportar / Importar local</option>
                           </select>
                         </div>
                       </div>
 
+
+
+
                       <!-- INICIA SECCION DE EXPORTAR -->
                       <section id="seccionExportar" hidden>
+                        <div class="container mb-3">
+                          <div class="row">
+                            <a href="/backup" class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-12 offset-md-8">
+                              <i class="lni lni-plus"></i>
+                              Realizar nuevo reespaldo
+                            </a>
+                          </div>
+                        </div>
                         <h6 class="mb-2">Backup más reciente</h6>
                         <div class="kanban-header" id="backupBaseDeDatos">
                           <div class="kanban-header-members">
@@ -128,8 +139,10 @@
                               </button>
                               <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
                                 <li class="dropdown-item">
-                                  <a href="/backup" class="text-gray text-sm">
-                                    <i class="fa-solid fa-rotate-right"></i> Nuevo respaldo
+                                  <a href="{{ backups_files[0]['import_link'] }}" target="_blank"
+                                    class="text-gray text-sm" style="margin-right: 1px !important;">
+                                    <i class="fa-solid fa-file-import"></i>
+                                    Importar
                                   </a>
                                 </li>
                                 {% if backups_files %}
@@ -137,7 +150,7 @@
                                   <a href="{{ backups_files[0]['download_link'] }}" target="_blank"
                                     class="text-gray text-sm" style="margin-right: 1px !important;">
                                     <i class="fa-solid fa-download"></i>
-                                    Descargar
+                                    Ver / Descargar
                                   </a>
                                 </li>
                                 {% endif %}
@@ -177,10 +190,17 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
                                   <li class="dropdown-item">
+                                    <a href="{{ backups_files[0]['import_link'] }}" target="_blank"
+                                      class="text-gray text-sm" style="margin-right: 1px !important;">
+                                      <i class="fa-solid fa-file-import"></i>
+                                      Importar
+                                    </a>
+                                  </li>
+                                  <li class="dropdown-item">
                                     <a id="" href="{{ files['download_link'] }}" target="_blank"
                                       class="text-gray text-sm" style="margin-right: 1px !important;">
                                       <i class="fa-solid fa-download"></i>
-                                      Descargar
+                                      Ver / Descargar
                                     </a>
                                   </li>
                                   <li class="dropdown-item">

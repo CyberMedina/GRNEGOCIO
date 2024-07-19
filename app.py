@@ -5,6 +5,7 @@ from flask import Flask, render_template, jsonify, request, session, url_for, re
 from flask_mail import Mail, Message
 from io import BytesIO
 from sqlalchemy import create_engine, text, MetaData
+from sqlalchemy.schema import CreateTable
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +13,7 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
 from urllib.parse import urlencode
+import tempfile
 import weasyprint
 import smtplib
 import subprocess
@@ -998,6 +1000,9 @@ def refresh_access_token(refresh_token):
     return tokens['access_token']
 
 
+
+
+
 @app.route('/base_de_datos', methods=['GET', 'POST'])
 def base_de_datos():
 
@@ -1030,6 +1035,8 @@ def base_de_datos():
             response = {
                 "filename": file.name,
                 "fileDate": filedate,
+                "import_link": f"/restore?file_url={download_link}",
+                
                 "download_link": download_link,
                 "delete_link": delete_link
             }
@@ -1077,6 +1084,14 @@ def busqueda_capital(nombres):
 metadata = MetaData()
 metadata.reflect(bind=engine)
 
+def generate_create_table_statements(metadata):
+    """Genera sentencias CREATE TABLE para todas las tablas en el metadata."""
+    create_statements = []
+    for table in metadata.sorted_tables:
+        create_statement = str(CreateTable(table).compile(dialect=engine.dialect))
+        create_statements.append(create_statement + ";")
+    return create_statements
+
 def generate_insert_statements(table):
     """Genera sentencias INSERT para todos los datos de una tabla."""
     insert_statements = []
@@ -1089,31 +1104,53 @@ def generate_insert_statements(table):
             insert_statements.append(insert_statement)
     return insert_statements
 
+def drop_all_tables():
+    """Elimina todas las tablas y sus datos de la base de datos."""
+    metadata.reflect(bind=engine)  # Refleja el estado actual de la base de datos en el MetaData
+    metadata.drop_all(bind=engine)
+
+def execute_sql_file(sql_file_path):
+    """Ejecuta todas las sentencias SQL en un archivo."""
+    with engine.connect() as connection:
+        try:
+            with open(sql_file_path, 'r') as file:
+                sql_statements = file.read()
+                for statement in sql_statements.split(';'):
+                    if statement.strip():
+                        connection.execute(text(statement))
+            connection.commit()
+        except SQLAlchemyError as e:
+            connection.rollback()
+            print(f"An error occurred: {e}")
+            raise
+
 
 @app.route('/backup', methods=['GET', 'POST'])
-def backup_database_to_insert_statements():
-    """Genera un backup de la base de datos en forma de sentencias INSERT y lo sube a Dropbox."""
-
+def backup_database_to_sql_file():
+    """Genera un backup de la base de datos en forma de sentencias SQL y lo sube a Dropbox."""
 
     access_token = session.get('access_token')
     if not access_token:
         return redirect(url_for('login'))
-    
-    
+
     # Inicializa el cliente de Dropbox
     dbx = dropbox.Dropbox(access_token)
-
 
     backup_statements = []
 
     # Obtener las tablas ordenadas por dependencias de claves foráneas
     ordered_tables = metadata.sorted_tables
 
+    # Generar CREATE TABLE statements
+    create_statements = generate_create_table_statements(metadata)
+    backup_statements.extend(create_statements)
+
+    # Generar INSERT statements
     for table in ordered_tables:
         backup_statements.extend(generate_insert_statements(table))
-    
+
     str_fechahora = obtener_str_fecha_hora(datetime.now())
-    backup_filename = f'backup{str_fechahora}.sql'
+    backup_filename = f'backup_{str_fechahora}.sql'
     backup_file_content = '\n'.join(backup_statements)
 
     # Crear un archivo en memoria
@@ -1131,6 +1168,47 @@ def backup_database_to_insert_statements():
     else:
         print(f"Error uploading to Dropbox: {error_message}")
         return f"Error uploading to Dropbox: {error_message}", 500
+    
+
+@app.route('/restore', methods=['GET'])
+def restore_backup():
+    """Restaura la base de datos desde un archivo de respaldo."""
+    file_url = request.args.get('file_url')
+    
+    if not file_url:
+        return "No file URL provided", 400
+
+    print(file_url)
+    
+    # Asegurarse de que la URL descarga el archivo directamente
+    file_url = file_url + "&dl=1"
+    if "dl=0" in file_url:
+        file_url = file_url.replace("dl=0", "dl=1")
+
+    # Descargar el archivo de respaldo
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content_type = response.headers.get('Content-Type')
+        if 'text/html' in content_type:
+            return "Failed to download the backup file. The URL might be incorrect.", 500
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.sql') as temp_file:
+            temp_file.write(response.content)
+            temp_file_path = temp_file.name
+
+        try:
+            # Eliminar todas las tablas y sus datos
+            drop_all_tables()
+
+            # Ejecutar el archivo SQL descargado
+            execute_sql_file(temp_file_path)
+            return "Database restored successfully", 200
+        finally:
+            # Eliminar el archivo temporal
+            os.remove(temp_file_path)
+    else:
+        return "Failed to download the backup file", 500
+
 
 @app.route('/get_latest_backup', methods=['GET'])
 def get_latest_backup():
