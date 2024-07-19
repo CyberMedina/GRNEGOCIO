@@ -1085,23 +1085,35 @@ metadata = MetaData()
 metadata.reflect(bind=engine)
 
 def generate_create_table_statements(metadata):
-    """Genera sentencias CREATE TABLE para todas las tablas en el metadata."""
+    """Genera sentencias CREATE TABLE para todas las tablas en el metadata sin usar comillas, con validación."""
     create_statements = []
     for table in metadata.sorted_tables:
-        create_statement = str(CreateTable(table).compile(dialect=engine.dialect))
-        create_statements.append(create_statement + ";")
+        try:
+            # Compilar el CREATE TABLE statement con quoting deshabilitado
+            create_statement = CreateTable(table).compile(dialect=engine.dialect, compile_kwargs={"literal_binds": True})
+            # Convertir a string y eliminar las comillas invertidas manualmente
+            create_statement = str(create_statement).replace('`', '')
+            create_statements.append(create_statement + ";")
+        except SQLAlchemyError as e:
+            print(f"Error creating table {table.name}: {e}")
+            # Puedes decidir si deseas continuar o detener la ejecución aquí
+            continue
     return create_statements
 
 def generate_insert_statements(table):
-    """Genera sentencias INSERT para todos los datos de una tabla."""
+    """Genera sentencias INSERT para todos los datos de una tabla, con validación."""
     insert_statements = []
-    with engine.connect() as connection:
-        result = connection.execute(table.select())
-        for row in result:
-            columns = ', '.join(table.columns.keys())
-            values = ', '.join("'{}'".format(str(value).replace("'", "\\'")) if value is not None else 'NULL' for value in row)
-            insert_statement = "INSERT INTO {} ({}) VALUES ({});".format(table.name, columns, values)
-            insert_statements.append(insert_statement)
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(table.select())
+            for row in result:
+                columns = ', '.join(table.columns.keys())
+                values = ', '.join("'{}'".format(str(value).replace("'", "\\'")) if value is not None else 'NULL' for value in row)
+                insert_statement = "INSERT INTO {} ({}) VALUES ({});".format(table.name, columns, values)
+                insert_statements.append(insert_statement)
+    except SQLAlchemyError as e:
+        print(f"Error generating insert statements for table {table.name}: {e}")
+        # Puedes decidir si deseas continuar o detener la ejecución aquí
     return insert_statements
 
 def drop_all_tables():
