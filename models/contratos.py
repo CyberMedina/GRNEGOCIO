@@ -206,4 +206,37 @@ def finalizacionContratoDescripcion(db_session, id_contrato, fechaFinalizacion, 
     finally:
         db_session.close()
 
+def eliminar_todos_contratos_porIdCliente(db_session, id_cliente):
+    try:
+        query = text("""
+        DELETE FROM contrato
+        WHERE id_cliente = :id_cliente;
+        """)
+        db_session.execute(query, {"id_cliente": id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+def eliminar_todos_contratos_fiador_porIdCliente(db_session, id_cliente):
+    print("El id cliente es ", id_cliente)
+    try:
+        query = text("""
+        DELETE FROM contrato_fiador
+        WHERE id_cliente = :id_cliente;
+        """)
+        db_session.execute(query, {"id_cliente": id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
 

@@ -30,6 +30,8 @@ def insertar_tipo_cliente(db_session, nombre_tipoCliente, estado):
         db_session.close()
 
 
+
+
 def obtener_companias_telefonicas(db_session):
     # El estado 1 quiere decir que esa compañia esta activa
 
@@ -70,6 +72,8 @@ def insertar_persona(db_session, nombres, apellidos, genero, cedula, fecha_nacim
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+
 
 
 def actualizar_persona(db_session, id_persona, nombres, apellidos, genero, cedula, fecha_nacimiento, estado):
@@ -90,6 +94,26 @@ def actualizar_persona(db_session, id_persona, nombres, apellidos, genero, cedul
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def eliminar_persona(db_session, id_persona):
+    try:
+        query = text("""
+        DELETE FROM persona
+        WHERE id_persona = :id_persona;
+        """)
+
+        db_session.execute(query, {"id_persona": id_persona})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 def insertar_direccion(db_session, nombre_direccion, direccion_escrita, direccion_mapa, estado):
@@ -131,6 +155,26 @@ def actualizar_direccion(db_session, id_direccion, nombre_direccion, direccion_e
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def eliminar_direccion(db_session, id_direccion):
+    try:
+        query = text("""
+        DELETE FROM direccion
+        WHERE id_direccion = :id_direccion;
+        """)
+
+        db_session.execute(query, {"id_direccion": id_direccion})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 def insertar_telefono(db_session, id_compania, nombre_telefono, numero_telefono, estado):
@@ -171,6 +215,26 @@ def actualizar_telefono(db_session, id_telefono, id_compania, nombre_telefono, n
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def eliminar_telefono(db_session, id_telefono):
+    try:
+        query = text("""
+        DELETE FROM telefono
+        WHERE id_telefono = :id_telefono;
+        """)
+
+        db_session.execute(query, {"id_telefono": id_telefono})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
@@ -190,7 +254,26 @@ def insertar_persona_direccion(db_session, id_persona, id_direccion, estado):
         db_session.rollback()
         print(f"Error: {e}")
         return False
-    
+
+def eliminar_persona_direccion(db_session, id_persona):
+    try:
+        query = text("""
+        DELETE FROM persona_direccion
+        WHERE id_persona = :id_persona;
+        """)
+
+        db_session.execute(query, {"id_persona": id_persona})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 
@@ -211,6 +294,26 @@ def insertar_direccion_telelfono(db_session, id_direccion, id_telefono, estado):
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def eliminar_direccion_telefono(db_session, id_direccion):
+    try:
+        query = text("""
+        DELETE FROM direccion_telefono
+        WHERE id_direccion = :id_direccion;
+        """)
+
+        db_session.execute(query, {"id_direccion": id_direccion})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 def insertar_cliente(db_session, id_persona, id_tipoCliente, imagenCliente, imagenCedula, estado):
@@ -251,6 +354,26 @@ def actualizar_cliente(db_session, id_cliente, id_persona, id_tipoCliente, image
         db_session.rollback()
         print(f"Error: {e}")
         return False
+    
+def eliminar_cliente(db_session, id_cliente):
+    try:
+        query = text("""
+        DELETE FROM cliente
+        WHERE id_cliente = :id_cliente;
+        """)
+
+        db_session.execute(query, {"id_cliente": id_cliente})
+        db_session.commit()
+
+        return True
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+
+    finally:
+        db_session.close()
 
 
 def actualizarEstadoCliente(db_session, id_cliente, estado):
@@ -351,3 +474,140 @@ AND p.estado = '1';
 
 
 
+
+def seleccionar_clientes_contratofiador(db_session, id_cliente):
+    try:
+        query = text("""
+SELECT cf.id_cliente
+FROM contrato c
+JOIN contrato_fiador cf ON c.id_contrato_fiador = cf.id_contrato_fiador
+WHERE c.id_cliente = :id_cliente;
+        """)
+
+        result = db_session.execute(
+            query, {"id_cliente": id_cliente}).fetchall()
+        return result
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+
+def seleccionar_personas_por_id_cliente(db_session, id_cliente):
+    try:
+        query = text("""SELECT id_persona 
+FROM cliente
+WHERE id_cliente = :id_cliente;""")
+        result = db_session.execute(query, {"id_cliente": id_cliente}).fetchone()
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+
+
+
+def seleccionar_direccion_por_id_persona(db_session, id_persona):
+    try:
+        query = text("""SELECT id_direccion 
+FROM
+persona_direccion
+WHERE id_persona = :id_persona;""")
+        result = db_session.execute(query, {"id_persona": id_persona}).fetchone()
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+def seleccionar_id_telefono_por_idDireccion(db_session, id_direccion):
+    try:
+        query = text("""SELECT id_telefono
+FROM direccion_telefono
+WHERE id_direccion = :id_direccion""")
+        result = db_session.execute(query, {"id_direccion": id_direccion}).fetchone()
+        return result
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+
+def ultra_funcion_para_eliminar_todo_registro_de_cliente(db_session, id_cliente):
+    try:
+        query = text("""
+-- Supongamos que quieres eliminar al cliente con id_cliente = 15
+SET @id_cliente = :id_cliente;
+
+-- Paso 1: Obtener id_persona y id_direccion para eliminaciones posteriores
+SET @id_persona = (SELECT id_persona FROM cliente WHERE id_cliente = @id_cliente);
+SET @id_direccion = (SELECT id_direccion FROM persona_direccion WHERE id_persona = @id_persona LIMIT 1);
+SET @id_telefono = (SELECT id_telefono FROM direccion_telefono WHERE id_direccion = @id_direccion LIMIT 1);
+
+-- Paso 2: Eliminar dependencias en 'transacciones_saldos' a través de 'saldos_pagos'
+DELETE FROM transacciones_saldos
+WHERE id_saldos_pagos IN (
+    SELECT id_saldos_pagos FROM saldos_pagos WHERE id_cliente = @id_cliente
+);
+
+-- Paso 3: Eliminar dependencias en 'detalle_pagos' a través de 'pagos'
+DELETE FROM detalle_pagos
+WHERE id_pagos IN (
+    SELECT id_pagos FROM pagos WHERE id_cliente = @id_cliente
+);
+
+-- Paso 4: Eliminar dependencias en 'pagos'
+DELETE FROM pagos WHERE id_cliente = @id_cliente;
+
+-- Paso 5: Eliminar dependencias en 'saldos_pagos'
+DELETE FROM saldos_pagos WHERE id_cliente = @id_cliente;
+
+-- Paso 6: Eliminar dependencias en 'finalizacionContrato'
+DELETE FROM finalizacionContrato
+WHERE id_contrato IN (
+    SELECT id_contrato FROM contrato WHERE id_cliente = @id_cliente
+);
+
+-- Paso 7: Eliminar dependencias en 'contrato' a través de 'contrato_fiador'
+DELETE FROM contrato
+WHERE id_contrato_fiador IN (
+    SELECT id_contrato_fiador FROM contrato_fiador WHERE id_cliente = @id_cliente
+);
+
+-- Paso 8: Eliminar dependencias en 'contrato_fiador'
+DELETE FROM contrato_fiador WHERE id_cliente = @id_cliente;
+
+-- Paso 9: Eliminar dependencias en 'contrato'
+DELETE FROM contrato WHERE id_cliente = @id_cliente;
+
+-- Paso 10: Eliminar dependencias en 'direccion_telefono'
+DELETE FROM direccion_telefono WHERE id_direccion = @id_direccion;
+
+-- Paso 11: Eliminar dependencias en 'persona_direccion'
+DELETE FROM persona_direccion WHERE id_persona = @id_persona;
+
+-- Paso 12: Eliminar dependencias en 'telefono'
+DELETE FROM telefono WHERE id_telefono = @id_telefono;
+
+-- Paso 13: Eliminar dependencias en 'direccion'
+DELETE FROM direccion WHERE id_direccion = @id_direccion;
+
+
+-- Paso 15: Finalmente, eliminar la fila principal en 'cliente'
+DELETE FROM cliente WHERE id_cliente = @id_cliente;
+
+-- Paso 14: Eliminar dependencias en 'persona'
+DELETE FROM persona WHERE id_persona = @id_persona;
+""")
+        db_session.execute(query, {"id_cliente": id_cliente})
+        db_session.commit()
+        return True
+    
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()

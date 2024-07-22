@@ -74,6 +74,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
   // llama a validacionDolares manualmente
   fechaLetras(event);
 
+  let checkbox_confirmacion = document.getElementById('checkbox_confirmacion');
+  checkbox_confirmacion.checked = true;
+
+
+
 
 
 
@@ -395,13 +400,13 @@ function validacionDolares(event) {
     tipoPagoCompleto.selectedIndex = 2; // Indica que pagó imcompleto
 
   }
-  
+
   else if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) === parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))) {
     cantidadPagar$.style.color = 'green';
     tipoPagoCompleto.selectedIndex = 1; // Indica que pagó completo
   }
-  
-  else if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) > parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))){
+
+  else if (parseFloat(cantidadPagar$.value.replace(/\D/g, '')) > parseFloat(cantidadPagarVerificar$.value.replace(/\D/g, ''))) {
     cantidadPagar$.style.color = "skyblue"
     tipoPagoCompleto.selectedIndex = 4; // Indica que pagó completo
   }
@@ -602,8 +607,7 @@ function obtenerInformacionPagoBorrar(id_pago) {
       // Filtrar los pagos con estado 1
       console.log(pago);
 
-      if (pago.tasa_conversion)
-      {
+      if (pago.tasa_conversion) {
 
         modalInformacionPago.innerHTML = `
           <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
@@ -614,8 +618,7 @@ function obtenerInformacionPagoBorrar(id_pago) {
         `;
 
       }
-      else
-      {
+      else {
         modalInformacionPago.innerHTML = `
           <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
           <br>
@@ -629,7 +632,7 @@ function obtenerInformacionPagoBorrar(id_pago) {
 
 
 
-        btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
+      btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
 
 
 
@@ -652,7 +655,7 @@ function obtenerInformacionPagoEspecifico(id_pago) {
   let modalVisualizarPago = new bootstrap.Modal(document.getElementById('modalVisualizarPago'));
   let tasaCambioRowVP = document.getElementById('tasaCambioRowVP');
   let cantidadPagoCordobasRowVP = document.getElementById('cantidadPagoCordobasRowVP');
-  
+
 
   let tipoMonedaPagoVP = document.getElementById('tipoMonedaPagoVP');
   let cantidadPagoCordobasVP = document.getElementById('cantidadPagoCordobasVP');
@@ -683,39 +686,37 @@ function obtenerInformacionPagoEspecifico(id_pago) {
       if (data.error) {
         throw new Error(data.error);
       }
-      
+
       let pago = data.pago;
       fechaPagoLetras = fechaLetrasFuncion(pago.fecha_pago)
       console.log(pago);
 
-      if (pago.tasa_conversion)
-      {
+      if (pago.tasa_conversion) {
         cantidadPagoCordobasRowVP.hidden = false;
         lblPagoC$VP.innerHTML = 'Pagó en córdobas';
         lblPago$VP.innerHTML = 'Tasa de cambio: ' + pago.tasa_conversion;
 
-      inputTasaCambioPagoVP.value = pago.tasa_conversion;
-      cantidadPagar$VP.value = pago.cifraPago$;
-      cantidadPagoCordobasVP.value = pago.cifraPagoC$;
+        inputTasaCambioPagoVP.value = pago.tasa_conversion;
+        cantidadPagar$VP.value = pago.cifraPago$;
+        cantidadPagoCordobasVP.value = pago.cifraPagoC$;
       }
-      else
-      {
+      else {
         cantidadPagoCordobasRowVP.hidden = true;
         lblPago$VP.innerHTML = 'Pagó en dólares';
-        
+
         inputTasaCambioPagoVP.value = pago.tasa_conversion;
         cantidadPagar$VP.value = pago.codigoMoneda + ' ' + pago.cifraPago;
       }
 
-      
-      
+
+
       fechaPagoVP.value = fechaPagoLetras;
       if (pago.observacion) {
         observacionPagoVP.value = pago.observacion;
       } else {
         observacionPagoVP.value = 'No hay observaciones';
       }
-      
+
 
       modalVisualizarPago.show();
 
@@ -759,7 +760,7 @@ btnOcultarDetallesCliente.addEventListener('click', function () {
 });
 
 
-function finalizarDeuda(id_cliente){
+function finalizarDeuda(id_cliente) {
 
   console.log(id_cliente);
 
@@ -774,3 +775,187 @@ function finalizarDeuda(id_cliente){
 
 }
 
+
+
+
+const btnGuardar = document.getElementById('btnGuardar');
+btnGuardar.addEventListener('click', async function (event) {
+  event.preventDefault();
+
+  try {
+    let data = await verificar_tipo_saldo_insertar();
+    console.log(data);
+    if (data.estadoPago == 0 || data.estadoPago == 4) {
+      let modal_confirmacion_detalle_pago = new bootstrap.Modal(document.getElementById('modal_confirmacion_detalle_pago'));
+      let content_modal_detalle_pago = document.getElementById('content_modal_detalle_pago');
+
+
+      let estadopago_texto = '';
+      let color_text = '';
+
+      if (data.estadoPago == 0) {
+        estadopago_texto = 'en contra';
+        color_text = 'text-danger';
+      } else if (data.estadoPago == 4) {
+        estadopago_texto = 'a favor';
+        color_text = 'text-success';
+      }
+
+      content_modal_detalle_pago.innerHTML = `¿Está seguro que desea agregar un saldo <strong class="${color_text}">${estadopago_texto}</strong>
+          al cliente <strong>${data.nombres_apellidos}</strong> de <strong class="${color_text}">$ ${data.cantidadPagarDolares} dólares</strong>?`;
+
+      modal_confirmacion_detalle_pago.show();
+
+    }
+    else if (data.estadoPago == 1 || data.estadoPago == 2) {
+      let data = await procesar_pago();
+      console.log(data);
+
+      window.location.reload();
+
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
+
+const proceder_pago = document.getElementById('proceder_pago');
+proceder_pago.addEventListener('click', async function (event) {
+
+  event.preventDefault();
+
+  
+
+  try{
+    let data = await procesar_pago();
+    console.log(data);
+
+    window.location.reload();
+  }
+  catch(error){
+    console.error('Error:', error);
+  }
+
+
+
+});
+
+async function procesar_pago() {
+  let formData = new FormData(document.getElementById('anadirClientes'));
+
+  try {
+    const response = await fetch('/procesar_pago', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error al verificar el tipo de saldo:', error);
+    throw error; // Re-lanzar el error para manejarlo en el bloque try-catch del submit 
+  }
+
+}
+
+async function verificar_tipo_saldo_insertar() {
+  let formData = new FormData(document.getElementById('anadirClientes'));
+
+  try {
+    const response = await fetch('/verificar_tipo_saldo_insertar', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error al verificar el tipo de saldo:', error);
+    throw error; // Re-lanzar el error para manejarlo en el bloque try-catch del submit 
+  }
+}
+
+// const anadirClientes = document.getElementById('anadirClientes');
+// anadirClientes.addEventListener('submit', async function (event) { // Marcar esta función como async
+
+//   let proceder_pago_estado = 1;
+//   let verificar_pago_estado = 2;
+
+//   event.preventDefault();
+
+//   let procesar_pago = false;
+
+//   try {
+//     let data = await verificar_tipo_saldo_insertar(procesar_pago);
+//     console.log(data);
+
+//     if (data.message.id_operation === proceder_pago_estado) {
+//       // Manejar la respuesta de proceder_pago
+//       if (data.message.message === "Pago realizado con éxito") {
+//         // Código para manejar éxito
+//         console.log("Pago realizado con éxito");
+//       } else {
+//         // Código para manejar error en proceder_pago
+//         console.error("Error en el proceso de pago:", data.message.message);
+//       }
+//     } else if (data.message.id_operation === verificar_pago_estado) {
+//       // Manejar la respuesta de verificar_pago
+//       let modal_confirmacion_detalle_pago = new bootstrap.Modal(document.getElementById('modal_confirmacion_detalle_pago'));
+//       let content_modal_detalle_pago = document.getElementById('content_modal_detalle_pago');
+
+//       if (data.verificacion_tipo_pago_insertar.estadoPago == 0 || data.verificacion_tipo_pago_insertar.estadoPago == 4) {
+//         let checkbox_modal_confirmado = document.getElementById('checkbox_modal_confirmado');
+//         checkbox_modal_confirmado.checked = true;
+
+//         let estadopago_texto = '';
+//         let color_text = '';
+
+//         if (data.verificacion_tipo_pago_insertar.estadoPago == 0) {
+//           estadopago_texto = 'en contra';
+//           color_text = 'text-danger';
+//         } else if (data.verificacion_tipo_pago_insertar.estadoPago == 4) {
+//           estadopago_texto = 'a favor';
+//           color_text = 'text-success';
+//         }
+
+//         content_modal_detalle_pago.innerHTML = `¿Está seguro que desea agregar un saldo <strong class="${color_text}">${estadopago_texto}</strong>
+//           al cliente <strong>${data.verificacion_tipo_pago_insertar.nombres_apellidos}</strong>? de <strong class="${color_text}">$ ${data.verificacion_tipo_pago_insertar.cantidadPagarDolares} dólares</strong>`;
+
+//         modal_confirmacion_detalle_pago.show();
+//         console.log(data);
+//       } else {
+//         procesar_pago = true;
+//         try {
+//           data = await verificar_tipo_saldo_insertar(procesar_pago);
+//           if (data.message.id_operation === proceder_pago_estado) {
+//             // Manejar la respuesta de proceder_pago al intentar procesar el pago nuevamente
+//             console.log(data.message.message);
+//           }
+//         } catch (error) {
+//           console.error('Error al procesar el pago:', error);
+//         }
+//       }
+//     }
+
+//   } catch (error) {
+//     console.error('Error:', error);
+//   }
+// });

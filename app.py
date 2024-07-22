@@ -514,6 +514,38 @@ def datos_prestamoV1():
     return jsonify({"datos_prestamo": datos_pago}), 200
 
 
+@app.route('/eliminar_todo_rastro_cliente', methods=['GET'])
+def eliminar_cliente_prestamo():
+    id_cliente = '15'
+
+    db_session.begin()
+
+    try:
+        ### Se eliminan todo rastro de pagos y prestamos del cliente ###
+        
+        # Obtener la lista de clientes
+        id_clientes_tuplas = seleccionar_clientes_contratofiador(db_session, id_cliente)
+        # Extraer los valores de las tuplas
+        id_clientes = [cliente[0] for cliente in id_clientes_tuplas]
+
+        for id_cliente in id_clientes:
+            print(id_cliente)
+            
+            ultra_funcion_para_eliminar_todo_registro_de_cliente(db_session, id_cliente)
+
+        return "EXITO"
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        return jsonify({"error": "Error en la base de datos"}), 500
+    finally:
+        db_session.close()
+
+
+        
+
+
+
 ########### Empieza el modulo de pagos ############
 
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
@@ -552,13 +584,10 @@ def listado_clientes_pagos():
 
 
 
-
-
-@app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
-def añadir_pago(id_cliente):
-
-    if request.method == 'POST':
-
+@app.route('/verificar_tipo_saldo_insertar', methods=['POST'])
+def verificar_tipo_saldo_insertar():
+    try:
+        id_cliente = request.form['formId_cliente']
         id_moneda = request.form['tipoMonedaPago']
         cantidadPagarDolares = request.form['cantidadPagar$']
         cantidadPagarCordobas = request.form.get('cantidadPagoCordobas')
@@ -569,88 +598,75 @@ def añadir_pago(id_cliente):
         tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
         cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
+        print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
 
-        # Verifica si el checkbox de no pago está marcado
         if 'checkBoxNoPago' in request.form:
-            estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
-
+            estadoPago = no_hay_pago
         elif 'checkBoxPrimerPago' in request.form:
-            # Establece el estado de pago como primer pago
             estadoPago = primer_pago_del_prestamo
         else:
-            estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
+            estadoPago = tipoPagoCompletoForm
 
-        id_moneda = int(id_moneda)
+        print("El estado de pago es: ", estadoPago)
 
-        if cantidadPagarCordobas:
-            cantidadPagarCordobas_conversion = convertir_string_a_decimal(
-                cantidadPagarCordobas)
+        response = verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, fechaPago, tipoPagoCompletoForm)
+        return response
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Error al procesar la solicitud"}), 500
 
-        else:
-            cantidadPagarCordobas_conversion = 0.00
 
-        resultado_pago_fecha = obtener_pagoEspecial(
-            db_session, id_cliente, fechaPago)
-        # saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
-        # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
-        cifra_a_pagar = resultado_pago_fecha['cifra']
-        print(cifra_a_pagar)
+@app.route('/procesar_pago', methods=['POST'])
+def procesar_pago():
 
-        db_session.begin()
+    id_cliente = request.form['formId_cliente']  # Cambié () a []
+    id_moneda = request.form['tipoMonedaPago']
+    cantidadPagarDolares = request.form['cantidadPagar$']
+    cantidadPagarCordobas = request.form.get('cantidadPagoCordobas')
+    inputTasaCambioPago = request.form['inputTasaCambioPago']
+    fechaPago = request.form['fechaPago']
+    observacionPago = request.form['observacionPago']
+    evidenciaPago = request.files['evidenciaPago']
+    tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
-        try:
-            id_contrato = obtener_IdContrato(db_session, id_cliente)
+    
+    procesar_todo = False
 
-            num_pagos = comprobar_primerPago(db_session, id_contrato)
 
-            id_pagos = insertarPago(
-                db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, estadoPago)
-            insertar_detalle_pagos(
-                db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
+    cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
+    print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
 
-            if id_moneda is not dolares:
+    # Verifica si el checkbox de no pago está marcado
+    if 'checkBoxNoPago' in request.form:
+        estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
 
-                insertar_detalle_pagos(db_session, id_pagos, id_moneda,
-                                       cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
+    elif 'checkBoxPrimerPago' in request.form:
+        # Establece el estado de pago como primer pago
+        estadoPago = primer_pago_del_prestamo
+    else:
+        estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
+    
+    print('checkbox_confirmacion' in request.form)
 
-            diferencia_pago_a_saldo = obtener_diferencia_a_saldo(
-                cantidadPagarDolares, cifra_a_pagar)
-            print(
-                f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
-            
-            # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
-            if estadoPago == 0:
-                cantidadPagarDolaresNegativo = cantidadPagarDolares - \
-                    (cantidadPagarDolares * 2)
-                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda,
-                                                cantidadPagarDolaresNegativo, activo)
-                insertar_transaccion_saldo(
-                    db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
+    if 'checkbox_confirmacion' in request.form:
+        procesar_todo =  True
 
-            # Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
-            elif diferencia_pago_a_saldo:
-                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda,
-                                                diferencia_pago_a_saldo, activo)
-                insertar_transaccion_saldo(
-                    db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
+    response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
+                fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                monedaConversion)
+    return response
+        
 
 
 
-        except SQLAlchemyError as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
 
-        except Exception as e:
-            db_session.rollback()
-            print(f"Error: {e}")
-            return redirect(url_for('añadir_pago', id_cliente=id_cliente, error="Error en la base de datos"))
+@app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
+def añadir_pago(id_cliente):
 
-        db_session.commit()
+    if request.method == 'POST':
+        pass
 
-
-
-        return redirect(url_for('añadir_pago', id_cliente=id_cliente))
+        
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 

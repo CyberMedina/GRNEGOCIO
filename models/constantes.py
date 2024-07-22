@@ -59,3 +59,11 @@ consulta_sumatoria_total = 2
 # Constantes para los emails
 asunto_envio_historial = "Historial de pagos y de saldo"
 
+# Contantes para los checkbox
+checbox_inactivo = 0
+checbox_activo = 1
+
+# Constantes para las repuestas de las operaciones
+proceder_pago_estado = 1
+verificar_pago_estado = 2
+

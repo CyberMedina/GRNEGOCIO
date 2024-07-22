@@ -1,3 +1,4 @@
+from flask import Flask, request, jsonify, Blueprint
 from db import *
 from utils import *
 from models.constantes import *
@@ -1632,6 +1633,7 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
 
 
 def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
+
     # Convertir a float si es string
     if isinstance(cantidadPago, str):
         cantidadPago = float(cantidadPago)
@@ -1646,6 +1648,196 @@ def obtener_diferencia_a_saldo(cantidadPago, monto_pago_quincenal):
         diferencia_a_saldo = None
 
     return diferencia_a_saldo
+
+def verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, fechaPago, tipoPagoCompletoForm):
+    try:
+        datos_cliente = datos_pagov2(id_cliente, db_session)
+        verificacion_tipo_pago_insertar = {}
+
+        id_moneda = int(id_moneda)
+
+        if cantidadPagarCordobas:
+            cantidadPagarCordobas_conversion = convertir_string_a_decimal(cantidadPagarCordobas)
+        else:
+            cantidadPagarCordobas_conversion = 0.00
+
+        resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
+        cifra_a_pagar = resultado_pago_fecha['cifra']
+        diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
+        print(f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
+
+        if estadoPago == 0 or estadoPago == 4:
+            cantidadPagarDolaresNegativo = cantidadPagarDolares * -1
+        else:
+            cantidadPagarDolaresNegativo = 0
+
+        verificacion_tipo_pago_insertar = {
+            "nombres_apellidos": f"{datos_cliente[0]['nombres']} {datos_cliente[0]['apellidos']}",
+            "cantidadPagarDolares": cantidadPagarDolares,
+            "cantidadPagarDolaresNegativo": cantidadPagarDolaresNegativo,
+            "estadoPago": estadoPago,
+            "id_moneda": id_moneda,
+            "cantidadPagarCordobas_conversion": cantidadPagarCordobas_conversion,
+        }
+
+        if diferencia_pago_a_saldo is not None and diferencia_pago_a_saldo > 0:
+            verificacion_tipo_pago_insertar["cantidadPagarDolares"] = diferencia_pago_a_saldo
+
+        print(verificacion_tipo_pago_insertar)
+
+        return jsonify(verificacion_tipo_pago_insertar), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Error al verificar el pago"}), 500
+    
+
+
+                
+
+
+
+def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
+                fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                monedaConversion):
+    
+
+    id_moneda = int(id_moneda)
+
+    if cantidadPagarCordobas:
+        cantidadPagarCordobas_conversion = convertir_string_a_decimal(
+            cantidadPagarCordobas)
+
+    else:
+        cantidadPagarCordobas_conversion = 0.00
+
+    resultado_pago_fecha = obtener_pagoEspecial(
+        db_session, id_cliente, fechaPago)
+    # saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
+    # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
+    cifra_a_pagar = resultado_pago_fecha['cifra']
+    print(cifra_a_pagar)
+
+    db_session.begin()
+
+    try:
+        id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+        num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+        id_pagos = insertarPago(
+            db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, estadoPago)
+        insertar_detalle_pagos(
+            db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
+
+        if id_moneda is not dolares:
+
+            insertar_detalle_pagos(db_session, id_pagos, id_moneda,
+                                    cantidadPagarCordobas_conversion, inputTasaCambioPago, monedaConversion)
+
+        diferencia_pago_a_saldo = obtener_diferencia_a_saldo(
+            cantidadPagarDolares, cifra_a_pagar)
+        print(
+            f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
+        print("Procesar todo esta en " + str(procesar_todo))
+        if procesar_todo == True:
+        
+            # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
+            if estadoPago == 0:
+                cantidadPagarDolaresNegativo = cantidadPagarDolares - \
+                    (cantidadPagarDolares * 2)
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_en_contra, id_moneda,
+                                                cantidadPagarDolaresNegativo, activo)
+                insertar_transaccion_saldo(
+                    db_session, id_saldos_pagos, id_pagos, id_moneda, cantidadPagarDolaresNegativo, Disminucion)
+
+            # Si se obtiene una diferencia de pago a saldo mayor a lo que se debe de pagar se deberá restar el saldo (sumar)
+            elif diferencia_pago_a_saldo:
+                id_saldos_pagos = ingreso_saldo(db_session, id_cliente, id_pagos, saldo_a_favor, id_moneda,
+                                                diferencia_pago_a_saldo, activo)
+                insertar_transaccion_saldo(
+                    db_session, id_saldos_pagos, id_pagos, id_moneda, diferencia_pago_a_saldo, Aumento)
+        
+        db_session.commit()
+
+        return jsonify({"message": "Pago realizado exitosamente"}), 200
+    
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"message": "Error en la base de datos"}), 500
+
+    except Exception as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"message": "Error en el servidor"}), 500
+    
+
+def eliminar_todos_pagos_por_idCliente(db_session, id_cliente):
+    try:
+        query = text("""
+                     DELETE FROM pagos WHERE id_cliente = :id_cliente;
+                     """
+                     )
+        db_session.execute(query, {'id_cliente': id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+def eliminar_todos_detalles_pagos_por_idCliente(db_session, id_cliente):
+    try:
+        query = text("""
+                     DELETE FROM detalle_pagos WHERE id_pagos IN (SELECT id_pagos FROM pagos WHERE id_cliente = :id_cliente);
+                     """
+                     )
+        db_session.execute(query, {'id_cliente': id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+def eliminar_todos_transacciones_saldos_por_idCliente(db_session, id_cliente):
+    try:
+        query = text("""
+                     DELETE FROM transacciones_saldos WHERE id_saldos_pagos IN (SELECT id_saldos_pagos FROM saldos_pagos WHERE id_cliente = :id_cliente);
+                     """
+                     )
+        db_session.execute(query, {'id_cliente': id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+def eliminar_todos_saldos_pagos_por_idCliente(db_session, id_cliente):
+    try:
+        query = text("""
+                     DELETE FROM saldos_pagos WHERE id_cliente = :id_cliente;
+                     """
+                     )
+        db_session.execute(query, {'id_cliente': id_cliente})
+        db_session.commit()
+        return True
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return False
+    finally:
+        db_session.close()
+
+   
 
 
 
