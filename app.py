@@ -519,6 +519,7 @@ def datos_prestamoV1():
 @app.route('/eliminar_todo_rastro_cliente/<int:id_cliente>', methods=['POST'])
 def eliminar_cliente_prestamo(id_cliente):
 
+
     db_session.begin()
 
     try:
