@@ -785,7 +785,7 @@ btnGuardar.addEventListener('click', async function (event) {
   try {
     let data = await verificar_tipo_saldo_insertar();
     console.log(data);
-    if (data.estadoPago == 0 || data.estadoPago == 4) {
+    if (data.estadoPago == 0 || data.estadoPago == 3 || data.estadoPago == 4) {
       let modal_confirmacion_detalle_pago = new bootstrap.Modal(document.getElementById('modal_confirmacion_detalle_pago'));
       let content_modal_detalle_pago = document.getElementById('content_modal_detalle_pago');
 

@@ -516,28 +516,57 @@ def datos_prestamoV1():
 
 @app.route('/eliminar_todo_rastro_cliente', methods=['GET'])
 def eliminar_cliente_prestamo():
-    id_cliente = '15'
+    id_cliente = '11'  # Asegúrate de que id_cliente sea un entero
 
     db_session.begin()
 
     try:
-        ### Se eliminan todo rastro de pagos y prestamos del cliente ###
-        
-        # Obtener la lista de clientes
-        id_clientes_tuplas = seleccionar_clientes_contratofiador(db_session, id_cliente)
-        # Extraer los valores de las tuplas
-        id_clientes = [cliente[0] for cliente in id_clientes_tuplas]
+        id_clientes = [id_cliente]  # Empieza con el id_cliente inicial
 
-        for id_cliente in id_clientes:
-            print(id_cliente)
+        # Función para convertir resultados a enteros si es necesario
+        def convertir_a_entero(tupla):
+            if isinstance(tupla, (list, tuple)):
+                return int(tupla[0])
+            return int(tupla)
+
+        # Agregar los demás clientes que están relacionados con el cliente principal
+        clientes_fiador = seleccionar_clientes_contratofiador(db_session, id_cliente)
+        id_clientes.extend([convertir_a_entero(cliente) for cliente in clientes_fiador])
+
+        print(id_clientes)
+
+        # for id_cliente in id_clientes:
+        #     id_cliente = convertir_a_entero(id_cliente)  # Asegúrate de que id_cliente es un entero
+        #     print("El id cliente es ", id_cliente)
             
-            ultra_funcion_para_eliminar_todo_registro_de_cliente(db_session, id_cliente)
+        #     id_persona = convertir_a_entero(seleccionar_personas_por_id_cliente(db_session, id_cliente))
+        #     id_direccion = convertir_a_entero(seleccionar_direccion_por_id_persona(db_session, id_persona))
+        #     id_telefono = convertir_a_entero(seleccionar_id_telefono_por_idDireccion(db_session, id_direccion))
+
+        #     eliminar_todos_saldos_pagos_por_idCliente(db_session, id_cliente)
+        #     eliminar_todos_transacciones_saldos_por_idCliente(db_session, id_cliente)
+        #     eliminar_todos_detalles_pagos_por_idCliente(db_session, id_cliente)
+        #     eliminar_todos_pagos_por_idCliente(db_session, id_cliente)
+
+        #     ### Se eliminan todos los contratos de ese cliente ###
+        #     eliminar_todos_contratos_porIdCliente(db_session, id_cliente)
+        #     eliminar_todos_contratos_fiador_porIdCliente(db_session, id_cliente)
+
+        #     ### Se eliminan todos los clientes y fiadores de ese cliente ###
+        #     eliminar_cliente(db_session, id_cliente)
+        #     eliminar_direccion_telefono(db_session, id_direccion)
+        #     eliminar_persona_direccion(db_session, id_persona)
+        #     eliminar_telefono(db_session, id_telefono)
+        #     eliminar_direccion(db_session, id_direccion)
+        #     eliminar_persona(db_session, id_persona)
+
+        # db_session.commit()
 
         return "EXITO"
-
-    except SQLAlchemyError as e:
+    except Exception as e:
         db_session.rollback()
-        return jsonify({"error": "Error en la base de datos"}), 500
+        print(f"Error: {e}")
+        return "Error"
     finally:
         db_session.close()
 
@@ -674,6 +703,10 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
+    if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+        print("El cliente es especial")
+
+
     # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
@@ -805,6 +838,8 @@ def PruebaImprimir_pago():
 def eliminar_pago():
     data = request.get_json()
     id_pagos = data.get('id_pago')
+
+    print("El id del pago es " + str(id_pagos))
 
     db_session.begin()
 
@@ -1141,7 +1176,7 @@ def execute_sql_file(sql_file_path):
     """Ejecuta todas las sentencias SQL en un archivo."""
     with engine.connect() as connection:
         try:
-            with open(sql_file_path, 'r') as file:
+            with open(sql_file_path, 'r', encoding='utf-8') as file:
                 sql_statements = file.read()
                 for statement in sql_statements.split(';'):
                     if statement.strip():
@@ -1151,7 +1186,6 @@ def execute_sql_file(sql_file_path):
             connection.rollback()
             print(f"An error occurred: {e}")
             raise
-
 
 @app.route('/backup', methods=['GET', 'POST'])
 def backup_database_to_sql_file():

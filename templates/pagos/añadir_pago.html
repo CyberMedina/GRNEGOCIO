@@ -117,9 +117,11 @@
                                             <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                                     dataCliente.nombre_tipoCliente }}</span></p>
                                             <a id="btnMostrarDetallesCliente" href="#0"
-                                                class="text-medium text-dark">[Leer
-                                                más]</a>
+                                                class="text-medium text-dark">[Leer más]</a>
                                             <div class="detallesCliente" id="detallesCliente" hidden>
+                                                {% if dataCliente.id_tipoCliente == 3 %}
+                                                <p><strong>Saldo a la fecha: </strong><span id="nombre_negocio"></span></p>
+                                                {% endif %}
                                                 <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
                                                         dataCliente.tiempo_pago }}</span></p>
                                                 <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{

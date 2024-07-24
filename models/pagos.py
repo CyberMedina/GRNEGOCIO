@@ -14,11 +14,9 @@ def listar_cliesntesPagos(db_session):
 FROM cliente cl
 JOIN persona p ON cl.id_persona = p.id_persona
 JOIN contrato c ON cl.id_cliente = c.id_cliente
-WHERE cl.estado = '1' AND
-c.estado = '1' AND
-cl.id_tipoCliente = '2' OR
-cl.id_tipoCliente = '3';
-                     """
+WHERE cl.estado = '1' 
+AND c.estado = '1' 
+AND (cl.id_tipoCliente = '2' OR cl.id_tipoCliente = '3');"""
                      )
         result = db_session.execute(query).fetchall()
         return result
@@ -946,23 +944,45 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
         # Si el estado del pago es "No hay pago", se debe eliminar el registro de la tabla transacciones_saldos
         # y actualizar el saldo en contra
 
-        if estado_pago == no_hay_pago or estado_pago == pago_de_mas:
+        if estado_pago == no_hay_pago or estado_pago == pago_de_mas or estado_pago == primer_pago_del_prestamo:
 
-            print("entró en la eliminación de más")
 
-            id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
-            print(f"el id del cliente es" + str(id_cliente))
+            eliminar_con_saldo = True
 
-            cifra_anterior = obtener_cifraSaldo_anterior(
-                db_session, id_pagos, id_cliente)
-            print(f"la cifra anterior es" + str(cifra_anterior))
+            if estado_pago == primer_pago_del_prestamo:
 
-            actualizar_saldo(db_session, id_cliente, cifra_anterior, activo)
+                eliminar_con_saldo = False
 
-            query = text(
-                """DELETE FROM transacciones_saldos WHERE id_pagos = :id_pagos;""")
-            db_session.execute(query, {'id_pagos': id_pagos})
-            db_session.commit()
+                id_contrato = seleccionar_idContrato_con_idPago(db_session, id_pagos)
+
+                primer_pago_contrato = obtener_primerPago(db_session, id_contrato)[0]
+
+                resultado_buscar_detalle_pago_idPagos = buscar_detalle_pago_idPagos(db_session, id_pagos)
+                if "cifraPago$" in resultado_buscar_detalle_pago_idPagos:
+                    cifra_primer_pago_seleccionado = resultado_buscar_detalle_pago_idPagos["cifraPago$"]
+                elif "cifraPago" in resultado_buscar_detalle_pago_idPagos:
+                    cifra_primer_pago_seleccionado = resultado_buscar_detalle_pago_idPagos["cifraPago"]
+                else:
+                    cifra_primer_pago_seleccionado = None  # o algún valor por defecto
+
+                if cifra_primer_pago_seleccionado > primer_pago_contrato:
+                    print("Entró en la eliminación primer pago porque es pago de más!")
+                    eliminar_con_saldo = True
+
+            if eliminar_con_saldo == True:
+                id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
+                print(f"el id del cliente es" + str(id_cliente))
+
+                cifra_anterior = obtener_cifraSaldo_anterior(
+                    db_session, id_pagos, id_cliente)
+                print(f"la cifra anterior es" + str(cifra_anterior))
+
+                actualizar_saldo(db_session, id_cliente, cifra_anterior, activo)
+
+                query = text(
+                    """DELETE FROM transacciones_saldos WHERE id_pagos = :id_pagos;""")
+                db_session.execute(query, {'id_pagos': id_pagos})
+                db_session.commit()
 
         # Eliminar primero los registros de la tabla detalle_pagos relacionados con el pago
         query_detalle = text("""
@@ -1838,6 +1858,25 @@ def eliminar_todos_saldos_pagos_por_idCliente(db_session, id_cliente):
         db_session.close()
 
    
+def seleccionar_idContrato_con_idPago(db_session, id_pago):
+    try:
+
+        query = text("""
+SELECT id_contrato FROM pagos
+WHERE id_pagos = :id_pago;""")
+        
+        result = db_session.execute(query, {'id_pago': id_pago}).fetchone()
+        if result:
+            return result[0]
+        else:
+            return None
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
 
 
 

@@ -463,7 +463,7 @@ AND p.estado = '1';
 
         result = db_session.execute(
             query, {"id_persona": id_persona}).fetchone()
-        return result
+        return result if result else None
 
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -486,7 +486,7 @@ WHERE c.id_cliente = :id_cliente;
 
         result = db_session.execute(
             query, {"id_cliente": id_cliente}).fetchall()
-        return result
+        return [row[0] for row in result]
     
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -500,7 +500,7 @@ def seleccionar_personas_por_id_cliente(db_session, id_cliente):
 FROM cliente
 WHERE id_cliente = :id_cliente;""")
         result = db_session.execute(query, {"id_cliente": id_cliente}).fetchone()
-        return result
+        return result[0] if result else None
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -516,7 +516,7 @@ FROM
 persona_direccion
 WHERE id_persona = :id_persona;""")
         result = db_session.execute(query, {"id_persona": id_persona}).fetchone()
-        return result
+        return result[0] if result else None
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -528,7 +528,7 @@ def seleccionar_id_telefono_por_idDireccion(db_session, id_direccion):
 FROM direccion_telefono
 WHERE id_direccion = :id_direccion""")
         result = db_session.execute(query, {"id_direccion": id_direccion}).fetchone()
-        return result
+        return result[0] if result else None
     except SQLAlchemyError as e:
         db_session.rollback()
         print(f"Error: {e}")
