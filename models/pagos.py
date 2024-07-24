@@ -1879,4 +1879,27 @@ WHERE id_pagos = :id_pago;""")
 
 
 
+###### EMPIEZA LA CONSTRUCCION DE PAGOS PARA CLIENTES ESPECIALES ######
+def sumatoria_de_pagos_Cliente_especial(db_session, id_contrato):
+    try:
+        query = text("""
+SELECT COALESCE(SUM(cifraPago), 0.00)
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = :id_contrato
+AND (p.estado = :estado1 OR p.estado = :estado2 OR p.estado = :estado4 OR p.estado = :estado5)
+AND dp.estado = :estado6;""")
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'estado1': pago_completo, 'estado2': pago_incompleto, 'estado4': pago_de_mas, 'estado5': primer_pago_del_prestamo, 'estado6': activo}).fetchone()
+        if result:
+            return result[0]
+        else:
+            return None
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
+
 

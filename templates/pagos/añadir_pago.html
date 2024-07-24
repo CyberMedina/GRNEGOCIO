@@ -70,14 +70,8 @@
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction1">
                                             <li class="dropdown-item">
-                                                <a href="#0" class="text-gray">Reducir capital</a>
-                                            </li>
-                                            <li class="dropdown-item">
-                                                <a href="#0" class="text-gray">Ver contrato</a>
-                                            </li>
-                                            <li class="dropdown-item">
                                                 <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}"
-                                                    class="text-gray">Editar contrato</a>
+                                                    class="text-gray">Ver / Editar contrato</a>
                                             </li>
                                             <li class="dropdown-item">
                                                 <a href="#FinalizarDeuda"
@@ -116,12 +110,15 @@
                                             {% endif %}
                                             <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                                     dataCliente.nombre_tipoCliente }}</span></p>
+                                            {% if dataCliente.id_tipoCliente == 3 %}
+                                            <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                        dataCliente.monto_solicitado }}</span> </strong></p>
+                                            <p><strong>Saldo a la fecha: </strong><span id="nombre_negocio">{{
+                                                    saldo_pendiente }}</span></p>
+                                            {% endif %}
                                             <a id="btnMostrarDetallesCliente" href="#0"
                                                 class="text-medium text-dark">[Leer más]</a>
                                             <div class="detallesCliente" id="detallesCliente" hidden>
-                                                {% if dataCliente.id_tipoCliente == 3 %}
-                                                <p><strong>Saldo a la fecha: </strong><span id="nombre_negocio"></span></p>
-                                                {% endif %}
                                                 <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
                                                         dataCliente.tiempo_pago }}</span></p>
                                                 <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
@@ -292,13 +289,16 @@
 
                                     <tr>
                                         <td colspan="4" class="text-center">
-                                            <span id="tooltip-iconPersonalize"
-                                                class="tooltip-icon text-secondary fw-bolder" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="{{ pago.fechaPrestamo }}">
-                                                Pagos del préstamo de: ${{ pago.monto_solicitado }}
-                                            </span>
-
+                                            <a href="/visualizar_contrato_id/{{ pago.id_contrato }}"> <span
+                                                    id="tooltip-iconPersonalize"
+                                                    class="tooltip-icon text-secondary fw-bolder"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    title="{{ pago.fechaPrestamo }}">
+                                                    Pagos del préstamo de: ${{ pago.monto_solicitado }}
+                                                </span></a>
                                         </td>
+
+
                                     </tr>
 
                                     {% set last_id_contrato.value = pago.id_contrato %}
@@ -425,7 +425,7 @@
                             Pago completo
                         </a>
 
-                        
+
 
                         <div class="row">
 
@@ -580,7 +580,8 @@
                         </div>
                         <!-- ModalFive start -->
                         <div class="warning-modal">
-                            <div class="modal fade" id="modal_confirmacion_detalle_pago" tabindex="-1" aria-hidden="true">
+                            <div class="modal fade" id="modal_confirmacion_detalle_pago" tabindex="-1"
+                                aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content card-style">
                                         <div class="modal-header px-0 border-0">
@@ -619,289 +620,6 @@
 
             </div>
         </div>
-
-
-
-
-
-
-       
-
-
-
-        <!-- ModalOpcionImprimir start -->
-        <div class="warning-modal">
-            <div class="modal fade" id="ModalOpcionImprimir" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content card-style">
-                        <div class="modal-header px-0 border-0">
-                            <h5 class="text-bold">Opción de impresión</h5>
-                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
-                                <i class="lni lni-cross-circle"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body px-0">
-                            <div class="content mb-30">
-                                <p class="text-sm">
-                                <div class="row">
-
-                                    <div class="col-6 col-sm-6 col-md-6">
-                                        <div class="input-style-1">
-                                            <label class="text-bold">Incio fecha</label>
-                                            <input type="date" required name="inicioFechaImpresion"
-                                                id="inicioFechaImpresion" />
-                                            <p id="tiempoLetrasInicioFechaImpresion"></p>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="col-6 col-sm-6 col-md-6">
-                                        <div class="input-style-1">
-                                            <label class="text-bold">Fin fecha</label>
-                                            <input type="date" required name="finFechaImpresion"
-                                                id="finFechaImpresion" />
-                                            <p id="tiempoLetrasFinFechaImpresion"></p>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-check checkbox-style checkbox-success mb-20">
-                                        <div class="select-style-1">
-                                            <input class="form-check-input" type="checkbox" value="0"
-                                                id="checkBoxEnvioCorreo" name="checkBoxEnvioCorreo"
-                                                onclick="enviarImpresionTelefono()" />
-                                            <label class="form-check-label" for="checkBoxNoPago">
-                                                Enviar impresión al correo electronico</label>
-                                            <div class="select-position" id="divSelectcomboCorreoElectronicoImpresion"
-                                                hidden>
-                                                <select class="light-bg" required name="comboCorreoElectronicoImpresion"
-                                                    id="comboCorreoElectronicoImpresion">
-                                                    <option value="medinajhonatan02@gmail.com">
-                                                        medinajhonatan02@gmail.com
-                                                    </option selected>
-                                                    <option value="germanmayorga58@gmail.com">germanmayorga58@gmail.com
-                                                    </option>
-
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </p>
-                            </div>
-                            <div class="action d-flex flex-wrap justify-content-end">
-                                <button data-bs-dismiss="modal"
-                                    class="main-btn btn-sm danger-btn-outline btn-hover m-1">
-                                    Cancelar
-                                </button>
-                                <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1"
-                                    onclick="enviar_datos_imprimir_backend()">
-                                    Ir a imprimir
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ModalOpcionImprimir End -->
-
-        <!-- ModalThree start -->
-        <div class="warning-modal">
-            <div class="modal fade" id="modalCalculoPrimerPago" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content card-style">
-                        <div class="modal-header px-0 border-0">
-                            <h3 class="text-bold">Cálculo primer pago</h3>
-                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
-                                <i class="lni lni-cross-circle"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body px-0">
-                            <div class="content mb-30">
-
-                                <div class="tab-style-3 mb-30">
-                                    <nav class="nav" id="nav-tab">
-                                        <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
-                                            data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
-                                            Pago diario
-                                        </button>
-                                        <button id="tab-3-2" class="main-btn deactive-btn rounded-full"
-                                            data-bs-toggle="tab" data-bs-target="#tabContent-3-2">
-                                            Primer pago
-                                        </button>
-                                    </nav>
-                                    <div class="tab-content" id="nav-tabContent3">
-                                        <div class="tab-pane fade show active" id="tabContent-3-1">
-
-                                            <div class="row">
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1">
-                                                        <label>Pago mensual</label>
-                                                        <input class="text-center" type="number" placeholder="0"
-                                                            name="pagoMensualModal" id="pagoMensualModal" readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1 text-center">
-                                                        <label>Dividido</label>
-                                                        <input class="text-center" type="text" placeholder="" value="/"
-                                                            readonly>
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-3">
-                                                    <div class="input-style-1 text-center">
-                                                        <label>Mes comercial</label>
-                                                        <input class="text-center" type="text" value="30 días"
-                                                            name="noDiasMesModal" id="noDiasMesModal" readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1 text-center">
-                                                        <label>resultado</label>
-                                                        <input class="text-center" type="text" placeholder="" value="="
-                                                            readonly>
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-3">
-                                                    <div class="input-style-1 text-center">
-                                                        <label class="text-success text-bold">Pago diario</label>
-                                                        <input class="text-center" type="number"
-                                                            name="resultadoPagoDiarioModal"
-                                                            id="resultadoPagoDiarioModal" readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="tabContent-3-2">
-
-
-                                            <div class="row">
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1">
-                                                        <label>Pago diario</label>
-                                                        <input class="text-center" type="number" placeholder="0"
-                                                            name="pagoMensual" id="pagoDiario2Modal"
-                                                            name="pagoDiario2Modal" readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1 text-center">
-                                                        <label>Multiplicado</label>
-                                                        <input class="text-center" type="text" placeholder="" value="X"
-                                                            readonly>
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-3">
-                                                    <div class="input-style-1 text-center">
-                                                        <label id="diasRestantesCorteModal"></label>
-                                                        <input class="text-center" type="text" value=""
-                                                            id="diasHastaProximoCorte" name="diasHastaProximoCorte"
-                                                            readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-2">
-                                                    <div class="input-style-1 text-center">
-                                                        <label>Resultado</label>
-                                                        <input class="text-center" type="text" placeholder="" value="="
-                                                            readonly>
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-                                                <div class="col-sm-3">
-                                                    <div class="input-style-1 text-center">
-                                                        <label class="text-success text-bold">Primer pago</label>
-                                                        <input class="text-center" type="number" value=""
-                                                            id="montoPrimerPagoModal" readonly />
-                                                    </div>
-                                                    <!-- end select -->
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- end card -->
-
-
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ModalThree End -->
-
-        <!-- ModalThree start -->
-        <div class="warning-modal">
-            <div class="modal fade" id="modalFinalizarDeuda" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content card-style">
-                        <div class="modal-header px-0 border-0">
-                            <h5 class="text-bold">Finalizar deuda</h5>
-                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
-                                <i class="lni lni-cross-circle"></i>
-                            </button>
-                        </div>
-                        <div class="modal-body px-0">
-                            <div class="content mb-30">
-                                <p class="text-sm">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="input-style-1">
-                                            <label class="text-bold">Fecha de finalización</label>
-                                            <input type="date" required name="fechaFinalizacion"
-                                                id="fechaFinalizacion" />
-                                            <p id="tiempoLetrasFinalizacion"></p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="input-style-3">
-                                            <label>Observación</label>
-                                            <textarea placeholder="Descripción de la observación" rows="5"
-                                                name="observacionFinalizacion" id="observacionFinalizacion"></textarea>
-                                            <span class="icon"><i class="fa-solid fa-eye"></i></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                </p>
-                            </div>
-                            <div class="action d-flex flex-wrap justify-content-end">
-                                <button data-bs-dismiss="modal"
-                                    class="main-btn btn-sm danger-btn-outline btn-hover m-1">
-                                    Cancel
-                                </button>
-                                <button data-bs-dismiss="modal" class="main-btn btn-sm primary-btn btn-hover m-1">
-                                    Send Message
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ModalThree End -->
-
         <!-- end col -->
         <!-- end input -->
     </div>
@@ -941,11 +659,10 @@
                         <div id="cantidadPagoCordobasRowVP" class="col-6 col-sm-6" hidden>
                             <div class="input-style-3">
                                 <label for="">Pago realizado en C$</label>
-                                <input type="text" placeholder="0" inputmode="decimal"
-                                    name="cantidadPagoCordobasVP" id="cantidadPagoCordobasVP" readonly />
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobasVP"
+                                    id="cantidadPagoCordobasVP" readonly />
                                 <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                <p id="lblPagoC$VP" style="font-size: small;"><span
-                                        id="lblCantidadPagarC$VP"></span>
+                                <p id="lblPagoC$VP" style="font-size: small;"><span id="lblCantidadPagarC$VP"></span>
                                 </p>
                             </div>
                             <!-- end select -->
@@ -1000,8 +717,8 @@
 </div>
 
 
- <!-- ModalFour start -->
- <div class="warning-modal">
+<!-- ModalFour start -->
+<div class="warning-modal">
     <div class="modal fade" id="modalBorrarPago" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content card-style">
@@ -1031,6 +748,276 @@
     </div>
 </div>
 <!-- ModalFour End -->
+
+
+<!-- ModalOpcionImprimir start -->
+<div class="warning-modal">
+    <div class="modal fade" id="ModalOpcionImprimir" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h5 class="text-bold">Opción de impresión</h5>
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+                        <p class="text-sm">
+                        <div class="row">
+
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <div class="input-style-1">
+                                    <label class="text-bold">Incio fecha</label>
+                                    <input type="date" required name="inicioFechaImpresion" id="inicioFechaImpresion" />
+                                    <p id="tiempoLetrasInicioFechaImpresion"></p>
+                                </div>
+
+                            </div>
+
+                            <div class="col-6 col-sm-6 col-md-6">
+                                <div class="input-style-1">
+                                    <label class="text-bold">Fin fecha</label>
+                                    <input type="date" required name="finFechaImpresion" id="finFechaImpresion" />
+                                    <p id="tiempoLetrasFinFechaImpresion"></p>
+                                </div>
+                            </div>
+
+
+                            <div class="form-check checkbox-style checkbox-success mb-20">
+                                <div class="select-style-1">
+                                    <input class="form-check-input" type="checkbox" value="0" id="checkBoxEnvioCorreo"
+                                        name="checkBoxEnvioCorreo" onclick="enviarImpresionTelefono()" />
+                                    <label class="form-check-label" for="checkBoxNoPago">
+                                        Enviar impresión al correo electronico</label>
+                                    <div class="select-position" id="divSelectcomboCorreoElectronicoImpresion" hidden>
+                                        <select class="light-bg" required name="comboCorreoElectronicoImpresion"
+                                            id="comboCorreoElectronicoImpresion">
+                                            <option value="medinajhonatan02@gmail.com">
+                                                medinajhonatan02@gmail.com
+                                            </option selected>
+                                            <option value="germanmayorga58@gmail.com">germanmayorga58@gmail.com
+                                            </option>
+
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </p>
+                    </div>
+                    <div class="action d-flex flex-wrap justify-content-end">
+                        <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                            Cancelar
+                        </button>
+                        <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1"
+                            onclick="enviar_datos_imprimir_backend()">
+                            Ir a imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ModalOpcionImprimir End -->
+
+<!-- ModalThree start -->
+<div class="warning-modal">
+    <div class="modal fade" id="modalCalculoPrimerPago" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h3 class="text-bold">Cálculo primer pago</h3>
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-0">
+                    <div class="content mb-30">
+
+                        <div class="tab-style-3 mb-30">
+                            <nav class="nav" id="nav-tab">
+                                <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                    data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
+                                    Pago diario
+                                </button>
+                                <button id="tab-3-2" class="main-btn deactive-btn rounded-full" data-bs-toggle="tab"
+                                    data-bs-target="#tabContent-3-2">
+                                    Primer pago
+                                </button>
+                            </nav>
+                            <div class="tab-content" id="nav-tabContent3">
+                                <div class="tab-pane fade show active" id="tabContent-3-1">
+
+                                    <div class="row">
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1">
+                                                <label>Pago mensual</label>
+                                                <input class="text-center" type="number" placeholder="0"
+                                                    name="pagoMensualModal" id="pagoMensualModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                                <label>Dividido</label>
+                                                <input class="text-center" type="text" placeholder="" value="/"
+                                                    readonly>
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                                <label>Mes comercial</label>
+                                                <input class="text-center" type="text" value="30 días"
+                                                    name="noDiasMesModal" id="noDiasMesModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                                <label>resultado</label>
+                                                <input class="text-center" type="text" placeholder="" value="="
+                                                    readonly>
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                                <label class="text-success text-bold">Pago diario</label>
+                                                <input class="text-center" type="number" name="resultadoPagoDiarioModal"
+                                                    id="resultadoPagoDiarioModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="tabContent-3-2">
+
+
+                                    <div class="row">
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1">
+                                                <label>Pago diario</label>
+                                                <input class="text-center" type="number" placeholder="0"
+                                                    name="pagoMensual" id="pagoDiario2Modal" name="pagoDiario2Modal"
+                                                    readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                                <label>Multiplicado</label>
+                                                <input class="text-center" type="text" placeholder="" value="X"
+                                                    readonly>
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                                <label id="diasRestantesCorteModal"></label>
+                                                <input class="text-center" type="text" value=""
+                                                    id="diasHastaProximoCorte" name="diasHastaProximoCorte" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-2">
+                                            <div class="input-style-1 text-center">
+                                                <label>Resultado</label>
+                                                <input class="text-center" type="text" placeholder="" value="="
+                                                    readonly>
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                            <div class="input-style-1 text-center">
+                                                <label class="text-success text-bold">Primer pago</label>
+                                                <input class="text-center" type="number" value=""
+                                                    id="montoPrimerPagoModal" readonly />
+                                            </div>
+                                            <!-- end select -->
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end card -->
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ModalThree End -->
+
+<!-- ModalThree start -->
+<div class="warning-modal">
+    <div class="modal fade" id="modalFinalizarDeuda" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-style">
+                <div class="modal-header px-0 border-0">
+                    <h5 class="text-bold">Finalizar deuda</h5>
+                    <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                        <i class="lni lni-cross-circle"></i>
+                    </button>
+                </div>
+                <div class="modal-body px-0">
+                    <form action="/eliminar_todo_rastro_cliente/{{ datos_cliente[0].id_cliente }}" method="POST">
+                        <div class="content mb-30">
+                            <p class="text-sm">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="input-style-1">
+                                        <label class="text-bold">Fecha de finalización</label>
+                                        <input type="date" required name="fechaFinalizacion" id="fechaFinalizacion" />
+                                        <p id="tiempoLetrasFinalizacion"></p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-style-3">
+                                        <label>Observación</label>
+                                        <textarea placeholder="Descripción de la observación" rows="5"
+                                            name="observacionFinalizacion" id="observacionFinalizacion"></textarea>
+                                        <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            </p>
+
+                        </div>
+                        <div class="action d-flex flex-wrap justify-content-end">
+                            <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                                Cancelelar
+                            </button>
+                            <button type="submit" class="main-btn btn-sm primary-btn btn-hover m-1">
+                                Eliminar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ModalThree End -->
+
+
 
 {% endblock %}
 

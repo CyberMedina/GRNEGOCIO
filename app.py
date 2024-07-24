@@ -13,12 +13,14 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
 from urllib.parse import urlencode
+from decimal import Decimal
 import tempfile
 import weasyprint
 import smtplib
 import subprocess
 import glob
 import io
+
 
 
 # Importando desde archivos locales
@@ -514,14 +516,14 @@ def datos_prestamoV1():
     return jsonify({"datos_prestamo": datos_pago}), 200
 
 
-@app.route('/eliminar_todo_rastro_cliente', methods=['GET'])
-def eliminar_cliente_prestamo():
-    id_cliente = '11'  # Asegúrate de que id_cliente sea un entero
+@app.route('/eliminar_todo_rastro_cliente/<int:id_cliente>', methods=['POST'])
+def eliminar_cliente_prestamo(id_cliente):
 
     db_session.begin()
 
     try:
-        id_clientes = [id_cliente]  # Empieza con el id_cliente inicial
+        # Usar un conjunto para almacenar los IDs de clientes y evitar duplicados
+        id_clientes = {id_cliente}
 
         # Función para convertir resultados a enteros si es necesario
         def convertir_a_entero(tupla):
@@ -531,38 +533,38 @@ def eliminar_cliente_prestamo():
 
         # Agregar los demás clientes que están relacionados con el cliente principal
         clientes_fiador = seleccionar_clientes_contratofiador(db_session, id_cliente)
-        id_clientes.extend([convertir_a_entero(cliente) for cliente in clientes_fiador])
+        id_clientes.update(convertir_a_entero(cliente) for cliente in clientes_fiador if cliente is not None)
 
         print(id_clientes)
 
-        # for id_cliente in id_clientes:
-        #     id_cliente = convertir_a_entero(id_cliente)  # Asegúrate de que id_cliente es un entero
-        #     print("El id cliente es ", id_cliente)
+        for id_cliente in id_clientes:
+            id_cliente = convertir_a_entero(id_cliente)  # Asegúrate de que id_cliente es un entero
+            print("El id cliente es ", id_cliente)
             
-        #     id_persona = convertir_a_entero(seleccionar_personas_por_id_cliente(db_session, id_cliente))
-        #     id_direccion = convertir_a_entero(seleccionar_direccion_por_id_persona(db_session, id_persona))
-        #     id_telefono = convertir_a_entero(seleccionar_id_telefono_por_idDireccion(db_session, id_direccion))
+            id_persona = convertir_a_entero(seleccionar_personas_por_id_cliente(db_session, id_cliente))
+            id_direccion = convertir_a_entero(seleccionar_direccion_por_id_persona(db_session, id_persona))
+            id_telefono = convertir_a_entero(seleccionar_id_telefono_por_idDireccion(db_session, id_direccion))
 
-        #     eliminar_todos_saldos_pagos_por_idCliente(db_session, id_cliente)
-        #     eliminar_todos_transacciones_saldos_por_idCliente(db_session, id_cliente)
-        #     eliminar_todos_detalles_pagos_por_idCliente(db_session, id_cliente)
-        #     eliminar_todos_pagos_por_idCliente(db_session, id_cliente)
+            eliminar_todos_saldos_pagos_por_idCliente(db_session, id_cliente)
+            eliminar_todos_transacciones_saldos_por_idCliente(db_session, id_cliente)
+            eliminar_todos_detalles_pagos_por_idCliente(db_session, id_cliente)
+            eliminar_todos_pagos_por_idCliente(db_session, id_cliente)
 
-        #     ### Se eliminan todos los contratos de ese cliente ###
-        #     eliminar_todos_contratos_porIdCliente(db_session, id_cliente)
-        #     eliminar_todos_contratos_fiador_porIdCliente(db_session, id_cliente)
+            ### Se eliminan todos los contratos de ese cliente ###
+            eliminar_todos_contratos_porIdCliente(db_session, id_cliente)
+            eliminar_todos_contratos_fiador_porIdCliente(db_session, id_cliente)
 
-        #     ### Se eliminan todos los clientes y fiadores de ese cliente ###
-        #     eliminar_cliente(db_session, id_cliente)
-        #     eliminar_direccion_telefono(db_session, id_direccion)
-        #     eliminar_persona_direccion(db_session, id_persona)
-        #     eliminar_telefono(db_session, id_telefono)
-        #     eliminar_direccion(db_session, id_direccion)
-        #     eliminar_persona(db_session, id_persona)
+            ### Se eliminan todos los clientes y fiadores de ese cliente ###
+            eliminar_cliente(db_session, id_cliente)
+            eliminar_direccion_telefono(db_session, id_direccion)
+            eliminar_persona_direccion(db_session, id_persona)
+            eliminar_telefono(db_session, id_telefono)
+            eliminar_direccion(db_session, id_direccion)
+            eliminar_persona(db_session, id_persona)
 
-        # db_session.commit()
+        db_session.commit()
 
-        return "EXITO"
+        return redirect(url_for('listado_clientes_pagos'))
     except Exception as e:
         db_session.rollback()
         print(f"Error: {e}")
@@ -570,8 +572,6 @@ def eliminar_cliente_prestamo():
     finally:
         db_session.close()
 
-
-        
 
 
 
@@ -703,8 +703,6 @@ def añadir_pago(id_cliente):
 
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
-    if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
-        print("El cliente es especial")
 
 
     # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
@@ -751,6 +749,17 @@ def añadir_pago(id_cliente):
         "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
         "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
     }
+
+    print(pagos_cliente)
+
+    
+    if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+        total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+        capital = Decimal(pagos_cliente[0]["monto_solicitado"])
+        saldo_pendiente = capital - total_pagos
+        print("El saldo pendiente es: ", saldo_pendiente)
+        formulario_añadir_pago.update({"saldo_pendiente": saldo_pendiente})
+        
 
 
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
@@ -925,17 +934,37 @@ def visualizar_contrato(id_cliente):
     datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
     datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
 
-
-
-
-
-
-    
     print(datos_cliente)
 
     datos_formulario_anadir_prestamo = {
         "id_cliente": id_cliente,
         "id_contratoActual" : id_contratoActual,
+        "companias_telefonicas": obtener_companias_telefonicas(db_session),
+        "tipos_monedas": obtener_tipos_monedas(db_session),
+        "datos_cliente": datos_cliente,
+        "datos_contratoCliente": datos_contratoCliente,
+        "datos_contratoFiador": datos_contratoFiador,
+        "datos_fiador" : datos_fiador,
+    }
+
+    return render_template('contrato/visualizar_contrato.html', **datos_formulario_anadir_prestamo)
+
+
+@app.route('/visualizar_contrato_id/<int:id_contrato>', methods=['GET', 'POST'])
+def visualizar_contrato_id(id_contrato):
+
+    id_cliente = seleccionar_idCliente_por_idContrato(db_session, id_contrato)
+    datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
+    datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contrato)
+
+    datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
+    datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
+
+    print(datos_cliente)
+
+    datos_formulario_anadir_prestamo = {
+        "id_cliente": id_cliente,
+        "id_contratoActual" : id_contrato,
         "companias_telefonicas": obtener_companias_telefonicas(db_session),
         "tipos_monedas": obtener_tipos_monedas(db_session),
         "datos_cliente": datos_cliente,

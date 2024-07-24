@@ -611,3 +611,18 @@ DELETE FROM persona WHERE id_persona = @id_persona;
         return False
     finally:
         db_session.close()
+
+
+def seleccionar_idCliente_por_idContrato(db_session, id_contrato):
+    try:
+        query = text("""SELECT id_cliente 
+FROM contrato
+WHERE id_contrato = :id_contrato;""")
+        result = db_session.execute(query, {"id_contrato": id_contrato}).fetchone()
+        return result[0] if result else None
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+    

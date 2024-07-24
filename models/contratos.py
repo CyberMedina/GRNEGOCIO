@@ -240,3 +240,4 @@ def eliminar_todos_contratos_fiador_porIdCliente(db_session, id_cliente):
         db_session.close()
 
 
+
