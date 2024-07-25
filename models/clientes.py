@@ -414,8 +414,7 @@ JOIN direccion_telefono dt ON dt.id_direccion = d.id_direccion
 JOIN telefono t ON t.id_telefono = dt.id_telefono
 JOIN companias_telefonicas c ON c.id_compania = t.id_compania
 WHERE                                     
-cl.estado = :estado;
-                     """)
+cl.id_tipoCliente = :estado;""")
 
         result = db_session.execute(query_listar_clientes, {"estado": estado})
         return result

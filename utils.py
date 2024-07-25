@@ -23,8 +23,18 @@ import time
 from datetime import datetime, timedelta
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive 
+from functools import wraps
+from flask import session, redirect, url_for
 
 
+
+def login_requiredUser(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect('/login_system')
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def ObtenerIDTabla(db_session, id_tabla, tabla):
@@ -54,6 +64,8 @@ def contar_resultados(db_session, tabla, estado):
     query = text(f'SELECT COUNT(*) FROM {tabla} WHERE estado = :estado')
     result = db_session.execute(query, {"estado": estado})
     return result.fetchone()[0]
+
+
 
 
 

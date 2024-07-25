@@ -2,6 +2,7 @@ from logging import getLogger
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Mail, Message
 from io import BytesIO
 from sqlalchemy import create_engine, text, MetaData
@@ -82,6 +83,29 @@ def obtener_tasa_cambio():
 logger = getLogger(__name__)
 
 
+
+@app.route('/login_system', methods=['GET', 'POST'])
+def login_system():
+
+    if request.method == 'POST':
+
+        usuario = request.form['usuario']
+        password = request.form['password']
+
+        queryLogin = text("SELECT * FROM usuarios WHERE (usuario = :usuario) LIMIT 1")
+        user_row = db_session.execute(queryLogin, {"usuario":usuario}).fetchone()
+
+        if user_row:
+            user_password = user_row[5]
+            user_id = user_row[0]
+        
+            if check_password_hash(user_password, password):
+                session['user_id'] = user_id
+                return render_template('index.html')
+        return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
+
+    return render_template('auth/login.html')
+
 @cross_origin()
 @app.route('/actualizar_tasa_cambio', methods=['POST'])
 def actualizar_tasa_cambio():
@@ -108,7 +132,9 @@ def actualizar_tasa_cambio():
 
 
 @app.route('/')
+@login_requiredUser
 def index():
+
 
     return render_template('index.html')
 
@@ -189,6 +215,7 @@ def guardar_en_sesion_ordenar_clientesPrestamos():
 
 
 @app.route('/clientes', methods=['GET', 'POST'])
+@login_requiredUser
 def clientes():
 
     # Obtenemos la lista de clientes cruda sin procesar
@@ -260,12 +287,14 @@ def clientes():
 
 
 @app.route('/datos_cliente', methods=['GET', 'POST'])
+@login_requiredUser
 def datos_cliente():
     return render_template('datos_cliente.html')
 
 
 ########### Empieza el modulo de prestamos ###########
 @app.route('/prestamos', methods=['GET', 'POST'])
+@login_requiredUser
 def prestamos():
 
     # Obtenemos la lista de clientes cruda sin procesar
@@ -335,6 +364,7 @@ def prestamos():
 
 
 @app.route('/anadir_prestamo/<int:id_cliente>', methods=['GET', 'POST'])
+@login_requiredUser
 def anadir_prestamo(id_cliente):
 
     datos_cliente = listar_datosClientes_porID(db_session, id_cliente)
@@ -579,6 +609,7 @@ def eliminar_cliente_prestamo(id_cliente):
 ########### Empieza el modulo de pagos ############
 
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
+@login_requiredUser
 def listado_clientes_pagos():
 
 
@@ -691,6 +722,7 @@ def procesar_pago():
 
 
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
+@login_requiredUser
 def añadir_pago(id_cliente):
 
     if request.method == 'POST':
@@ -925,6 +957,7 @@ def prueba_extraer_plata():
 ########### Empieza el modulo de contrato ##########
 
 @app.route('/visualizar_contrato/<int:id_cliente>', methods=['GET', 'POST'])
+@login_requiredUser
 def visualizar_contrato(id_cliente):
 
 
@@ -952,6 +985,7 @@ def visualizar_contrato(id_cliente):
 
 
 @app.route('/visualizar_contrato_id/<int:id_contrato>', methods=['GET', 'POST'])
+@login_requiredUser
 def visualizar_contrato_id(id_contrato):
 
     id_cliente = seleccionar_idCliente_por_idContrato(db_session, id_contrato)
@@ -978,6 +1012,7 @@ def visualizar_contrato_id(id_contrato):
 
 
 @app.route('/finalizar_pago/<int:id_cliente>', methods=['GET', 'POST'])
+@login_requiredUser
 def finalizar_contrato(id_cliente):
 
     if request.method == 'POST':
@@ -1085,6 +1120,7 @@ def refresh_access_token(refresh_token):
 
 
 @app.route('/base_de_datos', methods=['GET', 'POST'])
+@login_requiredUser
 def base_de_datos():
 
 
@@ -1655,6 +1691,16 @@ def obtener_capital():
             return jsonify({"message": "Error en la base de datos"}), 500
     else:
         return jsonify({"message": "Metodo no permitido"}), 400
+    
+
+
+@app.route('/Cerrar_Sesion')
+def Cerrar_Sesion():
+    
+    session.pop('user_id', None)
+    session.pop('name', None)
+    session.pop('lastname', None)
+    return redirect(url_for('index'))
 
 
 

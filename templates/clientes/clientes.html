@@ -51,26 +51,26 @@
                   <div class="select-style-1 mb-0 ml-10">
                     <div class="select-position">
                       <select id="filtro-comboBox" class="p-0 pe-5 border-0">
-                        {% if session["numero_seleccionado_ordenar_clientes"] == '1' %}
+                        {% if session["numero_seleccionado_ordenar_clientes"] == '2' %}
                         <option value="5">En proceso</option>
-                        <option value="1" selected>Activos</option>
-                        <option value="0">Inactivos</option>
-                        <option value="3">Todos</option>
-                        {% elif session["numero_seleccionado_ordenar_clientes"] == '0' %}
-                        <option value="5">En proceso</option>
-                        <option value="1">Activos</option>
-                        <option value="0" selected>Inactivos</option>
-                        <option value="3">Todos</option>
+                        <option value="2" selected>Normales</option>
+                        <option value="3">Especiales</option>
+                        <option value="6">Todos</option>
                         {% elif session["numero_seleccionado_ordenar_clientes"] == '3' %}
                         <option value="5">En proceso</option>
-                        <option value="1">Activos</option>
-                        <option value="0">Inactivos</option>
-                        <option value="3" selected>Todos</option>
+                        <option value="2">Normales</option>
+                        <option value="3" selected>Especiales</option>
+                        <option value="6">Todos</option>
+                        {% elif session["numero_seleccionado_ordenar_clientes"] == '6' %}
+                        <option value="5">En proceso</option>
+                        <option value="2">Normales</option>
+                        <option value="3">Especiales</option>
+                        <option value="6" selected>Todos</option>
                         {% else %}
                         <option value="5" selected>En proceso</option>
-                        <option value="1">Activos</option>
-                        <option value="0">Inactivos</option>
-                        <option value="3">Todos</option>
+                        <option value="2">Normales</option>
+                        <option value="3">Especiales</option>
+                        <option value="6">Todos</option>
                         {% endif %}
                       </select>
                     </div>

@@ -34,8 +34,9 @@
   <!-- ======== sidebar-nav start =========== -->
   <aside class="sidebar-nav-wrapper">
     <div class="navbar-logo">
-      <a href="index.html">
-        <img src="assets/images/logo/logo.svg" alt="logo" />
+      <a href="/">
+        <img src="{{ url_for('static', filename='assets/images/logo/GRNEGOCIOLOGO.png') }}" alt="logo"
+          style="max-width: 150px;" />
       </a>
     </div>
     <nav class="sidebar-nav">
@@ -91,7 +92,7 @@
             <span class="text">Pagos</span>
           </a>
         </li>
-        <span class="divider">
+        <!-- <span class="divider">
           <hr />
         </span>
         <li class="nav-item nav-item-has-children">
@@ -116,7 +117,7 @@
               <a href="typography.html"> Typography </a>
             </li>
           </ul>
-        </li>
+        </li> -->
       </ul>
     </nav>
   </aside>
@@ -214,7 +215,7 @@
                   <div class="profile-info">
                     <div class="info">
                       <div class="image">
-                        <img src="https://ui-avatars.com/api/?name=Germán+Medina/?rounded=true" alt=""/>
+                        <img src="https://ui-avatars.com/api/?name=Germán+Medina/?rounded=true" alt="" />
                       </div>
                       <div>
                         <h6 class="fw-500">Germán Medina</h6>
@@ -237,16 +238,7 @@
                     </div>
                   </li>
                   <li class="divider"></li>
-                  <li>
-                    <a href="#0">
-                      <i class="lni lni-user"></i> Ver perfil
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#0">
-                      <i class="lni lni-alarm"></i> Notificaciones
-                    </a>
-                  </li>
+
                   <li>
                     <a href="#" onclick="configuracionTasaCambio();"><i class="lni lni-dollar"></i>Tasa de cambio</a>
                   </li>
@@ -255,12 +247,12 @@
                       Modo:<span id="modoLuz"></span> </a>
                   </li>
                   <li>
-                    <a href="#0"> <i class="lni lni-cog"></i> Configuración </a>
+                    <a href="/base_de_datos"> <i class="lni lni-cog"></i> Configuración </a>
                   </li>
 
                   <li class="divider"></li>
                   <li>
-                    <a href="#0"> <i class="lni lni-exit"></i> Cerrar sesión </a>
+                    <a href="/Cerrar_Sesion"> <i class="lni lni-exit"></i> Cerrar sesión </a>
                   </li>
                 </ul>
               </div>
@@ -280,7 +272,8 @@
   <div class="btn-theme">
     <div class="container">
       <label class="toggle" for="switch">
-        <input id="switch" class="input" type="checkbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"/>
+        <input id="switch" class="input" type="checkbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
+          aria-controls="offcanvasRight" />
         <div class="icon">
           <i class="fa-solid fa-screwdriver-wrench"></i>
         </div>
@@ -378,7 +371,9 @@
     <script src="{{ url_for('static', filename='assets/js/polyfill.js') }}"></script>
     <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
     <script src="https://kit.fontawesome.com/9b8b75d2fb.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+      integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+      crossorigin="anonymous"></script>
 
 
     <script>
