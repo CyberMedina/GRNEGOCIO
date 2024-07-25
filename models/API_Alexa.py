@@ -7,6 +7,8 @@ from db import *
 from utils import *
 from num2words import num2words
 from fuzzywuzzy  import process, fuzz
+import math
+
 
 
 
@@ -121,7 +123,7 @@ def obtenerDatosClienteporID(db_session, id_cliente):
 
     return formulario_añadir_pago
 
-def crear_cadena_respuesta(db_session, nombre_cliente):
+def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
 
     print("Creando cadena de respuesta...")
     print(nombre_cliente)
@@ -267,4 +269,91 @@ def obtener_pagoClienteTexto(db_session, nombre_cliente):
 ### estado 3 = Ya se ha pagado el monto total de la quincena
 ### estado 2 = Pago quincenal
 ### estado 1  = El resto a pagar de la Primera quincena de julio de 2024
+
+
+
+
+def crear_cadena_respuesta_cantidad_pago_cliente(db_session, nombre_cliente):
+
+    print("Creando cadena de respuesta...")
+    print(nombre_cliente)
+    
+
+    # Obtener ID del cliente por nombre
+    id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
+
+    # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
+    id_contratoActual = obtener_IdContrato(db_session, id_cliente)
+    datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
+    datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
+
+    # 
+    nombre_cliente = f"{datos_cliente[2]} {datos_cliente[3]}"
+
+    pago_quincenal_dolares = datos_contratoCliente[10]
+    pago_mensual_dolares = datos_contratoCliente[9]
+
+    tasa_de_cambio = obtener_tasa_cambio_local()
+
+    pago_quincenal_cordobas = pago_quincenal_dolares * tasa_de_cambio['cifraTasaCambio']
+    pago_mensual_cordobas = pago_mensual_dolares * tasa_de_cambio['cifraTasaCambio']
+    ### pago_quincena_cordobas haz que se aplique redondeo siempre que se encuentre decimales
+    pago_quincenal_cordobas = math.ceil(pago_quincenal_cordobas)
+    pago_mensual_cordobas = math.ceil(pago_mensual_cordobas)
+
+    cadena_texto_respuesta = f"""{nombre_cliente} paga a la quincena {pago_quincenal_dolares} dólares, 
+    que son unos {pago_quincenal_cordobas} córdobas, al mes, son {pago_mensual_dolares} dólares, 
+    que en cordobas son {pago_mensual_cordobas}"""
+
+    return cadena_texto_respuesta
+
+
+def crear_cadena_respuesta_cantidad_de_clientes_pagados(db_session):
+    listado_clientesPagosDict = []
+
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+    for listado in listado_clientesPagos:
+        clientePagoDict = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6]
+        }
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        clientePagoDict.update(PagosEstadosCortes)
+        listado_clientesPagosDict.append(clientePagoDict)
+
+    # Obtenemos la lista de clientes
+    print(listado_clientesPagosDict)
+
+    clientes_pagados = []
+
+    for cliente in listado_clientesPagosDict:
+        if cliente['estado'] == 1 or cliente['estado'] == 2:
+            clientes_pagados.append(cliente)
+
+
+
+
+    cantidad_clientes_pagados = len(clientes_pagados)
+    nombre_clientes_pagados = [f"{cliente['nombres']} {cliente['apellidos']}" for cliente in clientes_pagados]
+
+    if cantidad_clientes_pagados == 0:
+        cadenena_texto_respuesta = "Según mis registros, no hay clientes que hayan pagado"
+        return cadenena_texto_respuesta
+    elif cantidad_clientes_pagados == 1:
+        cadenena_texto_respuesta = f"""Segun mis registros es de {cantidad_clientes_pagados} cliente, el cual es: {nombre_clientes_pagados[0]}"""
+        return cadenena_texto_respuesta
+    elif cantidad_clientes_pagados > 1:
+        cadenena_texto_respuesta = f"""Segun mis registros es de {cantidad_clientes_pagados} clientes,
+        los cuales son: {nombre_clientes_pagados}"""
+        return cadenena_texto_respuesta
+
+    return cadenena_texto_respuesta
+
+
 

@@ -1718,7 +1718,7 @@ def obtener_estadoCliente():
 
 
         try:
-            cadena_respuesta = crear_cadena_respuesta(db_session, nombre_cliente)
+            cadena_respuesta = crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente)
             return jsonify({"respuesta": cadena_respuesta}), 200
         except SQLAlchemyError as e:
             db_session.rollback()
@@ -1726,6 +1726,43 @@ def obtener_estadoCliente():
             return jsonify({"message": "Error en la base de datos"}), 500
     else:
         return jsonify({"message": "Metodo no permitido"}), 400
+    
+
+@app.route('/api/obtener_cantidad_pago_cliente', methods=['GET', 'POST'])
+@cross_origin()
+def obtener_cantidad_pago_cliente():
+    if request.method == 'POST':
+        data = request.json
+
+        nombre_cliente = data['person']
+        print(nombre_cliente)
+
+       
+
+
+        try:
+            cadena_respuesta = crear_cadena_respuesta_cantidad_pago_cliente(db_session, nombre_cliente)
+            return jsonify({"respuesta": cadena_respuesta}), 200
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return jsonify({"message": "Error en la base de datos"}), 500
+    else:
+        return jsonify({"message": "Metodo no permitido"}), 400
+    
+
+@app.route('/api/obtener_cantidad_clientes_pagados', methods=['GET'])
+@cross_origin()
+def obtener_cantidad_clientes_pagados():
+
+    try:
+        cadena_respuesta = crear_cadena_respuesta_cantidad_de_clientes_pagados(db_session)
+        return jsonify({"respuesta": cadena_respuesta}), 200
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"message": "Error en la base de datos"}), 500
+
     
 
 @app.route('/api/imprimir_pago_alexa', methods=['GET', 'POST'])
