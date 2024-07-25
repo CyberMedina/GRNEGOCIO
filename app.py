@@ -1120,7 +1120,6 @@ def refresh_access_token(refresh_token):
 
 
 @app.route('/base_de_datos', methods=['GET', 'POST'])
-@login_requiredUser
 def base_de_datos():
 
 
