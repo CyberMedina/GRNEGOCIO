@@ -431,7 +431,7 @@ def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contr
         db_session.close()
 
 
-def ultimo_pago_contrato(db_session, id_cliente):
+def ultimo_pago_contrato(db_session, id_contrato):
     try:
         query = text(""" 
         SELECT
@@ -466,14 +466,18 @@ def ultimo_pago_contrato(db_session, id_cliente):
         JOIN 
             contrato c ON p.id_contrato = c.id_contrato
         WHERE 
-            p.id_cliente = :id_cliente 
-            AND p.estado = :estado_detalle_pago1 OR p.estado = :estado_detalle_pago2
+            p.id_contrato = :id_contrato 
+            AND (p.estado = :estado_detalle_pago1 OR p.estado = :estado_detalle_pago2
+                      OR p.estado = :estado_detalle_pago3 
+                     OR p.estado = :estado_detalle_pago4)
         ORDER BY 
-            p.fecha_pago DESC
+            p.id_pagos DESC
         LIMIT 1;
         """)
 
-        result = db_session.execute(query, {'id_cliente': id_cliente, "estado_detalle_pago1": pago_completo, 'estado_detalle_pago2': pago_incompleto}).fetchall()
+        result = db_session.execute(query, {'id_contrato': id_contrato, "estado_detalle_pago1": pago_completo,
+                                            'estado_detalle_pago2': pago_incompleto, 'estado_detalle_pago3': primer_pago_del_prestamo,
+                                            'estado_detalle_pago4': pago_de_mas}).fetchall()
         
         new_result = []
         last_id_contrato = None

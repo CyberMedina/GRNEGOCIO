@@ -135,8 +135,11 @@ def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
     # Obtener datos del cliente por ID
     datos_cliente = obtenerDatosClienteporID(db_session, id_cliente)
 
+    # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
+    id_contratoActual = obtener_IdContrato(db_session, id_cliente)
+
     # Obtener datos del ultimo pago
-    ultimo_pago = ultimo_pago_contrato(db_session, id_cliente)
+    ultimo_pago = ultimo_pago_contrato(db_session, id_contratoActual)
 
 
     # Obtener la quincena actual
@@ -147,13 +150,15 @@ def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
     nombres = datos_cliente['datos_cliente'][0]['nombres']
     apellidos = datos_cliente['datos_cliente'][0]['apellidos']
 
-
+    if ultimo_pago:
     #Extraer datos necesarios del ultimo pago
-    cifra_ultimo_pago = num2words(ultimo_pago[0][8], lang='es')
-    fecha_ultimo_pago = ultimo_pago[0][3]
-    fecha_ultimo_pago_letras = ultimo_pago[0][15]
+        cifra_ultimo_pago = num2words(ultimo_pago[0][8], lang='es')
+        fecha_ultimo_pago = ultimo_pago[0][3]
+        fecha_ultimo_pago_letras = ultimo_pago[0][15]
 
-    str_pago = f"el último pago que tengo registrado es el {fecha_ultimo_pago}, osea en la {fecha_ultimo_pago_letras}, con un monto de {cifra_ultimo_pago} dólares"
+        str_pago = f"el último pago que tengo registrado es el {fecha_ultimo_pago}, osea en la {fecha_ultimo_pago_letras}, con un monto de {cifra_ultimo_pago} dólares"
+    else:
+        str_pago = "no tengo registrado ningún pago"
     
 
 
@@ -286,7 +291,7 @@ def crear_cadena_respuesta_cantidad_pago_cliente(db_session, nombre_cliente):
 
     # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
     id_contratoActual = obtener_IdContrato(db_session, id_cliente)
-    
+
     datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
     datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
 
