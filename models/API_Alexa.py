@@ -282,8 +282,11 @@ def crear_cadena_respuesta_cantidad_pago_cliente(db_session, nombre_cliente):
     # Obtener ID del cliente por nombre
     id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
 
+    print(id_cliente)
+
     # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
     id_contratoActual = obtener_IdContrato(db_session, id_cliente)
+    
     datos_cliente = listar_datosClienteContratoCompleto(db_session, id_cliente)
     datos_contratoCliente = listarDatosContratoID_contrato(db_session, id_contratoActual)
 

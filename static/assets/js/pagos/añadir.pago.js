@@ -220,12 +220,12 @@ function calcularMontoPrimerPago() {
 
   const CopiaModalCalculoPrimerPago = modalCalculoPrimerPago.innerHTML;
   if (fechaPrestamo.getDate() === 1 || fechaPrestamo.getDate() === 15 || fechaPrestamo.getDate() === 30 || fechaPrestamo.getDate() === 31) {
-    document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
+    // document.getElementById("linkProcdmtoModal").setAttribute("data-bs-target", "#modalNoCalculo");
 
-    montoPrimerPago = 0;
-    montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
-    montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
-    return
+    // montoPrimerPago = 0;
+    // montoPrimerPagoInput.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+    // montoPrimerPagoInputModal.value = pagoQuincenalInput.value; // Redondear a 2 decimales
+    // return
   }
 
 

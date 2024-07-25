@@ -139,6 +139,7 @@ LIMIT 1;"""
                      )
         result = db_session.execute(
             query, {'id_cliente': id_cliente, 'estado1': activo, 'estado2': hijoContratoActivo}).fetchone()
+        print("El resultado es ", result)
         return result[0]
     except SQLAlchemyError as e:
         db_session.rollback()
