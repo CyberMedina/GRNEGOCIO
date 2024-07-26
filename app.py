@@ -2,6 +2,7 @@ from logging import getLogger
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
+from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_mail import Mail, Message
 from io import BytesIO
@@ -54,6 +55,11 @@ app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL_USER')
 
 mail.init_app(app)
+
+# Configure session to use filesystem
+app.config["SESSION_PERMANENT"] = True
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 
 
