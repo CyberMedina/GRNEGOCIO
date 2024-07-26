@@ -2893,7 +2893,15 @@ h6,
   color: #fff;
 }
 .darkTheme .table td p {
-  color: #838C9A;
+  color: #ffff;
+}
+
+.darktheme .table b, strong {
+  color: #ffff;
+}
+
+.darktheme .table i, span, a{
+  color: #ffff;
 }
 .darkTheme .table .action button {
   color: rgba(255, 255, 255, 0.7);
@@ -3667,7 +3675,7 @@ h6,
 .darkTheme .input-style-3 textarea {
   background: rgba(2, 2, 30, 0.2);
   border-color: #3F4053;
-  color: rgba(255, 255, 255, 0.7);
+  color: #fff;
 }
 .darkTheme .input-style-1 input:focus,
 .darkTheme .input-style-1 textarea:focus,

@@ -1587,11 +1587,9 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
 
     if isinstance(fecha, str):
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
-    print(fecha)
-    print(id_contrato)
-    print(id_cliente)
+
     num_pagos = comprobar_primerPago(db_session, id_cliente)
-    print(num_pagos)
+
 
     if num_pagos[0] == 0:
         monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)

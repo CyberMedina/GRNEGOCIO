@@ -1763,6 +1763,19 @@ def obtener_cantidad_clientes_pagados():
         print(f"Error: {e}")
         return jsonify({"message": "Error en la base de datos"}), 500
 
+
+@app.route('/api/obtener_cantidad_total_dinero_quincenal_clientes', methods=['GET'])
+@cross_origin()
+def obtener_cantidad_total_dinero_quincenal_clientes():
+
+    try:
+        cadena_respuesta = crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session)
+        return jsonify({"respuesta": cadena_respuesta}), 200
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"message": "Error en la base de datos"}), 500
+
     
 
 @app.route('/api/imprimir_pago_alexa', methods=['GET', 'POST'])
