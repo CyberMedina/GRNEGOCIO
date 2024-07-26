@@ -86,23 +86,27 @@ logger = getLogger(__name__)
 
 @app.route('/login_system', methods=['GET', 'POST'])
 def login_system():
-
     if request.method == 'POST':
-
         usuario = request.form['usuario']
         password = request.form['password']
 
-        queryLogin = text("SELECT * FROM usuarios WHERE (usuario = :usuario) LIMIT 1")
-        user_row = db_session.execute(queryLogin, {"usuario":usuario}).fetchone()
+        queryLogin = text("SELECT * FROM usuarios WHERE usuario = :usuario LIMIT 1")
+        try:
+            user_row = db_session.execute(queryLogin, {"usuario": usuario}).fetchone()
+            if user_row:
+                user_password = user_row[5]
+                user_id = user_row[0]
 
-        if user_row:
-            user_password = user_row[5]
-            user_id = user_row[0]
-        
-            if check_password_hash(user_password, password):
-                session['user_id'] = user_id
-                return render_template('index.html')
-        return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
+                if check_password_hash(user_password, password):
+                    session['user_id'] = user_id
+                    return render_template('index.html')
+            return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
+        except SQLAlchemyError as e:
+            db_session.rollback()  # Hacer rollback en caso de excepción
+            app.logger.error(f"Error al ejecutar la consulta: {str(e)}")
+            return render_template('auth/login.html', error="Ocurrió un error al iniciar sesión. Intente nuevamente.")
+        finally:
+            db_session.close()  # Cerrar la sesión al final
 
     return render_template('auth/login.html')
 
