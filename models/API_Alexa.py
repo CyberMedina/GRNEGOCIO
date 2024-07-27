@@ -316,6 +316,7 @@ def crear_cadena_respuesta_cantidad_pago_cliente(db_session, nombre_cliente):
     return cadena_texto_respuesta
 
 
+
 def crear_cadena_respuesta_cantidad_de_clientes_pagados(db_session):
     listado_clientesPagosDict = []
 
@@ -434,6 +435,24 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
         {lista_clientes_con_pagos}"""
 
     return cadenena_texto_respuesta
+
+
+
+def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):
+
+    print("Creando cadena de respuesta...")
+    print(nombre_cliente)
+    
+
+    # Obtener ID del cliente por nombre
+    id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
+
+    print(id_cliente)
+
+    pago = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
+    print(pago)
+
+    return 'retorno algo'
 
 
 

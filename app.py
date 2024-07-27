@@ -17,7 +17,6 @@ from babel.dates import format_date
 from urllib.parse import urlencode
 from decimal import Decimal
 import tempfile
-import weasyprint
 import smtplib
 import subprocess
 import glob
@@ -808,9 +807,9 @@ def añadir_pago(id_cliente):
     return render_template('pagos/añadir_pago.html', **formulario_añadir_pago)
 
 
-def generar_pdf_desde_html(html):
-    htmldoc = weasyprint.HTML(string=html, base_url="")
-    return htmldoc.write_pdf()
+# def generar_pdf_desde_html(html):
+#     htmldoc = weasyprint.HTML(string=html, base_url="")
+#     return htmldoc.write_pdf()
 
 @app.route('/Imprimir_pago', methods=['GET', 'POST'])
 def PruebaImprimir_pago():
@@ -862,16 +861,16 @@ def PruebaImprimir_pago():
             print(correo_electronico)
             cuerpo = html_formulario
 
-            # Genera el PDF desde tu HTML (ya lo tienes)
-            pdf_binario = generar_pdf_desde_html(html_formulario)
+            # # Genera el PDF desde tu HTML (ya lo tienes)
+            # pdf_binario = generar_pdf_desde_html(html_formulario)
 
             with app.app_context():
                 print(dataPagos_cliente)
                 mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
                 mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
-                # Adjuntar el PDF en formato binario
-                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
+                # # Adjuntar el PDF en formato binario
+                # mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
 
                 # Enviar el correo electrónico
                 mail.send(mensaje)
@@ -1785,7 +1784,30 @@ def obtener_cantidad_total_dinero_quincenal_clientes():
         db_session.rollback()
         print(f"Error: {e}")
         return jsonify({"message": "Error en la base de datos"}), 500
+    
 
+
+@app.route('/api/agendarPagoNormal', methods=['GET', 'POST'])
+@cross_origin()
+def agendarPagoNormal():
+    if request.method == 'POST':
+        data = request.json
+
+        nombre_cliente = data['person']
+        print(nombre_cliente)
+
+       
+
+
+        try:
+            cadena_respuesta = crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente)
+            return jsonify({"respuesta": cadena_respuesta}), 200
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return jsonify({"message": "Error en la base de datos"}), 500
+    else:
+        return jsonify({"message": "Metodo no permitido"}), 400
     
 
 @app.route('/api/imprimir_pago_alexa', methods=['GET', 'POST'])
@@ -1845,16 +1867,16 @@ def imprimir_pago_alexa():
             print(correo_electronico)
             cuerpo = html_formulario
 
-            # Genera el PDF desde tu HTML (ya lo tienes)
-            pdf_binario = generar_pdf_desde_html(html_formulario)
+            # # Genera el PDF desde tu HTML (ya lo tienes)
+            # pdf_binario = generar_pdf_desde_html(html_formulario)
 
             with app.app_context():
                 print(dataPagos_cliente)
                 mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
                 mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
-                # Adjuntar el PDF en formato binario
-                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
+                # # Adjuntar el PDF en formato binario
+                # mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
 
                 # Enviar el correo electrónico
                 mail.send(mensaje)
