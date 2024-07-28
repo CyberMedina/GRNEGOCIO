@@ -624,4 +624,19 @@ WHERE id_contrato = :id_contrato;""")
         print(f"Error: {e}")
         return None
     
+
+def seleccionar_datos_cliente(db_session, id_cliente):
+    try:
+        query = text("""SELECT cl.id_cliente, p.nombres, p.apellidos, p.genero, p.cedula, p.fecha_nacimiento, cl.imagenCliente, cl.imagenCedula, cl.estado
+FROM cliente cl
+JOIN persona p ON cl.id_persona = p.id_persona
+WHERE cl.id_cliente = :id_cliente;""")
+        result = db_session.execute(query, {"id_cliente": id_cliente}).fetchone()
+        return result if result else None
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    
+    
     

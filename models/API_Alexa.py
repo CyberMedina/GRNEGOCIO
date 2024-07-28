@@ -438,4 +438,47 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
 
 
 
+def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):
 
+    print("Creando cadena de respuesta...")
+    print(nombre_cliente)
+    
+
+    # Obtener ID del cliente por nombre
+    id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
+
+    datos_cliente = seleccionar_datos_cliente(db_session, id_cliente)
+
+    pago = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
+
+    nombres_apellidos_cliente = f"{datos_cliente[1]} {datos_cliente[2]}"
+    pago['nombres_apellidos_cliente'] = nombres_apellidos_cliente
+    pago['id_cliente'] = id_cliente
+
+
+    pago['cifra_cordobas'] = pago['cifra'] * obtener_tasa_cambio_local()['cifraTasaCambio']
+
+    pago['tasa_cambio'] = obtener_tasa_cambio_local()['cifraTasaCambio']
+
+ # Convertir Decimal a float
+    if 'cifra' in pago and isinstance(pago['cifra'], Decimal):
+        pago['cifra'] = float(pago['cifra'])
+
+    if 'cifra_cordobas' in pago and isinstance(pago['cifra_cordobas'], Decimal):
+        pago['cifra_cordobas'] = float(pago['cifra_cordobas'])
+        pago['cifra_cordobas'] = math.ceil(pago['cifra_cordobas'])
+
+    if 'tasa_cambio' in pago and isinstance(pago['tasa_cambio'], Decimal):
+        pago['tasa_cambio'] = float(pago['tasa_cambio'])
+    
+
+    
+
+
+    
+
+    
+
+    print(pago)
+
+    return pago

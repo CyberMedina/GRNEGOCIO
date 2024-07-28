@@ -239,7 +239,6 @@ JOIN contrato c ON p.id_contrato = c.id_contrato
         WHERE c.id_cliente = :id_cliente AND c.estado = :estado;""")
         result = db_session.execute(
             query, {'id_cliente': id_cliente, 'estado' :activo}).fetchall()
-        print(result)
         return result[0]
 
     except SQLAlchemyError as e:

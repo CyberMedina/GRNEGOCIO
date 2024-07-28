@@ -22,6 +22,7 @@ import smtplib
 import subprocess
 import glob
 import io
+import json
 
 
 
@@ -1785,6 +1786,81 @@ def obtener_cantidad_total_dinero_quincenal_clientes():
         db_session.rollback()
         print(f"Error: {e}")
         return jsonify({"message": "Error en la base de datos"}), 500
+    
+
+@app.route('/api/agendarPagoNormal', methods=['GET', 'POST'])
+@cross_origin()
+def agendarPagoNormal():
+    if request.method == 'POST':
+        data = request.json
+
+        nombre_cliente = data['person']
+        print(nombre_cliente)
+
+       
+
+
+        try:
+            cadena_respuesta = crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente)
+            #Convierte el objeto a una cadena JSON
+            json_response = json.dumps({"data": cadena_respuesta})
+            print(json_response)  # Imprime la cadena JSON
+
+            return jsonify({"respuesta": cadena_respuesta}), 200
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return jsonify({"message": "Error en la base de datos"}), 500
+    else:
+        return jsonify({"message": "Metodo no permitido"}), 400
+
+
+@app.route('/api/procesarPagoNormal', methods=['GET', 'POST'])
+@cross_origin()
+def procesarPagoNormal():
+    if request.method == 'POST':
+        data = request.json
+
+        print(data)
+
+        try:
+            
+            id_cliente = data['id_cliente']
+            id_moneda = dolares
+            cantidadPagarDolares = data['cifra']
+            cantidadPagarCordobas = None
+            inputTasaCambioPago = obtener_tasa_cambio()
+            fechaPago = datetime.now().strftime('%Y-%m-%d')
+            observacionPago = None
+            evidenciaPago = None
+            tipoPagoCompletoForm = None
+
+            
+            procesar_todo = False
+
+            if isinstance(cantidadPagarDolares, str):
+                cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
+            print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
+
+
+            estadoPago = pago_completo  # Utiliza el estado de pago completo
+
+            response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
+                        fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                        monedaConversion)
+            return response
+            #Convierte el objeto a una cadena JSON
+            json_response = json.dumps({"data": cadena_respuesta})
+            print(json_response)  # Imprime la cadena JSON
+
+            return jsonify({"respuesta": cadena_respuesta}), 200
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            print(f"Error: {e}")
+            return jsonify({"message": "Error en la base de datos"}), 500
+    else:
+        return jsonify({"message": "Metodo no permitido"}), 400
+    
 
     
 
@@ -1898,6 +1974,7 @@ def obtener_pago():
     nombre_cliente = data['person']
 
     cadena_texto_respuesta = obtener_pagoClienteTexto(db_session, nombre_cliente)
+    print(cadena_texto_respuesta)
 
     return jsonify({"respuesta": cadena_texto_respuesta}), 200
 
