@@ -451,7 +451,7 @@ def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):
 
     pago = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
 
-    if pago['respuesta']['estado'] == 2:
+    if pago['estado'] == 2:
 
         nombres_apellidos_cliente = f"{datos_cliente[1]} {datos_cliente[2]}"
         pago['nombres_apellidos_cliente'] = nombres_apellidos_cliente
@@ -473,7 +473,7 @@ def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):
         if 'tasa_cambio' in pago and isinstance(pago['tasa_cambio'], Decimal):
             pago['tasa_cambio'] = float(pago['tasa_cambio'])
         
-    
+
         
 
 
