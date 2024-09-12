@@ -1135,8 +1135,26 @@ def base_de_datos():
 
 
     access_token = session.get('access_token')
+    refresh_token = session.get('refresh_token')
+
     if not access_token:
         return redirect(url_for('login'))
+    
+    # Verificar si el access token ha expirado
+    try:
+        dbx = dropbox.Dropbox(access_token)
+        dbx.users_get_current_account()  # Hacer una llamada de prueba para ver si el token es válido
+    except dropbox.exceptions.AuthError as e:
+        if refresh_token:
+            # Si el token ha expirado, usar el refresh token para obtener uno nuevo
+            access_token = refresh_access_token(refresh_token)
+            if not access_token:
+                return redirect(url_for('login'))
+            # Guardar el nuevo access token en la sesión
+            session['access_token'] = access_token
+            dbx = dropbox.Dropbox(access_token)
+        else:
+            return redirect(url_for('login'))
     
     
     # Inicializa el cliente de Dropbox
