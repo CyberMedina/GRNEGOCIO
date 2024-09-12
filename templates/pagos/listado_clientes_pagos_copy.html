@@ -9,6 +9,18 @@
 {% endblock %}
 {% block body %}
 
+<style>
+    .table td p {
+        font-size: 25px;
+    }
+
+
+
+    span.main-badge {
+        font-size: 20px !important;
+    }
+</style>
+
 
 
 
@@ -56,24 +68,23 @@
                                 <thead>
                                     <tr>
                                         <th>
-                                            <h6>Nombre</h6>
-                                        </th>
-                                        <th>
-                                            <h6>Tipo cliente</h6>
-                                        </th>
-                                        <th>
-                                            <h6>Acción</h6>
+                                            <h6 style="font-size: 25px;">Nombre</h6>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for cliente in listado_clientes_pagos %}
-                                    <tr>
+                                    <tr onclick="ver_datosClientes({{ cliente.id_cliente }})">
                                         <td>
                                             <p class="text-bold">{{ cliente.nombres }} {{ cliente.apellidos }}</p>
+                                            {% if cliente.id_tipoCliente == 2 %}
+                                            <p>Cliente Normal</p>
+                                            {% else %}
+                                            <p>Cliente Especial</p>
+                                            {% endif %}
 
                                             {% if cliente.estado == 0 %}
-                                            <span class="main-badge danger-badge rounded-full">No ha pagado</span>
+                                            <span class="main-badge danger-badge rounded-full" style="font-size: 10px;">No ha pagado</span>
                                             {% elif cliente.estado == 1 %}
                                             <span class="main-badge success-badge rounded-full">Al día</span>
                                             {% elif cliente.estado == 2 %}
@@ -82,22 +93,6 @@
                                             <span class="text-danger">No pagó</span>
                                             {% endif %}
 
-                                        </td>
-                                        <td>
-                                            {% if cliente.id_tipoCliente == 2 %}
-                                            <p>Normal</p>
-                                            {% else %}
-                                            <p>Especial</p>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="action">
-                                                <a onclick="ver_datosClientes({{ cliente.id_cliente }})"
-                                                    class="main-btn info-btn-light rounded-full btn-hover btn-sm">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                    Ver
-                                                </a>
-                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}

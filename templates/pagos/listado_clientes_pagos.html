@@ -87,7 +87,7 @@
                                 <tbody>
                                     {% for cliente in listado_clientes_pagos %}
                                     {% if cliente.id_tipoCliente == 2 %}
-                                    <tr>
+                                    <tr onclick="ver_datosClientes({{ cliente.id_cliente }})">
                                         <td class="min-width">
                                             <p>{{ cliente.nombres }} A{{ cliente.apellidos }}</p>
                                             {% if cliente.estado == 1 OR cliente.estado == 0 %}

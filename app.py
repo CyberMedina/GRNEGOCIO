@@ -1190,8 +1190,7 @@ def base_de_datos():
         backups_files = []
 
 
-        print(backups_files)
-
+    
         
 
 
@@ -1199,6 +1198,8 @@ def base_de_datos():
     template_info = {
         "backups_files": backups_files
     }
+
+    print(backups_files)
 
 
     return render_template('base_de_datos/base_de_datos.html', **template_info)
@@ -1234,6 +1235,10 @@ def generate_create_table_statements(metadata):
     create_statements = []
     for table in metadata.sorted_tables:
         try:
+            # Añadir la sentencia DROP TABLE IF EXISTS antes del CREATE TABLE
+            drop_statement = f"DROP TABLE IF EXISTS {table.name};"
+            create_statements.append(drop_statement)
+
             # Compilar el CREATE TABLE statement con quoting deshabilitado
             create_statement = CreateTable(table).compile(dialect=engine.dialect, compile_kwargs={"literal_binds": True})
             # Convertir a string y eliminar las comillas invertidas manualmente
@@ -1241,7 +1246,6 @@ def generate_create_table_statements(metadata):
             create_statements.append(create_statement + ";")
         except SQLAlchemyError as e:
             print(f"Error creating table {table.name}: {e}")
-            # Puedes decidir si deseas continuar o detener la ejecución aquí
             continue
     return create_statements
 
@@ -1264,7 +1268,9 @@ def generate_insert_statements(table):
 def drop_all_tables():
     """Elimina todas las tablas y sus datos de la base de datos."""
     metadata.reflect(bind=engine)  # Refleja el estado actual de la base de datos en el MetaData
+    print("Tablas antes de eliminar:", metadata.tables.keys())  # Para ver qué tablas se están reflejando
     metadata.drop_all(bind=engine)
+    print("Tablas eliminadas.")
 
 def execute_sql_file(sql_file_path):
     """Ejecuta todas las sentencias SQL en un archivo."""
@@ -1274,6 +1280,7 @@ def execute_sql_file(sql_file_path):
                 sql_statements = file.read()
                 for statement in sql_statements.split(';'):
                     if statement.strip():
+                        print(f"Ejecutando: {statement.strip()[:100]}...")  # Muestra parte de la sentencia
                         connection.execute(text(statement))
             connection.commit()
         except SQLAlchemyError as e:
