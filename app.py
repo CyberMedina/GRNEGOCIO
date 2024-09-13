@@ -15,7 +15,7 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
 from urllib.parse import urlencode
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 import tempfile
 import weasyprint
 import smtplib
@@ -550,9 +550,37 @@ def datos_prestamoV1():
 
 # Suponiendo que obtener_tasa_cambio_local() devuelve un diccionario directamente
     tasa_cambioJSON = obtener_tasa_cambio_local()
+    print(tasa_cambioJSON)
+
+    # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
+    id_contratoActual = obtener_IdContrato(db_session, id_cliente)
+
+    # Obtener datos del ultimo pago
+    ultimo_pago = ultimo_pago_contrato(db_session, id_contratoActual)
+
+
+
+    print(ultimo_pago)
 
     # Asignar la tasa de cambio al diccionario de datos_pago
     datos_pago.append(tasa_cambioJSON)
+
+    if ultimo_pago:
+    #Extraer datos necesarios del ultimo pago
+        cifra_ultimo_pagoDolares = ultimo_pago[0][8]
+        cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][8]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
+        print(cifra_ultimo_pagoCordobas)
+        fecha_ultimo_pago = ultimo_pago[0][3]
+        fecha_ultimo_pago_letras = ultimo_pago[0][15]
+        ultimoPago_json = {
+            "cifra_ultimo_pagoDolares": cifra_ultimo_pagoDolares,
+            "cifra_ultimo_pagoCordobas": cifra_ultimo_pagoCordobas,
+            "fecha_ultimo_pago": fecha_ultimo_pago,
+            "fecha_utlimo_pago_formateado": fecha_ultimo_pago.strftime("%Y-%m-%d"),
+            "fecha_ultimo_pago_letras": fecha_ultimo_pago_letras
+        }
+        datos_pago.append(ultimoPago_json)
+    
 
     return jsonify({"datos_prestamo": datos_pago}), 200
 

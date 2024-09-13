@@ -31,13 +31,24 @@ async function ver_datosClientes(id_cliente) {
         const cliente = data.datos_prestamo[0];
         const tasa_cambio = data.datos_prestamo[1];
 
-        nombre_cliente.textContent = cliente.nombres + ' ' + cliente.apellidos;
-        tipo_cliente.textContent = cliente.nombre_tipoCliente;
-        tiempo_pago.textContent = cliente.tiempo_pago;
-        fecha_prestamo.textContent = cliente.fechaPrestamo;
-        cliente_desde.textContent = cliente.fecha_prestamo_desde;
+
+
+        nombre_cliente.forEach((elemento) => {
+            elemento.textContent = cliente.nombres + ' ' + cliente.apellidos;
+        });
+        tiempo_pago.forEach((elemento) => {
+            elemento.textContent = cliente.tiempo_pago;
+        });
+        fecha_prestamo.forEach((elemento) => {
+            elemento.textContent = cliente.fechaPrestamo;
+        });
+        cliente_desde.forEach((elemento) => {
+            elemento.textContent = cliente.fecha_prestamo_desde;
+        });
         tasa_interes_formateada = (Math.trunc(cliente.tasa_interes) + '%');
-        tasa_interes.textContent = tasa_interes_formateada;
+        tasa_interes.forEach((elemento) => {
+            elemento.textContent = tasa_interes_formateada;
+        });
 
         inputCapitalDolares.value = cliente.monto_solicitado;
         codigoMonedaCapitalDolares.textContent = cliente.codigoMoneda;
@@ -53,12 +64,23 @@ async function ver_datosClientes(id_cliente) {
         gestionarPago.href = '/añadir_pago/' + cliente.id_cliente;
 
 
+        if (data.datos_prestamo[2] === undefined) {
+            ultimoPago.textContent = 'No se ha realizado ningún pago.';
+        } else {
+
+            const pagos = data.datos_prestamo[2];
+
+            ultimoPago.textContent = 'El último pago fue realizado en la ' + pagos.fecha_ultimo_pago_letras + ' (' + pagos.fecha_utlimo_pago_formateado + ')' + ' con un monto de $' + pagos.cifra_ultimo_pagoDolares + ' dólares, ' + ' en cordobas es C$' + pagos.cifra_ultimo_pagoCordobas;
+        }
+
         conversionMoneda();
 
 
 
         modal = new bootstrap.Modal(document.getElementById('ModalDetalleCliente'));
         modal.show();
+
+        console.log('Datos del cliente:', cliente);
 
 
 
@@ -81,11 +103,11 @@ inputTasaCambio.addEventListener('change', function () {
 
 
 
-var nombre_cliente = document.getElementById('nombre_cliente');
-var tipo_cliente = document.getElementById('tipo_cliente');
-var tiempo_pago = document.getElementById('tiempo_pago');
-var fecha_prestamo = document.getElementById('fecha_prestamo');
-var cliente_desde = document.getElementById('cliente_desde');
+var nombre_cliente = document.querySelectorAll('#nombre_cliente');
+// var tipo_cliente = document.getElementById('tipo_cliente');
+var tiempo_pago = document.querySelectorAll('#tiempo_pago');
+var fecha_prestamo = document.querySelectorAll('#fecha_prestamo');
+var cliente_desde = document.querySelectorAll('#cliente_desde');
 var gestionarPago = document.getElementById('gestionarPago');
 
 
@@ -95,15 +117,26 @@ var inputCapitalCordobas = document.getElementById('inputCapitalCordobas');
 var codigoMonedaCapitalCordobas = document.getElementById('codigoMonedaCapitalCordobas');
 
 var inputPagoMensualDolares = document.getElementById('inputPagoMensualDolares');
+var capitalDolaresText = document.getElementById('capitalDolares');
 var codigoMonedaPagoMensualDolares = document.getElementById('codigoMonedaPagoMensualDolares');
-var tasa_interes = document.getElementById('tasa_interes');
+var tasa_interes = document.querySelectorAll('tasa_interes');
 var inputPagoMensualCordobas = document.getElementById('inputPagoMensualCordobas');
 var codigoMonedaPagoMensualCordobas = document.getElementById('codigoMonedaPagoMensualCordobas');
+var pagoMensualDolaresText = document.getElementById('pagoMensualDolaresText');
+var PagoQuincenalDolaresText = document.getElementById('PagoQuincenalDolaresText');
 
+var capitalCordobasText = document.getElementById('capitalCordobas');
 var inputPagoQuincenalDolares = document.getElementById('inputPagoQuincenalDolares');
 var codigoMonedaPagoQuincenalDolares = document.getElementById('codigoMonedaPagoQuincenalDolares');
 var inputPagoQuincenalCordobas = document.getElementById('inputPagoQuincenalCordobas');
 var codigoMonedaPagoQuincenalCordobas = document.getElementById('codigoMonedaPagoQuincenalCordobas');
+var pagoMensualCordobasText = document.getElementById('pagoMensualCordobasText');
+var PagoQuincenalCordobasText = document.getElementById('PagoQuincenalCordobasText');
+
+var ultimoPago = document.getElementById('ultimoPago');
+
+
+
 
 
 function conversionMoneda() {
@@ -117,6 +150,21 @@ function conversionMoneda() {
     inputCapitalCordobas.value = (capitalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
     inputPagoMensualCordobas.value = (pagoMensualDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
     inputPagoQuincenalCordobas.value = (pagoQuincenalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
+    cifraDolares = capitalDolares.toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
+    capitalDolaresText.textContent = '$ ' + cifraDolares;
+
+    pagoMensualDolaresText.textContent = '$ ' + pagoMensualDolares.toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
+    PagoQuincenalDolaresText.textContent = '$ ' + pagoQuincenalDolares.toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
+    capitalCordobasText.textContent = 'C$ ' + (capitalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+    pagoMensualCordobasText.textContent = 'C$ ' + (pagoMensualDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+    PagoQuincenalCordobasText.textContent = 'C$ ' + (pagoQuincenalDolares * tasaCambio).toLocaleString('es-NI', { minimumFractionDigits: 2 });
+
+
+
 
 
 }

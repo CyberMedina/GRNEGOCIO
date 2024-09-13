@@ -19,6 +19,64 @@
     span.main-badge {
         font-size: 20px !important;
     }
+
+    .detalles-clientes p {
+        font-size: 20px;
+    }
+
+    .detalles-clientes label {
+        font-size: 20px;
+    }
+
+    .card-wrapper .single-card .card-info {
+        display: block;
+    }
+
+    .card-wrapper {
+
+        overflow-x: hidden;
+
+
+    }
+
+    .card-wrapper .single-card .bg-shape {
+
+        left: auto !important;
+
+    }
+
+    .card-wrapper .single-card .card-info span {
+        font-size: 20px;
+    }
+
+    .card-wrapper .single-card .card-info p {
+        font-size: 20px;
+    }
+
+    #nav-tab{
+        font-size: 20px;
+    }
+
+    .card-wrapper .single-card {
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        padding: 30px;
+        max-width: 100%;
+        min-width: auto;
+        width: auto;
+    }
+
+
+    #ultimoPago {
+        margin-top: -50px;
+        margin-bottom: 35px;
+        margin-left: 32px;
+        font-size: 20px;
+    }
+
+
 </style>
 
 
@@ -84,7 +142,8 @@
                                             {% endif %}
 
                                             {% if cliente.estado == 0 %}
-                                            <span class="main-badge danger-badge rounded-full" style="font-size: 10px;">No ha pagado</span>
+                                            <span class="main-badge danger-badge rounded-full"
+                                                style="font-size: 10px;">No ha pagado</span>
                                             {% elif cliente.estado == 1 %}
                                             <span class="main-badge success-badge rounded-full">Al día</span>
                                             {% elif cliente.estado == 2 %}
@@ -121,8 +180,8 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content card-style">
                 <div class="modal-header px-0 border-0">
-
-                    <h4 id="nombre_cliente" class="text-bold mb-2"></h4>
+                    <h2>Datos del cliente</h2>
+                    <!-- <h4 id="nombre_cliente" class="text-bold mb-2"></h4> -->
 
 
 
@@ -132,115 +191,294 @@
                 </div>
                 <div class="modal-body px-0">
                     <div class="content mb-30">
-                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes">
+                        <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes"
+                            class="detalles-clientes">
                             <div class="row">
+                                <div class="tab-style-3 mb-30 card-style">
+                                    <nav class="nav" id="nav-tab">
+                                        <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                            data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
+                                            Dólares
+                                        </button>
+                                        <button id="tab-3-2" class="main-btn deactive-btn rounded-full"
+                                            data-bs-toggle="tab" data-bs-target="#tabContent-3-2">
+                                            Córdobas
+                                        </button>
+                                    </nav>
+                                    <div class="tab-content" id="nav-tabContent3">
+                                        <div class="tab-pane fade show active" id="tabContent-3-1">
+                                            <div class="row">
+                                                <div class="col-sm-7">
+                                                    <div class="card-wrapper mb-30">
 
-                                <div class="col-12 mb-2">
-                                    <p><strong>Tipo Cliente: </strong><span id="tipo_cliente"></span></p>
-                                    <p><strong>Paga de manera: </strong><span id="tiempo_pago"></span></p>
-                                    <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo"></span></p>
-                                    <p><strong>Cliente desde hace: </strong><span id="cliente_desde"></span></p>
-                                </div>
+                                                        <div class="single-card-wrapper">
+                                                            <div class="single-card primary-bg">
+                                                                <span class="text-sm text-white fw-700 "
+                                                                    style="font-size: 25px;" id="nombre_cliente"></span>
+                                                                <br>
+                                                                <span class="fw-700">Capital</span>
+                                                                <h3 id="capitalDolares"></h3>
+                                                                <h6 style="margin-top: -35px; margin-bottom: 40px;">Al
+                                                                    <span id="tasa_interes">18%</span></h6>
 
-                                <div class="container mb-3">
-                                    <div class="row">
-                                        <a id="gestionarPago" href=""
-                                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8">
-                                            <i class="lni lni-plus"></i>
-                                            Gestionar pago
-                                        </a>
+                                                                <span class="fw-700">Pago mensual</span>
+                                                                <h3 id="pagoMensualDolaresText"></h3>
+
+                                                                <span class="fw-700">Pago quincenal</span>
+                                                                <h3 id="PagoQuincenalDolaresText"></h3>
+                                                                <div class="card-info">
+                                                                    <div class="mr-15">
+                                                                        <span>Paga de manera: </span>
+                                                                        <p id="tiempo_pago"></p>
+                                                                    </div>
+                                                                    <div class="mr-15">
+                                                                        <span>Fecha del prestamo</span>
+                                                                        <p id="fecha_prestamo"></p>
+                                                                    </div>
+                                                                    <div class="mr-15">
+                                                                        <span>Cliente desde hace</span>
+                                                                        <p id="cliente_desde"></p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <span class="bg-shape">
+                                                                    <svg width="330" height="200" viewBox="0 0 330 200"
+                                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <mask id="mask0" style="mask-type: alpha"
+                                                                            maskUnits="userSpaceOnUse" x="0" y="0"
+                                                                            width="330" height="200">
+                                                                            <rect width="330" height="200" rx="10"
+                                                                                fill="#6647BF" />
+                                                                        </mask>
+                                                                        <g mask="url(#mask0)">
+                                                                            <path opacity="0.3"
+                                                                                d="M274 200C274 184.536 286.536 172 302 172V200H274Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.1"
+                                                                                d="M246 172H274V200H246V172Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.3"
+                                                                                d="M302 172C302 156.536 314.536 144 330 144V172H302Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.3"
+                                                                                d="M246 172C246 156.536 258.536 144 274 144V172H246Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.6"
+                                                                                d="M274 144C289.464 144 302 156.536 302 172H274V144Z"
+                                                                                fill="white" />
+                                                                            <circle opacity="0.05" cx="11.5" cy="9.5"
+                                                                                r="99.5" fill="white" />
+                                                                            <circle opacity="0.05" cx="11.5" cy="9.5"
+                                                                                r="68.5" fill="white" />
+                                                                            <circle opacity="0.08" cx="11.5" cy="9.5"
+                                                                                r="35.5" fill="white" />
+                                                                        </g>
+                                                                    </svg>
+                                                                </span>
+                                                                
+                                                            </div>
+                                                        </div>
+                                                        <!-- end single card -->
+                                                    </div>
+                                                    <!-- end card wrapper -->
+                                                </div>
+                                                <!-- end col -->
+                                            </div>
+                                            <!-- end row -->
+                                        </div>
+                                        <div class="tab-pane fade" id="tabContent-3-2">
+                                            <div class="col-6">
+                                                <div class="input-style-3">
+                                                    <label>Tasa de cambio</label>
+                                                    <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*"
+                                                        inputmode="decimal" name="inputTasaCambio"
+                                                        id="inputTasaCambio" />
+                                                    <span class="icon" id=""
+                                                        style="margin-left: 0rem;  margin-top: 2.5rem">C$</span>
+                                                    <!-- Aquí se mostrará el porcentaje -->
+                                                </div>
+                                                <!-- end select -->
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-7">
+                                                    <div class="card-wrapper mb-30">
+
+                                                        <div class="single-card-wrapper">
+                                                            <div class="single-card primary-bg">
+                                                                <span class="text-sm text-white fw-700 "
+                                                                    style="font-size: 25px;" id="nombre_cliente"></span>
+                                                                <br>
+                                                                <span class="fw-700">Capital</span>
+                                                                <h3 id="capitalCordobas"></h3>
+
+                                                                <span class="fw-700">Pago mensual</span>
+                                                                <h3 id="pagoMensualCordobasText"></h3>
+
+                                                                <span class="fw-700">Pago quincenal</span>
+                                                                <h3 id="PagoQuincenalCordobasText"></h3>
+                                                                <div class="card-info">
+                                                                    <div class="mr-15">
+                                                                        <span>Paga de manera: </span>
+                                                                        <p id="tiempo_pago"></p>
+                                                                    </div>
+                                                                    <div class="mr-15">
+                                                                        <span>Fecha del prestamo</span>
+                                                                        <p id="fecha_prestamo"></p>
+                                                                    </div>
+                                                                    <div class="mr-15">
+                                                                        <span>Cliente desde hace</span>
+                                                                        <p id="cliente_desde"></p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <span class="bg-shape">
+                                                                    <svg width="330" height="200" viewBox="0 0 330 200"
+                                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                        <mask id="mask0" style="mask-type: alpha"
+                                                                            maskUnits="userSpaceOnUse" x="0" y="0"
+                                                                            width="330" height="200">
+                                                                            <rect width="330" height="200" rx="10"
+                                                                                fill="#6647BF" />
+                                                                        </mask>
+                                                                        <g mask="url(#mask0)">
+                                                                            <path opacity="0.3"
+                                                                                d="M274 200C274 184.536 286.536 172 302 172V200H274Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.1"
+                                                                                d="M246 172H274V200H246V172Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.3"
+                                                                                d="M302 172C302 156.536 314.536 144 330 144V172H302Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.3"
+                                                                                d="M246 172C246 156.536 258.536 144 274 144V172H246Z"
+                                                                                fill="white" />
+                                                                            <path opacity="0.6"
+                                                                                d="M274 144C289.464 144 302 156.536 302 172H274V144Z"
+                                                                                fill="white" />
+                                                                            <circle opacity="0.05" cx="11.5" cy="9.5"
+                                                                                r="99.5" fill="white" />
+                                                                            <circle opacity="0.05" cx="11.5" cy="9.5"
+                                                                                r="68.5" fill="white" />
+                                                                            <circle opacity="0.08" cx="11.5" cy="9.5"
+                                                                                r="35.5" fill="white" />
+                                                                        </g>
+                                                                    </svg>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <!-- end single card -->
+                                                    </div>
+                                                    <!-- end card wrapper -->
+                                                </div>
+                                                <!-- end col -->
+                                            </div>
+                                        </div>
+                                        <span id="ultimoPago">Pruebita</span>
                                     </div>
+                                    <div class="container mb-3">
+                                        <div class="row">
+                                            <a id="gestionarPago" href=""
+                                                class="main-btn primary-btn btn-hover m-1 col-md-3 offset-md-8">
+                                                <i class="lni lni-plus"></i>
+                                                Gestionar pago
+                                            </a>
+                                        </div>
+                                    </div>
+
                                 </div>
+                                <!-- end card -->
 
 
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Tasa de cambio</label>
-                                        <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
-                                            name="inputTasaCambio" id="inputTasaCambio" />
-                                        <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
-                                        <!-- Aquí se mostrará el porcentaje -->
+
+
+
+
+
+
+
+
+                                <div class="viejo" hidden>
+                                    <h4 class="mb-3">Capital</h4>
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Dólares</label>
+                                            <input type="text" value="" name="inputCapitalDolares"
+                                                id="inputCapitalDolares" readonly />
+                                            <span class="icon" id="codigoMonedaCapitalDolares"
+                                                style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                            <p><strong>Tasa de interes: </strong><span id="tasa_interes"></span>
+                                            </p>
+                                        </div>
+                                        <!-- end select -->
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Córdobas</label>
+                                            <input type="text" value="" name="inputCapitalCordobas"
+                                                id="inputCapitalCordobas" readonly />
+                                            <span class="icon" id="codigoMonedaCapitalCordobas"
+                                                style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                        </div>
+                                        <!-- end select -->
+                                    </div>
+
+                                    <h4 class="mb-3">Pago mensual</h4>
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Dólares</label>
+                                            <input type="text" value="" name="inputPagoMensualDolares"
+                                                id="inputPagoMensualDolares" readonly />
+                                            <span class="icon" id="codigoMonedaPagoMensualDolares"
+                                                style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                        </div>
+                                        <!-- end select -->
+                                    </div>
+
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Córdobas</label>
+                                            <input type="text" value="" name="inputPagoMensualCordobas"
+                                                id="inputPagoMensualCordobas" readonly />
+                                            <span class="icon" id="codigoMonedaPagoMensualCordobas"
+                                                style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                        </div>
+                                        <!-- end select -->
+                                    </div>
+
+
+
+                                    <h4 class="mb-3">Pago quincenal</h4>
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Dólares</label>
+                                            <input type="text" value="" name="inputPagoQuincenalDolares"
+                                                id="inputPagoQuincenalDolares" readonly />
+                                            <span class="icon" id="codigoMonedaPagoQuincenalDolares"
+                                                style="margin-left: 1rem;  margin-top: 2rem"></span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                        </div>
+                                        <!-- end select -->
                                     </div>
                                     <!-- end select -->
-                                </div>
+                                    <div class="col-6">
+                                        <div class="input-style-3">
+                                            <label>Córdobas</label>
+                                            <input type="text" value="" name="inputPagoQuincenalCordobas"
+                                                id="inputPagoQuincenalCordobas" readonly />
+                                            <span class="icon" id="codigoMonedaPagoQuincenalCordobas"
+                                                style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                            <!-- Aquí se mostrará el porcentaje -->
+                                        </div>
+                                        <!-- end select -->
 
-
-
-                                <h4 class="mb-3">Capital</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="" name="inputCapitalDolares" id="inputCapitalDolares"
-                                            readonly />
-                                        <span class="icon" id="codigoMonedaCapitalDolares"
-                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                        <p><strong>Tasa de interes: </strong><span id="tasa_interes"></span></p>
                                     </div>
-                                    <!-- end select -->
-                                </div>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="" name="inputCapitalCordobas"
-                                            id="inputCapitalCordobas" readonly />
-                                        <span class="icon" id="codigoMonedaCapitalCordobas"
-                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-
-                                <h4 class="mb-3">Pago mensual</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="" name="inputPagoMensualDolares"
-                                            id="inputPagoMensualDolares" readonly />
-                                        <span class="icon" id="codigoMonedaPagoMensualDolares"
-                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="" name="inputPagoMensualCordobas"
-                                            id="inputPagoMensualCordobas" readonly />
-                                        <span class="icon" id="codigoMonedaPagoMensualCordobas"
-                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                    </div>
-                                    <!-- end select -->
-                                </div>
 
 
-
-                                <h4 class="mb-3">Pago quincenal</h4>
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Dólares</label>
-                                        <input type="text" value="" name="inputPagoQuincenalDolares"
-                                            id="inputPagoQuincenalDolares" readonly />
-                                        <span class="icon" id="codigoMonedaPagoQuincenalDolares"
-                                            style="margin-left: 1rem;  margin-top: 2rem"></span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                    </div>
-                                    <!-- end select -->
-                                </div>
-                                <!-- end select -->
-                                <div class="col-6">
-                                    <div class="input-style-3">
-                                        <label>Córdobas</label>
-                                        <input type="text" value="" name="inputPagoQuincenalCordobas"
-                                            id="inputPagoQuincenalCordobas" readonly />
-                                        <span class="icon" id="codigoMonedaPagoQuincenalCordobas"
-                                            style="margin-left: 0rem;  margin-top: 2rem">C$</span>
-                                        <!-- Aquí se mostrará el porcentaje -->
-                                    </div>
-                                    <!-- end select -->
                                 </div>
 
                         </form>
@@ -264,6 +502,10 @@
 <script src="{{ url_for('static', filename='assets/js/pagos/pagos.js') }}"></script>
 
 <script>
+
+    document.addEventListener("submit", function (e) {
+        e.preventDefault();
+    })
 
     /*
     const dataTable = new simpleDatatables.DataTable("#tableNormal", {
