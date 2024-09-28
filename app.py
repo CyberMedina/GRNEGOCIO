@@ -664,6 +664,8 @@ def listado_clientes_pagos():
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
+
+        total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes(db_session)
         
         PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
@@ -675,8 +677,11 @@ def listado_clientes_pagos():
 
 
     formulario_clientes_pagos = {
-        "listado_clientes_pagos": listado_clientesPagosDict
+        "listado_clientes_pagos": listado_clientesPagosDict,
+        "total_dinero_personas_pagadas" : total_dinero_personas_pagadas
     }
+
+    print(total_dinero_personas_pagadas)
 
     return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
 

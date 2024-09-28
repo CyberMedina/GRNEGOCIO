@@ -6,6 +6,7 @@ from models.contratos import *
 from datetime import datetime, timedelta
 from decimal import Decimal
 import timeit
+import math
 
 
 def listar_cliesntesPagos(db_session):
@@ -1901,6 +1902,71 @@ AND dp.estado = :estado6;""")
         return None
     finally:
         db_session.close()
+
+
+
+def cantidad_total_dinero_quincenal_clientes(db_session):
+    listado_clientesPagosDict = []
+
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+    for listado in listado_clientesPagos:
+        clientePagoDict = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6]
+        }
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        clientePagoDict.update(PagosEstadosCortes)
+        listado_clientesPagosDict.append(clientePagoDict)
+
+
+
+    clientes_pagados = []
+
+    for cliente in listado_clientesPagosDict:
+        if cliente['estado'] == 1 or cliente['estado'] == 2:
+            # Obtenemos los datos del contrato y del cliente mediante el ID del cliente
+            id_contratoActual = obtener_IdContrato(db_session, cliente['id_cliente'])
+
+            # Obtener datos del ultimo pago
+            ultimo_pago = ultimo_pago_contrato(db_session, id_contratoActual)
+
+            cifra_pago_cliente = ultimo_pago[0][8]
+
+            clientes_pagados.append({
+                "nombres": cliente['nombres'],
+                "apellidos": cliente['apellidos'],
+                "Pago": cifra_pago_cliente,
+            })
+
+    print(clientes_pagados)
+
+    cantidad_clientes_pagados = len(clientes_pagados)
+
+  
+    
+
+    if cantidad_clientes_pagados == 0:
+        result = {
+            "cantidad_clientes_pagados": cantidad_clientes_pagados,
+            "suma_total_dinero_quincenal_dolares": 0,
+            "suma_total_dinero_quincenal_cordobas": 0,
+        }
+        return result
+    elif cantidad_clientes_pagados > 0:
+
+        result = {
+            "cantidad_clientes_pagados": cantidad_clientes_pagados,
+            "suma_total_dinero_quincenal_dolares": sum([cliente['Pago'] for cliente in clientes_pagados]),
+            "suma_total_dinero_quincenal_cordobas": math.ceil(sum([cliente['Pago'] for cliente in clientes_pagados]) * obtener_tasa_cambio_local()['cifraTasaCambio']),
+        }
+        return result
+
 
 
 
