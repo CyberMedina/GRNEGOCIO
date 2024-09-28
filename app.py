@@ -650,27 +650,25 @@ def eliminar_cliente_prestamo(id_cliente):
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
 @login_requiredUser
 def listado_clientes_pagos():
-
-
-
-
     listado_clientesPagosDict = []
 
     listado_clientesPagos = listar_cliesntesPagos(db_session)
 
-    for listado in listado_clientesPagos:
+    for client_number, listado in enumerate(listado_clientesPagos, start=1):
         clientePagoDict = {
             "id_cliente": listado[0],
             "id_tipoCliente": listado[1],
-            "nombres": listado[2],
+            "nombres": f"{client_number}. {listado[2]}",
             "apellidos": listado[3],
             "id_contrato": listado[4],
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
+        
         PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
+        
 
     # Obtenemos la lista de clientes
     print(listado_clientesPagosDict)
