@@ -1588,6 +1588,8 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
     if isinstance(fecha, str):
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
 
+    print("la fecha formateada es" + str(fecha))
+
     num_pagos = comprobar_primerPago(db_session, id_cliente)
 
 
@@ -1651,6 +1653,8 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
                 'descripcion': 'Pago quincenal'
             }
 
+
+    print(estadoPagoCorte)
     return estadoPagoCorte
 
 
@@ -1905,7 +1909,7 @@ AND dp.estado = :estado6;""")
 
 
 
-def cantidad_total_dinero_quincenal_clientes(db_session):
+def cantidad_total_dinero_quincenal_clientes(db_session, date):
     listado_clientesPagosDict = []
 
     listado_clientesPagos = listar_cliesntesPagos(db_session)
@@ -1920,7 +1924,7 @@ def cantidad_total_dinero_quincenal_clientes(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
@@ -1960,10 +1964,19 @@ def cantidad_total_dinero_quincenal_clientes(db_session):
         return result
     elif cantidad_clientes_pagados > 0:
 
+        # Sumar pagos en dólares y cordobas con formato de comas
+        suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
+        suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
+
+        # Formatear con comas
+        suma_total_dinero_quincenal_dolares_formateado = f"{suma_total_dinero_quincenal_dolares:,.2f}"
+        suma_total_dinero_quincenal_cordobas_formateado = f"{suma_total_dinero_quincenal_cordobas:,.2f}"
+
+
         result = {
             "cantidad_clientes_pagados": cantidad_clientes_pagados,
-            "suma_total_dinero_quincenal_dolares": sum([cliente['Pago'] for cliente in clientes_pagados]),
-            "suma_total_dinero_quincenal_cordobas": math.ceil(sum([cliente['Pago'] for cliente in clientes_pagados]) * obtener_tasa_cambio_local()['cifraTasaCambio']),
+            "suma_total_dinero_quincenal_dolares": suma_total_dinero_quincenal_dolares_formateado,
+            "suma_total_dinero_quincenal_cordobas":suma_total_dinero_quincenal_cordobas_formateado
         }
         return result
 

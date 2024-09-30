@@ -206,6 +206,26 @@ def obtener_quincenaActual_letras(date):
     # Retornar la quincena, el mes y el año como una tupla
     return quincena, mes, anio
 
+def obtener_quincenaActualStr(date):
+        # Si la entrada es una cadena, convertirla a datetime
+    if isinstance(date, str):
+        date = datetime.strptime(date, "%Y-%m-%d")
+
+    # Obtener el mes y el año de la fecha
+    mes = calendar.month_name[date.month]
+    anio = date.year
+
+    # Obtener la quincena actual
+    if date.day <= 15:
+        quincena = "Primera"
+    else:
+        quincena = "Segunda"
+
+    quincena_actual_Str = f"{quincena} Quincena de {mes} del {anio} del día {date.day} de {mes} del {anio}"
+
+    return quincena_actual_Str
+
+
 def obtener_fechaIncioYFin_con_año(año):
     # Verificar si el año es un entero
     if isinstance(año, int):

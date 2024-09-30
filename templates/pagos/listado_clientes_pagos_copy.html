@@ -75,15 +75,15 @@
         margin-left: 32px;
         font-size: 20px;
     }
+
     .icon-card {
         display: block;
-        
+
     }
 
-    .icon-card .icon{
+    .icon-card .icon {
         margin-bottom: 15px;
     }
-
 </style>
 
 
@@ -126,19 +126,25 @@
         <!-- ========== tables-wrapper start ========== -->
 
         <!-- ========== title-wrapper end ========== -->
-        <div class="row">
+        <div class="row d-flex justify-content-center">
+
             <div class="col-xl-3 col-lg-4 col-sm-6 col-6">
                 <div class="icon-card mb-30">
                     <div class="icon orange">
                         <i class="lni lni-user"></i>
                     </div>
                     <div class="content">
-                        <h6 class="mb-10">Total clientes al día</h6>
-                        <h3 class="text-bold mb-10 text-success">{{ total_dinero_personas_pagadas.cantidad_clientes_pagados }}</h3>
+                        <h6 class="text-bold mb-10">Total clientes al día</h6>
+                        <h3 class="text-bold mb-10 ">{{ total_dinero_personas_pagadas.cantidad_clientes_pagados }} <span
+                                class="text">de {{ total_clientes }}</span></h3>
                         <p class="text-sm">
-                            <i class="lni lni-calendar"></i>
-                            <span class="text-gray"> Al 15 de Febrero</span>
+                            <span class="text-bold"></span>
                         </p>
+                        <div class="input-style-1">
+                            <label>{{ quincena_actual }}</label>
+                            <input type="date" name="quincena_actual" id="quincena_actual" value="{{ date_input }}" />
+                        </div>
+                        <!-- end input -->
                     </div>
                 </div>
             </div>
@@ -148,9 +154,12 @@
                         <i class="lni lni-dollar"></i>
                     </div>
                     <div class="content">
-                        <h6 class="mb-10">Dinero generado</h6>
-                        <h3 class="text-bold mb-10">$ {{ total_dinero_personas_pagadas.suma_total_dinero_quincenal_dolares}}</h3>
-                        <h3 class="text-bold mb-10"> C$ {{ total_dinero_personas_pagadas.suma_total_dinero_quincenal_cordobas }}</h3>
+                        <h6 class="text-bold mb-10">Dinero generado</h6>
+                        <h3 class="text-bold mb-10">$ {{
+                            total_dinero_personas_pagadas.suma_total_dinero_quincenal_dolares}}</h3>
+                        <h3 class="text-bold mb-10"> C$ {{
+                            total_dinero_personas_pagadas.suma_total_dinero_quincenal_cordobas }}</h3>
+                        <br>
                     </div>
                 </div>
             </div>
@@ -567,6 +576,44 @@
         }
 
     });
+
+
+    quincena_actual = document.getElementById('quincena_actual');
+
+    quincena_actual.addEventListener('change', (e) => {
+
+
+
+        const quincena_actual_value = document.getElementById('quincena_actual').value;
+
+        if (quincena_actual_value === '') {
+            window.alert('Seleccione una fecha');
+            return;
+        }
+        
+    
+        fetch('/listado_clientes_pagos_filter', {
+            method: 'POST',
+            body: JSON.stringify({
+                date: quincena_actual_value
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') { // status debe ser 'success' según tu respuesta del backend
+                window.location.reload();
+            } else {
+                window.alert('No se pudo filtrar los clientes');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    
 
 
 

@@ -647,43 +647,104 @@ def eliminar_cliente_prestamo(id_cliente):
 
 ########### Empieza el modulo de pagos ############
 
+
+@app.route('/listado_clientes_pagos_filter', methods=['POST'])
+def listado_clientes_pagos_filter():
+    data = request.get_json()
+    date = data.get("date")
+
+    if date is None:
+        return jsonify({"error": "No se ha proporcionado la fecha"}), 400
+    
+
+    session['detected_change_date_form'] = {
+        "changed": True,
+        "date": date
+    }
+
+    return jsonify({"status": "success"})
+
+
 @app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
 @login_requiredUser
 def listado_clientes_pagos():
-    listado_clientesPagosDict = []
 
-    listado_clientesPagos = listar_cliesntesPagos(db_session)
+    if request.method == 'GET':
 
-    for client_number, listado in enumerate(listado_clientesPagos, start=1):
-        clientePagoDict = {
-            "id_cliente": listado[0],
-            "id_tipoCliente": listado[1],
-            "nombres": f"{client_number}. {listado[2]}",
-            "apellidos": listado[3],
-            "id_contrato": listado[4],
-            "pagoMensual": listado[5],
-            "pagoQuincenal": listado[6]
+
+
+        date_input = request.args.get('date')
+
+        detected_change = session.get('detected_change_date_form')
+    
+        if detected_change:
+            # Verificar si 'changed' es True
+            if detected_change.get('changed') == True and detected_change.get('date') is not None:
+                # Si es True, acceder a 'date'
+                date = detected_change.get('date')
+                date_input = date
+
+                
+                session.pop('detected_change_date_form', None)
+            else:
+                # Si 'changed' es False o no está presente
+                date = datetime.now()
+                date_input = date.strftime("%Y-%m-%d")
+        else:
+            date = datetime.now()
+            date_input = date.strftime("%Y-%m-%d")
+            
+
+
+
+        listado_clientesPagosDict = []
+
+        listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+        for client_number, listado in enumerate(listado_clientesPagos, start=1):
+            clientePagoDict = {
+                "id_cliente": listado[0],
+                "id_tipoCliente": listado[1],
+                "nombres": f"{client_number}. {listado[2]}",
+                "apellidos": listado[3],
+                "id_contrato": listado[4],
+                "pagoMensual": listado[5],
+                "pagoQuincenal": listado[6]
+            }
+
+            if date is None:
+                date = datetime.now()
+
+            total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes(db_session, date)
+            print(f"El date a consultar el estado es {date}")
+            PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
+            clientePagoDict.update(PagosEstadosCortes)
+            listado_clientesPagosDict.append(clientePagoDict)
+
+            
+
+
+
+        quincena, mes, anio = obtener_quincenaActual_letras(date)
+
+        quincena_actual = f"{quincena} quincena de {mes} del {anio}"
+
+
+
+
+        formulario_clientes_pagos = {
+            "listado_clientes_pagos": listado_clientesPagosDict,
+            "total_dinero_personas_pagadas" : total_dinero_personas_pagadas,
+            "total_clientes" : len(listado_clientesPagosDict),
+            "quincena_actual" : quincena_actual,
+            "date_input" : date_input
         }
 
-        total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes(db_session)
-        
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
-        clientePagoDict.update(PagosEstadosCortes)
-        listado_clientesPagosDict.append(clientePagoDict)
-        
 
-    # Obtenemos la lista de clientes
-    print(listado_clientesPagosDict)
+        return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
 
-
-    formulario_clientes_pagos = {
-        "listado_clientes_pagos": listado_clientesPagosDict,
-        "total_dinero_personas_pagadas" : total_dinero_personas_pagadas
-    }
-
-    print(total_dinero_personas_pagadas)
-
-    return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
+    if request.method == 'POST':
+        pass
 
 
 
@@ -1836,7 +1897,7 @@ def obtener_cantidad_clientes_pagados():
 def obtener_cantidad_total_dinero_quincenal_clientes():
 
     try:
-        cadena_respuesta = crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session)
+        cadena_respuesta = crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session, datetime.now())
         return jsonify({"respuesta": cadena_respuesta}), 200
     except SQLAlchemyError as e:
         db_session.rollback()
