@@ -420,17 +420,21 @@
                         <input type="text" id="formId_cliente" name="formId_cliente"
                             value="{{ dataCliente.id_cliente }}" hidden>
 
-                        <a id="pagoCompleto" href="#0"
-                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
-                            Pago completo
-                        </a>
+                        <div class="pagoCompleto" hidden>
+                            <a id="pagoCompleto" href="#0"
+                                class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
+                                Pago completo
+                            </a>
+
+                        </div>
+
 
 
 
                         <div class="row">
 
                             <div class="col-12">
-                                <div class="col-8 col-sm-4 col-md-4">
+                                <div class="col-8 col-sm-4 col-md-4" hidden>
                                     <div class="select-style-1">
                                         <label class="">Sugerencia pago</label>
                                         <div class="select-position">
@@ -442,14 +446,39 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <!-- end select -->
+
                                 </div>
-                                <div class="input-style-1">
-                                    <label class="text-bold">Fecha del pago*</label>
-                                    <input type="date" required name="fechaPago" id="fechaPago" />
-                                    <p id="tiempoPagoLetras"></p>
+
+                                <div class="row">
+                                    <div class="col-6">
+
+                                        <div class="input-style-1">
+                                            <label class="text-bold">Quincena correspondiente* <span id="conRetraso"
+                                                    class="text-danger text-bold" hidden> (Con retraso)</span></label>
+                                            <input type="date" required name="fechaPago" id="fechaPago" />
+                                            <p id="tiempoPagoLetras"></p>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class="col-6" id="divInputFechaPagoReal" hidden>
+                                        <div class="input-style-1">
+                                            <label class="text-bold">Fecha del pago*</label>
+                                            <input type="date" required name="fechaPagoReal" id="fechaPagoReal" />
+                                            <p id="tiempoPagoLetrasReal"></p>
+                                        </div>
+                                    </div>
+
                                 </div>
+
+
+
+
+
                             </div>
+
+
 
                             <div class="row">
 
@@ -467,51 +496,62 @@
 
                             </div>
 
-                            <div class="col-4 col-sm-2 col-md-2">
-                                <div class="select-style-1">
-                                    <label class="">Moneda</label>
-                                    <div class="select-position">
-                                        <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
-                                            <option value="1">$</option selected>
-                                            <option value="2">C$</option>
-                                        </select>
+                                                            
+                            <div class="col mb-3">
+                                <a href="javascript:void(0)" id="pagoCompletoBtnInput"
+                                    class="main-btn success-btn-light square-btn btn-hover">Pago completo</a>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-4 col-sm-2 col-md-2">
+                                    <div class="select-style-1">
+                                        <label class="">Moneda</label>
+                                        <div class="select-position">
+                                            <select class="light-bg" required name="tipoMonedaPago" id="tipoMonedaPago">
+                                                <option value="1">$</option selected>
+                                                <option value="2">C$</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    <!-- end select -->
                                 </div>
-                                <!-- end select -->
-                            </div>
-                            <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
-                                <div class="input-style-3">
-                                    <label for="">Pago en C$</label>
-                                    <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobas"
-                                        id="cantidadPagoCordobas" />
-                                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
-                                    <span>C$<span id="lblCantidadPagarC$"></span>
-                                    </span>
-                                    <input id="cantidadPagarVerificarC$" type="text" hidden>
+                                <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
+                                    <div class="input-style-3">
+                                        <label for="">Pago en C$</label>
+                                        <input type="text" placeholder="0" inputmode="decimal"
+                                            name="cantidadPagoCordobas" id="cantidadPagoCordobas" />
+                                        <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                        <span>C$<span id="lblCantidadPagarC$"></span>
+                                        </span>
+                                        <input id="cantidadPagarVerificarC$" type="text" hidden>
+                                    </div>
+                                    <!-- end select -->
                                 </div>
-                                <!-- end select -->
-                            </div>
-                            {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
-                            dataCliente.pagoQuincenal %}
-                            <div class="col-6 col-sm-4">
-                                <div class="input-style-3">
-                                    <label for="">Pago en $</label>
-                                    <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
-                                        id="cantidadPagar$" required />
-                                    <span class="icon" style="z-index: 1 !important;"><i
-                                            class="fa-solid fa-coins"></i></span>
-                                    <span id="pCantidadPagarVerificar$"
-                                        style="position:relative; z-index: 5 !important;" class="tooltip-icon"
-                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                        title="{{monto_pagoEspecial.descripcion }}"></span>
-                                    <input id="cantidadPagarVerificar$" type="text" value="" hidden>
+                                {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
+                                dataCliente.pagoQuincenal %}
+                                <div class="col-6 col-sm-4">
+                                    <div class="input-style-3">
+                                        <label for="">Pago en $</label>
+                                        <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
+                                            id="cantidadPagar$" required />
+                                        <span class="icon" style="z-index: 1 !important;"><i
+                                                class="fa-solid fa-coins"></i></span>
+                                        <span id="pCantidadPagarVerificar$"
+                                            style="position:relative; z-index: 5 !important;" class="tooltip-icon"
+                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="{{monto_pagoEspecial.descripcion }}"></span>
+                                        <input id="cantidadPagarVerificar$" type="text" value="" hidden>
+                                    </div>
+                                    <!-- end select -->
                                 </div>
-                                <!-- end select -->
+
+
+                                {% endfor %}
+
                             </div>
 
 
 
-                            {% endfor %}
 
                         </div>
 

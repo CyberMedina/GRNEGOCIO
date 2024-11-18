@@ -7,8 +7,10 @@ let cantidadPagarVerificar$ = document.getElementById('cantidadPagarVerificar$')
 let pCantidadPagarVerificar$ = document.getElementById('pCantidadPagarVerificar$');
 let cantidadPagar$ = document.getElementById('cantidadPagar$');
 let cantidadPagoCordobas = document.getElementById('cantidadPagoCordobas');
-let fechaPago = document.getElementById('fechaPago');
+let fechaPago = document.getElementById('fechaPago'); // Se refiere a la referencia de la quincena
+let fechaPagoReal = document.getElementById('fechaPagoReal'); // Se refiere a la fecha en la que se pagó la quiencena
 let tiempoPagoLetras = document.getElementById('tiempoPagoLetras');
+let tiempoPagoLetrasReal = document.getElementById('tiempoPagoLetrasReal')
 let pagoCompleto = document.getElementById('pagoCompleto');
 let comboSugerenciaPago = document.getElementById('comboSugerenciaPago');
 let formId_cliente = document.getElementById('formId_cliente');
@@ -60,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
   let fechaFormateada = obtenerFecha();
 
   fechaPago.value = fechaFormateada;
+  fechaPagoReal.value = fechaFormateada;
 
   // llama a validacionDolares manualmente
   fechaLetras({ target: fechaPago });
@@ -73,6 +76,8 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
   // llama a validacionDolares manualmente
   fechaLetras(event);
+
+  tiempoPagoLetrasReal.textContent = fechaLetrasFuncion(fechaFormateada, 'minimalista');
 
   let checkbox_confirmacion = document.getElementById('checkbox_confirmacion');
   checkbox_confirmacion.checked = true;
@@ -352,8 +357,8 @@ function fechaLetras(event) {
 
 }
 
-
-function fechaLetrasFuncion(fecha) {
+// Esta función retorna dos resultados completo o minimalista
+function fechaLetrasFuncion(fecha, estructuraResultado) {
   var fechaPagoValue = fecha;
   console.log(fechaPagoValue);
 
@@ -380,9 +385,15 @@ function fechaLetrasFuncion(fecha) {
   console.log(primeraSegundaQuincena);
 
 
+  if (estructuraResultado === 'minimalista') {
+    return primeraSegundaQuincena
+  }
+  else {
+    return primeraSegundaQuincena + " (" + day + " de " + nombreMes + " de " + year + ")";
+  }
 
-  return primeraSegundaQuincena + " (" + day + " de " + nombreMes + " de " + year + ")";
 }
+
 
 
 
@@ -444,20 +455,6 @@ cantidadPagoCordobas.addEventListener('input', function () {
 });
 
 
-
-
-fechaPago.addEventListener('input', function (event) {
-
-  obtener_pago();
-
-  // llama a validacionDolares manualmente
-  fechaLetras(event);
-
-
-
-
-
-});
 
 function obtener_pago() {
 
@@ -824,15 +821,15 @@ proceder_pago.addEventListener('click', async function (event) {
 
   event.preventDefault();
 
-  
 
-  try{
+
+  try {
     let data = await procesar_pago();
     console.log(data);
 
     window.location.reload();
   }
-  catch(error){
+  catch (error) {
     console.error('Error:', error);
   }
 
@@ -959,3 +956,142 @@ async function verificar_tipo_saldo_insertar() {
 //     console.error('Error:', error);
 //   }
 // });
+
+
+function mismaQuincena(fecha1, fecha2) {
+  // Parseamos las fechas desde el formato de string
+  const fechaPago1 = new Date(fecha1);
+  const fechaPago2 = new Date(fecha2);
+
+  // Obtenemos el año, mes y día de cada fecha
+  const year1 = fechaPago1.getUTCFullYear();
+  const month1 = fechaPago1.getUTCMonth() + 1; // Los meses en JavaScript van de 0 a 11
+  const day1 = fechaPago1.getUTCDate();
+
+  const year2 = fechaPago2.getUTCFullYear();
+  const month2 = fechaPago2.getUTCMonth() + 1;
+  const day2 = fechaPago2.getUTCDate();
+
+  // Determinamos en qué quincena cae cada fecha
+  const quincena1 = (day1 <= 15) ? `Primera quincena de ${month1}-${year1}` : `Segunda quincena de ${month1}-${year1}`;
+  const quincena2 = (day2 <= 15) ? `Primera quincena de ${month2}-${year2}` : `Segunda quincena de ${month2}-${year2}`;
+
+  console.log(quincena1);
+  console.log(quincena2);
+
+  // Comparamos las quincenas y retornamos true si son iguales, de lo contrario false
+  console.log(quincena1 === quincena2);
+  return quincena1 === quincena2;
+}
+
+// Función para normalizar la fecha
+function normalizarFecha(fecha) {
+  if (typeof fecha === 'string') {
+    // Detectar si el formato es YYYY-MM-DD y convertirlo a Date
+    if (fecha.includes('-')) {
+      let [year, month, day] = fecha.split('-').map(Number);
+      fecha = new Date(year, month - 1, day); // Convertir a Date
+    } else {
+      fecha = new Date(fecha); // Intentar convertir a Date
+    }
+  }
+  if (!isNaN(fecha.getTime())) {
+    fecha.setHours(0, 0, 0, 0); // Ajustar a la medianoche
+  }
+  return fecha;
+}
+
+// Función para actualizar la observación del pago
+function actualizarObservacionPago(fechaPagoRealValue, esRetraso) {
+  let observacionPago = document.getElementById('observacionPago');
+  if (esRetraso) {
+      let fechaPagoRealFormateada = normalizarFecha(fechaPagoRealValue);
+      let opcionesFecha = { day: 'numeric', month: 'long', year: 'numeric' };
+      let fechaPagoRealLetrasFormateada = fechaPagoRealFormateada.toLocaleDateString('es-ES', opcionesFecha);
+      observacionPago.value = 'El cliente tuvo un retraso en su pago y realmente pagó el día ' + fechaPagoRealLetrasFormateada;
+  } else {
+      observacionPago.value = '';
+  }
+}
+
+let conRetraso = document.getElementById('conRetraso');
+
+fechaPago.addEventListener('input', function () {
+  let fechaPagoValue = normalizarFecha(fechaPago.value);
+  let fechaActual = normalizarFecha(new Date());
+  let divInputFechaPagoReal = document.getElementById('divInputFechaPagoReal');
+  let fechaPagoRealValue = fechaPago.value;
+
+  // Actualizamos el label de la quincena
+  tiempoPagoLetras.textContent = fechaLetrasFuncion(fechaPago.value, 'minimalista');
+
+  obtener_pago();
+
+  console.log("Fecha actual normalizada:", fechaActual);
+  console.log("Fecha de pago normalizada:", fechaPagoValue);
+
+  if (fechaPagoValue < fechaActual) {
+      divInputFechaPagoReal.hidden = false;
+      fechaPagoRealValue = fechaActual.toISOString().split('T')[0];
+      actualizarObservacionPago(fechaPagoRealValue, true);
+      conRetraso.hidden = false;
+  } else {
+      divInputFechaPagoReal.hidden = true;
+      actualizarObservacionPago('', false);
+      conRetraso.hidden = true;
+  }
+
+  fechaPagoReal.value = fechaPagoRealValue;
+});
+
+fechaPagoReal.addEventListener('input', function () {
+  let fechaPagoValue = normalizarFecha(fechaPago.value);
+  let fechaPagoRealValue = normalizarFecha(fechaPagoReal.value);
+
+  console.log("EMPIEZA EL DEBUG!!!");
+  console.log("fechaPagoValue:", fechaPagoValue);
+  console.log("fechaPagoRealValue:", fechaPagoRealValue);
+
+
+
+  if (fechaPagoRealValue < fechaPagoValue) {
+      console.log("La fecha real de pago es anterior a la fecha programada.");
+      fechaPagoReal.value = fechaPago.value;
+      actualizarObservacionPago('', false);
+      conRetraso.hidden = true;
+  } else if (fechaPagoRealValue > fechaPagoValue) {
+      console.log("La fecha real de pago es posterior a la fecha programada.");
+      actualizarObservacionPago(fechaPagoReal.value, true);
+      conRetraso.hidden = false;
+  } else {
+      console.log("La fecha real de pago es igual a la fecha programada.");
+      actualizarObservacionPago('', false);
+      conRetraso.hidden = true;
+  }
+
+      // Actualizamos el label de la quincena
+      tiempoPagoLetrasReal.textContent = fechaLetrasFuncion(fechaPagoReal.value, 'minimalista');
+});
+
+
+document.getElementById('pagoCompletoBtnInput').addEventListener('click', function() {
+  calculoDolaresCordobas();
+
+  // Set the amount to pay in dollars
+  cantidadPagar$.value = cantidadPagarVerificar$.value;
+
+  if (tipoMonedaPago.value === '2') { // If the selected currency is Cordobas
+    // Calculate the amount to pay in Cordobas
+    let tasaCambio = parseFloat(inputTasaCambioPago.value);
+    let cantidadPagarVerificarDolares = parseFloat(cantidadPagarVerificar$.value);
+    let cantidadCordobas = cantidadPagarVerificarDolares * tasaCambio;
+    cantidadPagoCordobas.value = cantidadCordobas.toFixed(2);
+
+    // Manually dispatch input event to trigger validation
+    cantidadPagoCordobas.dispatchEvent(new Event('input'));
+  }
+
+  // Manually dispatch input event for Dollars input
+  cantidadPagar$.dispatchEvent(new Event('input'));
+
+});
