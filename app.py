@@ -38,6 +38,11 @@ from models.API_Alexa import *
 from models.base_de_datos import *
 from flask_cors import CORS
 from serverEmail import mail
+from utils import login_requiredUser
+from utils import obtener_tasa_cambio_local
+from utils import actualizar_tasa_cambio_oficial
+from utils import contar_resultados
+from utils import obtener_index_columna
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -142,12 +147,12 @@ def actualizar_tasa_cambio():
     return jsonify({"status": "success"}), 200
 
 
-@app.route('/')
-@login_requiredUser
-def index():
+# @app.route('/')
+# @login_requiredUser
+# def index():
 
 
-    return render_template('index.html')
+#     return render_template('index.html')
 
 ######## Rutas para guardar en sesión el número seleccionado en diferentes templates ########
 ##### Clientes#########
@@ -550,7 +555,7 @@ def datos_prestamoV1():
 
 # Suponiendo que obtener_tasa_cambio_local() devuelve un diccionario directamente
     tasa_cambioJSON = obtener_tasa_cambio_local()
-    print(tasa_cambioJSON)
+
 
     # Obtenemos los datos del contrato y del cliente meidante el ID del cliente
     id_contratoActual = obtener_IdContrato(db_session, id_cliente)
@@ -560,7 +565,7 @@ def datos_prestamoV1():
 
 
 
-    print(ultimo_pago)
+
 
     # Asignar la tasa de cambio al diccionario de datos_pago
     datos_pago.append(tasa_cambioJSON)
@@ -569,7 +574,7 @@ def datos_prestamoV1():
     #Extraer datos necesarios del ultimo pago
         cifra_ultimo_pagoDolares = ultimo_pago[0][8]
         cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][8]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
-        print(cifra_ultimo_pagoCordobas)
+
         fecha_ultimo_pago = ultimo_pago[0][3]
         fecha_ultimo_pago_letras = ultimo_pago[0][15]
         ultimoPago_json = {
@@ -605,11 +610,10 @@ def eliminar_cliente_prestamo(id_cliente):
         clientes_fiador = seleccionar_clientes_contratofiador(db_session, id_cliente)
         id_clientes.update(convertir_a_entero(cliente) for cliente in clientes_fiador if cliente is not None)
 
-        print(id_clientes)
 
         for id_cliente in id_clientes:
             id_cliente = convertir_a_entero(id_cliente)  # Asegúrate de que id_cliente es un entero
-            print("El id cliente es ", id_cliente)
+
             
             id_persona = convertir_a_entero(seleccionar_personas_por_id_cliente(db_session, id_cliente))
             id_direccion = convertir_a_entero(seleccionar_direccion_por_id_persona(db_session, id_persona))
@@ -665,7 +669,7 @@ def listado_clientes_pagos_filter():
     return jsonify({"status": "success"})
 
 
-@app.route('/listado_clientes_pagos', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 @login_requiredUser
 def listado_clientes_pagos():
 
@@ -693,8 +697,8 @@ def listado_clientes_pagos():
         else:
             date = datetime.now()
             date_input = date.strftime("%Y-%m-%d")
-            
-
+        
+        
 
 
         listado_clientesPagosDict = []
@@ -702,6 +706,7 @@ def listado_clientes_pagos():
         listado_clientesPagos = listar_cliesntesPagos(db_session)
 
         for client_number, listado in enumerate(listado_clientesPagos, start=1):
+
             clientePagoDict = {
                 "id_cliente": listado[0],
                 "id_tipoCliente": listado[1],
@@ -709,14 +714,17 @@ def listado_clientes_pagos():
                 "apellidos": listado[3],
                 "id_contrato": listado[4],
                 "pagoMensual": listado[5],
-                "pagoQuincenal": listado[6]
+                "pagoQuincenal": listado[6],
             }
+            
+
+
 
             if date is None:
                 date = datetime.now()
 
-            total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes(db_session, date)
-            print(f"El date a consultar el estado es {date}")
+            total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes_real(db_session, date)
+
             PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
             clientePagoDict.update(PagosEstadosCortes)
             listado_clientesPagosDict.append(clientePagoDict)
@@ -762,7 +770,6 @@ def verificar_tipo_saldo_insertar():
         tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
         cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
-        print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
 
         if 'checkBoxNoPago' in request.form:
             estadoPago = no_hay_pago
@@ -771,7 +778,7 @@ def verificar_tipo_saldo_insertar():
         else:
             estadoPago = tipoPagoCompletoForm
 
-        print("El estado de pago es: ", estadoPago)
+
 
         response = verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, fechaPago, tipoPagoCompletoForm)
         return response
@@ -792,13 +799,14 @@ def procesar_pago():
     observacionPago = request.form['observacionPago']
     evidenciaPago = request.files['evidenciaPago']
     tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
+    fechaPagoReal = request.form['fechaPagoReal']
 
     
     procesar_todo = False
 
 
     cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
-    print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
+
 
     # Verifica si el checkbox de no pago está marcado
     if 'checkBoxNoPago' in request.form:
@@ -816,7 +824,7 @@ def procesar_pago():
         procesar_todo =  True
 
     response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
-                fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                fechaPago, fechaPagoReal, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
                 monedaConversion)
     return response
         
@@ -876,7 +884,7 @@ def añadir_pago(id_cliente):
 
 
 
-    print(monto_pagoEspecial)
+
     formulario_añadir_pago = {
         "datos_cliente": pagos_cliente,
         "monto_pagoEspecial": monto_pagoEspecial,
@@ -886,14 +894,13 @@ def añadir_pago(id_cliente):
         "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
     }
 
-    print(pagos_cliente)
 
     
     if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
         total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
         capital = Decimal(pagos_cliente[0]["monto_solicitado"])
         saldo_pendiente = capital - total_pagos
-        print("El saldo pendiente es: ", saldo_pendiente)
+
         formulario_añadir_pago.update({"saldo_pendiente": saldo_pendiente})
         
 
@@ -909,7 +916,7 @@ def generar_pdf_desde_html(html):
 def PruebaImprimir_pago():
 
         data = request.get_json()
-        print(data)
+
         if not data:
             return jsonify({"error": "No se está recibiendo ninguna información"}), 400
 
@@ -952,14 +959,14 @@ def PruebaImprimir_pago():
 
         if data.get('checkBoxEnvioCorreo'):
             correo_electronico = data.get('correoElectronico')
-            print(correo_electronico)
+
             cuerpo = html_formulario
 
             # Genera el PDF desde tu HTML (ya lo tienes)
             pdf_binario = generar_pdf_desde_html(html_formulario)
 
             with app.app_context():
-                print(dataPagos_cliente)
+  
                 mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
                 mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
@@ -984,7 +991,7 @@ def eliminar_pago():
     data = request.get_json()
     id_pagos = data.get('id_pago')
 
-    print("El id del pago es " + str(id_pagos))
+
 
     db_session.begin()
 
@@ -1019,7 +1026,7 @@ def informacion_pagoEspecifico():
         id_pagos = data.get('id_pagos')
 
         pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
-        print(pago)
+
 
         return jsonify({"pago": pago}), 200
     except SQLAlchemyError as e:
@@ -1071,7 +1078,7 @@ def visualizar_contrato(id_cliente):
     datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
     datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
 
-    print(datos_cliente)
+
 
     datos_formulario_anadir_prestamo = {
         "id_cliente": id_cliente,
@@ -1098,7 +1105,7 @@ def visualizar_contrato_id(id_contrato):
     datos_contratoFiador = listarDatosFiadorContratoID_contratoFiador(db_session, datos_contratoCliente[0])
     datos_fiador = listar_datosClienteContratoCompleto(db_session, datos_contratoFiador[1])
 
-    print(datos_cliente)
+
 
     datos_formulario_anadir_prestamo = {
         "id_cliente": id_cliente,
@@ -1259,7 +1266,7 @@ def base_de_datos():
 
     # Obtener el archivo SQL más reciente de la carpeta
     all_sql_files = get_all_sql_files(dbx, folder_id)
-    print(all_sql_files)
+
 
     
     backups_files = []
@@ -1291,7 +1298,7 @@ def base_de_datos():
         "backups_files": backups_files
     }
 
-    print(backups_files)
+
 
 
     return render_template('base_de_datos/base_de_datos.html', **template_info)
@@ -1863,7 +1870,9 @@ def obtener_cantidad_pago_cliente():
         data = request.json
 
         nombre_cliente = data['person']
-        print(nombre_cliente)
+
+
+
 
        
 
@@ -1912,7 +1921,8 @@ def agendarPagoNormal():
         data = request.json
 
         nombre_cliente = data['person']
-        print(nombre_cliente)
+
+
 
        
 
@@ -1921,7 +1931,7 @@ def agendarPagoNormal():
             cadena_respuesta = crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente)
             #Convierte el objeto a una cadena JSON
             json_response = json.dumps({"data": cadena_respuesta})
-            print(json_response)  # Imprime la cadena JSON
+
 
             return jsonify({"respuesta": cadena_respuesta}), 200
         except SQLAlchemyError as e:
@@ -1938,7 +1948,8 @@ def procesarPagoNormal():
     if request.method == 'POST':
         data = request.json
 
-        print(data)
+
+
 
         try:
             
@@ -1957,7 +1968,7 @@ def procesarPagoNormal():
 
             if isinstance(cantidadPagarDolares, str):
                 cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
-            print("La cantidad a pagar en dólares es: ", cantidadPagarDolares)
+
 
 
             estadoPago = pago_completo  # Utiliza el estado de pago completo
@@ -2042,7 +2053,7 @@ def imprimir_pago_alexa():
             pdf_binario = generar_pdf_desde_html(html_formulario)
 
             with app.app_context():
-                print(dataPagos_cliente)
+
                 mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
                 mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 

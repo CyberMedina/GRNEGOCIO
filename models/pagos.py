@@ -4,7 +4,7 @@ from utils import *
 from models.constantes import *
 from models.contratos import *
 from datetime import datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import timeit
 import math
 
@@ -267,19 +267,21 @@ def obtener_primerPago(db_session, id_contrato):
         db_session.close()
 
 
-def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, estado):
+def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_pago_real, estado):
     try:
         # Obtener el ID de la tabla persona
         id_pagos = ObtenerIDTabla(db_session, "id_pagos", "pagos")
 
+        fecha_pago_real = datetime.strptime(fecha_pago_real, '%Y-%m-%d')
+
         # Insertar el pago
         query = text("""
                      INSERT INTO pagos (id_pagos, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado)
-                        VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, NOW(), :estado);
+                        VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, :fecha_pago_real, :estado);
                         """
                      )
         db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'id_cliente': id_cliente,
-                           'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'estado': estado})
+                           'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'fecha_pago_real':fecha_pago_real, 'estado': estado})
         db_session.commit()
         return id_pagos
 
@@ -532,24 +534,21 @@ AND dp.estado = :estado_detalle_pago;
 
             for row in result:
                 if primer_elemento:
-                    print("primero entro acá")
                     total_cifra = row[1] - abs(suma_saldo)
                     cifra_anterior = total_cifra
-                    print(f"{row[1]} - {abs(suma_saldo)} = {total_cifra}")
                     primer_elemento = False
                 else:
-                    print("En el segundo registro entró acá")
                     if row[2] == Aumento:
                         total_cifra = cifra_anterior + abs(row[1])
-                        print(f"{cifra_anterior} + {abs(row[1])}  ")
+
                         cifra_anterior = total_cifra
-                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+
 
                     else:
                         total_cifra = cifra_anterior - abs(row[1])
-                        print(f"{cifra_anterior} - {abs(row[1])} = {total_cifra}")
+
                         cifra_anterior = total_cifra
-                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
+
                 result_dict = {
                     'id_moneda': row[0],
                     'monto': row[1],
@@ -574,28 +573,27 @@ AND dp.estado = :estado_detalle_pago;
 
             for row in result:
                 if primer_elemento:
-                    print("primero entro acá")
+
                     cifra_anterior = row[1]
-                    print(cifra_anterior)
+
                     primer_elemento = False
                 else:
-                    print("En el segundo registro entró acá")
+
                     if row[2] == Aumento:
                         total_cifra = cifra_anterior + abs(row[1])
-                        print(f"{cifra_anterior} + {abs(row[1])}  ")
+
                         cifra_anterior = total_cifra
-                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
 
                     else:
                         total_cifra = cifra_anterior - abs(row[1])
-                        print(f"{cifra_anterior} - {abs(row[1])} = {total_cifra}")
+
                         cifra_anterior = total_cifra
-                        print(f"La NUEVA cifra anterior es: {cifra_anterior}")
 
 
 
 
-            print(f"La suma total es: {total_cifra}")
+
+
             return total_cifra
 
 
@@ -695,6 +693,29 @@ AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2 OR p.estado = :estadoPag
     finally:
         db_session.close()
 
+# Se refiere a fechas reales a las fechas que realmente se realizó el pago de esa quincena y no la quincena como tal
+def validacion_fechaPago_quincena_fechas_reales(db_session, id_contrato, fechaPagoQuincena_inicio, fechaPagoQuincena_final, estadoMoneda):
+    try:
+        query = text("""
+                     SELECT SUM(cifraPago) 
+FROM detalle_pagos dp 
+JOIN pagos p ON dp.id_pagos = p.id_pagos 
+WHERE id_contrato = :id_contrato 
+AND fecha_realizacion_pago BETWEEN :fechaPagoQuincena_inicio AND :fechaPagoQuincena_final 
+AND dp.estado = :estadoMoneda
+AND (p.estado = :estadoPago1 OR p.estado = :estadoPago2 OR p.estado = :estadoPago3);""")
+
+        result = db_session.execute(query, {'id_contrato': id_contrato, 'fechaPagoQuincena_inicio': fechaPagoQuincena_inicio,
+                                    'fechaPagoQuincena_final': fechaPagoQuincena_final, 'estadoMoneda': estadoMoneda, 'estadoPago1': pago_completo, 'estadoPago2': pago_incompleto, 'estadoPago3': pago_de_mas}).fetchone()
+        return result[0]
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
+
 # Esta función es utilizada para verificar si el cliente ha pagado el monto total de la quincena en el caso que sea el primer pago
 
 
@@ -769,7 +790,7 @@ WHERE
         result_list = []
 
         if len(result) == 1:
-            print("Solo hay un registro")
+
             # Solo hay un registro
             row = result[0]
             result_list = {
@@ -895,7 +916,7 @@ LIMIT 1;
 """)
         ultima_transaccion_saldo = db_session.execute(
             query, {'id_pagos': id_pagos}).fetchone()
-        print(f"La ultima transaccion es" + str(ultima_transaccion_saldo))
+
 
         if ultima_transaccion_saldo:
             saldo_actual = obtener_saldo_con_id_cliente(db_session, id_cliente)
@@ -970,16 +991,16 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
                     cifra_primer_pago_seleccionado = None  # o algún valor por defecto
 
                 if cifra_primer_pago_seleccionado > primer_pago_contrato:
-                    print("Entró en la eliminación primer pago porque es pago de más!")
+
                     eliminar_con_saldo = True
 
             if eliminar_con_saldo == True:
                 id_cliente = buscar_id_cliente_con_id_pagos(db_session, id_pagos)
-                print(f"el id del cliente es" + str(id_cliente))
+
 
                 cifra_anterior = obtener_cifraSaldo_anterior(
                     db_session, id_pagos, id_cliente)
-                print(f"la cifra anterior es" + str(cifra_anterior))
+
 
                 actualizar_saldo(db_session, id_cliente, cifra_anterior, activo)
 
@@ -1040,12 +1061,12 @@ def validar_saldo_pendiente_en_contra(db_sesssion, id_cliente):
 
     if result_saldo:
         id_tipoSaldos_pagos = result_saldo[1]
-        print("existe un saldo")
+
         if id_tipoSaldos_pagos == saldo_en_contra:
             estado = saldo_en_contra
-            print("el saldo es en contra")
+
         elif id_tipoSaldos_pagos == saldo_a_favor:
-            print("el saldo es a favor")
+
             estado = saldo_a_favor
 
         try:
@@ -1162,7 +1183,7 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
 
     if saldos_pagos is None:
         try:
-            print("No existe la tabla saldo para este cliente, creando!")
+
             # Obtener el ID de la tabla persona
             id_saldos_pagos = (ObtenerIDTabla(
                 db_session, "id_saldos_pagos", "saldos_pagos"))
@@ -1201,12 +1222,11 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
     # Procedimiento para incrementar el saldo
     elif tipo_saldo == saldo_en_contra:
         try:
-            print("El saldo es en contra")
+
             cifraSaldoAnterior = Decimal(saldos_pagos[3])
-            print(f"La cifra anterior es" + str(cifraSaldoAnterior))
+
             cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
-            print
-            print(f"La cifra nueva es" + str(cifraSaldoNueva))
+
 
             actualizar_saldo(
                 db_session, id_cliente, cifraSaldoNueva, estado)
@@ -1221,11 +1241,11 @@ def ingreso_saldo(db_session, id_cliente, id_pagos, tipo_saldo, id_moneda, cifra
     # Procedimiento para reducir el saldo
     elif tipo_saldo == saldo_a_favor:
         try:
-            print("Es saldo a favor")
+
             cifraSaldoAnterior = Decimal(saldos_pagos[3])
-            print(f'saldo anterior es' + str(cifraSaldoAnterior))
+
             cifraSaldoNueva = Decimal(cifraSaldoAnterior + Decimal(cifraSaldo))
-            print("El saldo nuevo es" + str(cifraSaldoNueva))
+
             actualizar_saldo(
                 db_session, id_cliente, cifraSaldoNueva, estado)
             return saldos_pagos[0]
@@ -1511,7 +1531,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
 
     if isinstance(fecha, str):
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
-    print(fecha)
+
 
     id_contrato = obtener_IdContrato(db_session, id_cliente)
 
@@ -1588,7 +1608,7 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
     if isinstance(fecha, str):
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
 
-    print("la fecha formateada es" + str(fecha))
+
 
     num_pagos = comprobar_primerPago(db_session, id_cliente)
 
@@ -1654,7 +1674,82 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
             }
 
 
-    print(estadoPagoCorte)
+
+    return estadoPagoCorte
+
+# Se refiere a la modificación para obtener los estados del pago cuando realmente pagó en esa fecha y no en la fecha de la quincena
+def obtener_estadoPagoClienteCorte_real(db_session, id_cliente, id_contrato, pago_quincenal, pago_mensual, fecha):
+
+    if isinstance(fecha, str):
+        fecha = datetime.strptime(fecha, '%Y-%m-%d')
+
+
+
+    num_pagos = comprobar_primerPago(db_session, id_cliente)
+
+
+    if num_pagos[0] == 0:
+        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_pagoEspecial = monto_primerPago_consulta[0]
+
+        # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
+        estadoPagoCorte = {
+            'cifra': monto_pagoEspecial,
+            'estado': no_hay_pago,
+            'descripcion': 'Primer pago'
+        }
+    else:
+        # si hay más de un pago
+
+        dia_mes = fecha.day
+
+        inicio_quincena, fin_quincena = obtener_quincena_actual(fecha, dia_mes)
+
+        existencia_primer_pago = validacion_primer_pago_quincena(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        sumPagosQuincena = validacion_fechaPago_quincena_fechas_reales(
+            db_session, id_contrato, inicio_quincena, fin_quincena, monedaOriginal)
+
+        quincenaLetras, mesLetras, anioLetras = obtener_quincenaActual_letras(
+            fecha)
+
+        # Validamos que el cliente haya pagado el monto total de la quincena en su primer pago
+        if existencia_primer_pago:
+            monto_pagoEspecial = '0.00'
+            estadoPagoCorte = {
+                'cifra': monto_pagoEspecial,
+                'estado': pago_completo,
+                'descripcion': f'Ya se ha pagado el monto total de la quincena porque el primer pago del préstamo fue abonado'
+            }
+        # Si el cliente no ha pagado el monto total de la quincena se musetra la cifra a pagar
+        elif sumPagosQuincena:
+            if sumPagosQuincena >= pago_quincenal:
+                monto_pagoEspecial = '0.00'
+                estadoPagoCorte = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': pago_completo,
+                    'descripcion': 'Ya se ha pagado el monto total de la quincena'
+                }
+            else:
+                monto_pagoEspecial = pago_quincenal - \
+                    sumPagosQuincena
+                estadoPagoCorte = {
+                    'cifra': monto_pagoEspecial,
+                    'estado': pago_incompleto,
+                    'descripcion': f'El resto a pagar de la {quincenaLetras} quincena de {mesLetras} de {anioLetras}'
+                }
+        # Como solo hay 1 un pago, quiere decir que es el pago especial el que está registrado, por ende no se debe de cobrar intereses
+        else:
+            monto_pagoEspecial = pago_quincenal
+            estadoPagoCorte = {
+                'cifra': monto_pagoEspecial,
+                'estado': no_hay_pago,
+                'descripcion': 'Pago quincenal'
+            }
+
+
+
     return estadoPagoCorte
 
 
@@ -1690,7 +1785,7 @@ def verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, esta
         resultado_pago_fecha = obtener_pagoEspecial(db_session, id_cliente, fechaPago)
         cifra_a_pagar = resultado_pago_fecha['cifra']
         diferencia_pago_a_saldo = obtener_diferencia_a_saldo(cantidadPagarDolares, cifra_a_pagar)
-        print(f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
+
 
         if estadoPago == 0 or estadoPago == 4:
             cantidadPagarDolaresNegativo = cantidadPagarDolares * -1
@@ -1709,7 +1804,7 @@ def verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, esta
         if diferencia_pago_a_saldo is not None and diferencia_pago_a_saldo > 0:
             verificacion_tipo_pago_insertar["cantidadPagarDolares"] = diferencia_pago_a_saldo
 
-        print(verificacion_tipo_pago_insertar)
+
 
         return jsonify(verificacion_tipo_pago_insertar), 200
     except Exception as e:
@@ -1723,7 +1818,7 @@ def verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, esta
 
 
 def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
-                fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                fechaPago, fecha_pago_real, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
                 monedaConversion):
     
 
@@ -1741,7 +1836,7 @@ def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPaga
     # saldo_pendiente = validar_existencia_saldo(db_session, id_cliente)
     # saldo_a_favor = validar_saldo_pendiente_a_favor(db_session, id_cliente)
     cifra_a_pagar = resultado_pago_fecha['cifra']
-    print(cifra_a_pagar)
+
 
     db_session.begin()
 
@@ -1751,7 +1846,7 @@ def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPaga
         num_pagos = comprobar_primerPago(db_session, id_contrato)
 
         id_pagos = insertarPago(
-            db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, estadoPago)
+            db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, fecha_pago_real, estadoPago)
         insertar_detalle_pagos(
             db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 
@@ -1762,9 +1857,7 @@ def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPaga
 
         diferencia_pago_a_saldo = obtener_diferencia_a_saldo(
             cantidadPagarDolares, cifra_a_pagar)
-        print(
-            f'la diferencia del pago a saldo es: {diferencia_pago_a_saldo}')
-        print("Procesar todo esta en " + str(procesar_todo))
+
         if procesar_todo == True:
         
             # Si se obtiene una diferencia de pago a saldo menor a lo que se debe de pagar se deberá de aumentar el saldo (restar)
@@ -1948,7 +2041,7 @@ def cantidad_total_dinero_quincenal_clientes(db_session, date):
                 "Pago": cifra_pago_cliente,
             })
 
-    print(clientes_pagados)
+
 
     cantidad_clientes_pagados = len(clientes_pagados)
 
@@ -1981,5 +2074,112 @@ def cantidad_total_dinero_quincenal_clientes(db_session, date):
         return result
 
 
+
+def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
+    listado_clientesPagosDictReal = []
+    listado_clientes_pagosAlDia = []
+
+    contador_clientes_al_dia = 0
+
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+    for listado in listado_clientesPagos:
+        clientePagoDictReal = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6]
+        }
+        PagosEstadosCortesReal = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], date)
+        clientePagoDictReal.update(PagosEstadosCortesReal)
+        listado_clientesPagosDictReal.append(clientePagoDictReal)
+
+        PagosEstadosCortesAlDia = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
+        if PagosEstadosCortesAlDia['estado'] == 1 or PagosEstadosCortesAlDia['estado'] == 2:
+            contador_clientes_al_dia += 1
+        
+        
+
+
+        
+
+
+
+    clientes_pagados = []
+
+    for cliente in listado_clientesPagosDictReal:
+        if cliente['estado'] == 1 or cliente['estado'] == 2:
+            # Obtenemos los datos del contrato y del cliente mediante el ID del cliente
+            id_contratoActual = obtener_IdContrato(db_session, cliente['id_cliente'])
+
+            # Obtener datos del ultimo pago
+            ultimo_pago = ultimo_pago_contrato(db_session, id_contratoActual)
+
+            cifra_pago_cliente = ultimo_pago[0][8]
+
+
+
+
+
+            
+
+
+
+            # Suponiendo que ultimo_pago[0][4] es un string con formato de fecha y hora
+            fecha_completa = ultimo_pago[0][4]
+            fecha_solo = fecha_completa.strftime('%d-%m-%Y')
+            # Redondear la tasa de cambio a 2 decimales
+            tasa_cambio = obtener_tasa_cambio_local()['cifraTasaCambio'].quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+            clientes_pagados.append({
+                "nombres": cliente['nombres'],
+                "apellidos": cliente['apellidos'],
+                "Pago": cifra_pago_cliente,
+                "fecha_ultimo_pago_real": fecha_solo,
+                "fecha_ultimo_pago_letras": ultimo_pago[0][15],
+                "monto_ultimo_pago_dolares": ultimo_pago[0][8],
+                "monto_ultimo_pago_cordobas": (ultimo_pago[0][8] * tasa_cambio).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            })
+
+
+    print("empieza la depuracion")
+    print(clientes_pagados)
+        
+
+
+    cantidad_clientes_pagados = len(clientes_pagados)
+
+  
+    
+
+    if cantidad_clientes_pagados == 0:
+        result = {
+            "cantidad_clientes_pagados": cantidad_clientes_pagados,
+            "clientes_al_dia": contador_clientes_al_dia,
+            "suma_total_dinero_quincenal_dolares": 0,
+            "suma_total_dinero_quincenal_cordobas": 0,
+        }
+        return result
+    elif cantidad_clientes_pagados > 0:
+
+        # Sumar pagos en dólares y cordobas con formato de comas
+        suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
+        suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
+
+        # Formatear con comas
+        suma_total_dinero_quincenal_dolares_formateado = f"{suma_total_dinero_quincenal_dolares:,.2f}"
+        suma_total_dinero_quincenal_cordobas_formateado = f"{suma_total_dinero_quincenal_cordobas:,.2f}"
+
+
+        result = {
+            "clientes_pagados": clientes_pagados,
+            "clientes_al_dia": contador_clientes_al_dia,
+            "cantidad_clientes_pagados": cantidad_clientes_pagados,
+            "suma_total_dinero_quincenal_dolares": suma_total_dinero_quincenal_dolares_formateado,
+            "suma_total_dinero_quincenal_cordobas":suma_total_dinero_quincenal_cordobas_formateado
+        }
+        return result
 
 

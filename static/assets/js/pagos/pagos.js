@@ -70,7 +70,7 @@ async function ver_datosClientes(id_cliente) {
 
             const pagos = data.datos_prestamo[2];
 
-            ultimoPago.textContent = 'El último pago fue realizado en la ' + pagos.fecha_ultimo_pago_letras + ' (' + pagos.fecha_utlimo_pago_formateado + ')' + ' con un monto de $' + pagos.cifra_ultimo_pagoDolares + ' dólares, ' + ' en cordobas es C$' + pagos.cifra_ultimo_pagoCordobas;
+            ultimoPago.textContent = 'Último pago realizado en la ' + pagos.fecha_ultimo_pago_letras + ' (' + pagos.fecha_utlimo_pago_formateado + ')' + ' con un monto de $' + pagos.cifra_ultimo_pagoDolares + ' dólares, ' + ' en cordobas es C$' + pagos.cifra_ultimo_pagoCordobas;
         }
 
         conversionMoneda();
