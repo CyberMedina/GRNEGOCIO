@@ -14,6 +14,12 @@
 
         }
     }
+    @media (max-width: 992px) {
+        #fechaPagoReal{
+            margin-top: 20px !important;
+        }
+    }
+
 </style>
 
 {% endblock %}
@@ -464,8 +470,8 @@
 
                                     <div class="col-6" id="divInputFechaPagoReal" hidden>
                                         <div class="input-style-1">
-                                            <label class="text-bold">Fecha del pago*</label>
-                                            <input type="date" required name="fechaPagoReal" id="fechaPagoReal" />
+                                            <label class="text-bold">Fecha del pago* <span id="spanIgualarFechaQuincenaAFechaReal" class="text-success-emphasis text-bold">(¿Igualar?)</span></label>
+                                            <input class="mt-1" type="date" required name="fechaPagoReal" id="fechaPagoReal" />
                                             <p id="tiempoPagoLetrasReal"></p>
                                         </div>
                                     </div>
@@ -497,10 +503,7 @@
                             </div>
 
                                                             
-                            <div class="col mb-3">
-                                <a href="javascript:void(0)" id="pagoCompletoBtnInput"
-                                    class="main-btn success-btn-light square-btn btn-hover">Pago completo</a>
-                            </div>
+      
 
                             <div class="row">
                                 <div class="col-4 col-sm-2 col-md-2">
@@ -531,7 +534,7 @@
                                 dataCliente.pagoQuincenal %}
                                 <div class="col-6 col-sm-4">
                                     <div class="input-style-3">
-                                        <label for="">Pago en $</label>
+                                        <label for="">Pago en $ <span id="spanpagoCompletoDlrs" class="text-success-emphasis text-bold">(todo)</span></label>
                                         <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                             id="cantidadPagar$" required />
                                         <span class="icon" style="z-index: 1 !important;"><i

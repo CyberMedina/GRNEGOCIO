@@ -21,6 +21,10 @@ let detallesCliente = document.getElementById('detallesCliente');
 let btnMostrarDetallesCliente = document.getElementById('btnMostrarDetallesCliente');
 let btnOcultarDetallesCliente = document.getElementById('btnOcultarDetallesCliente');
 
+// Seccion automatizacion
+let spanIgualarFechaQuincenaAFechaReal = document.getElementById('spanIgualarFechaQuincenaAFechaReal');
+let spanpagoCompletoDlrs = document.getElementById('spanpagoCompletoDlrs');
+
 
 
 function calculoDolaresCordobas() {
@@ -511,22 +515,22 @@ function obtener_pago() {
 
 
 
-pagoCompleto.addEventListener('click', function () {
+// spanpagoCompletoDlrs.addEventListener('click', function () {
 
-  calculoDolaresCordobas();
+//   calculoDolaresCordobas();
 
-  cantidadPagar$.value = cantidadPagarVerificar$.value;
+//   cantidadPagar$.value = cantidadPagarVerificar$.value;
 
-  // llama a validacionDolares manualmente
-  validacionDolares({ target: cantidadPagar$ });
+//   // llama a validacionDolares manualmente
+//   validacionDolares({ target: cantidadPagar$ });
 
-  let fechaFormateada = obtenerFecha();
+//   let fechaFormateada = obtenerFecha();
 
-  fechaPago.value = fechaFormateada;
-  // llama a validacionDolares manualmente
-  fechaLetras({ target: fechaPago });
+//   fechaPago.value = fechaFormateada;
+//   // llama a validacionDolares manualmente
+//   fechaLetras({ target: fechaPago });
 
-});
+// });
 
 
 document.getElementById("filtro-comboBox").addEventListener("change", function () {
@@ -1054,7 +1058,7 @@ fechaPagoReal.addEventListener('input', function () {
 
 
 
-  if (fechaPagoRealValue < fechaPagoValue) {
+  if (fechaPagoRealValue <= fechaPagoValue) {
       console.log("La fecha real de pago es anterior a la fecha programada.");
       fechaPagoReal.value = fechaPago.value;
       actualizarObservacionPago('', false);
@@ -1066,6 +1070,7 @@ fechaPagoReal.addEventListener('input', function () {
   } else {
       console.log("La fecha real de pago es igual a la fecha programada.");
       actualizarObservacionPago('', false);
+
       conRetraso.hidden = true;
   }
 
@@ -1074,7 +1079,7 @@ fechaPagoReal.addEventListener('input', function () {
 });
 
 
-document.getElementById('pagoCompletoBtnInput').addEventListener('click', function() {
+document.getElementById('spanpagoCompletoDlrs').addEventListener('click', function() {
   calculoDolaresCordobas();
 
   // Set the amount to pay in dollars
@@ -1093,5 +1098,16 @@ document.getElementById('pagoCompletoBtnInput').addEventListener('click', functi
 
   // Manually dispatch input event for Dollars input
   cantidadPagar$.dispatchEvent(new Event('input'));
+
+});
+
+
+spanIgualarFechaQuincenaAFechaReal.addEventListener("click", function(){
+
+  fechaPagoReal.value = fechaPago.value;
+
+  fechaPagoReal.dispatchEvent(new Event('input'));
+
+  divInputFechaPagoReal.hidden = true;
 
 });
