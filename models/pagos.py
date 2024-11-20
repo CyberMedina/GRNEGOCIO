@@ -2076,12 +2076,15 @@ def cantidad_total_dinero_quincenal_clientes(db_session, date):
 
 
 def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
-    listado_clientesPagosDict = []
+    listado_clientesPagosDictReal = []
+    listado_clientes_pagosAlDia = []
+
+    contador_clientes_al_dia = 0
 
     listado_clientesPagos = listar_cliesntesPagos(db_session)
 
     for listado in listado_clientesPagos:
-        clientePagoDict = {
+        clientePagoDictReal = {
             "id_cliente": listado[0],
             "id_tipoCliente": listado[1],
             "nombres": listado[2],
@@ -2090,15 +2093,24 @@ def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], date)
-        clientePagoDict.update(PagosEstadosCortes)
-        listado_clientesPagosDict.append(clientePagoDict)
+        PagosEstadosCortesReal = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], date)
+        clientePagoDictReal.update(PagosEstadosCortesReal)
+        listado_clientesPagosDictReal.append(clientePagoDictReal)
+
+        PagosEstadosCortesAlDia = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
+        if PagosEstadosCortesAlDia['estado'] == 1 or PagosEstadosCortesAlDia['estado'] == 2:
+            contador_clientes_al_dia += 1
+        
+        
+
+
+        
 
 
 
     clientes_pagados = []
 
-    for cliente in listado_clientesPagosDict:
+    for cliente in listado_clientesPagosDictReal:
         if cliente['estado'] == 1 or cliente['estado'] == 2:
             # Obtenemos los datos del contrato y del cliente mediante el ID del cliente
             id_contratoActual = obtener_IdContrato(db_session, cliente['id_cliente'])
@@ -2145,6 +2157,7 @@ def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
     if cantidad_clientes_pagados == 0:
         result = {
             "cantidad_clientes_pagados": cantidad_clientes_pagados,
+            "clientes_al_dia": contador_clientes_al_dia,
             "suma_total_dinero_quincenal_dolares": 0,
             "suma_total_dinero_quincenal_cordobas": 0,
         }
@@ -2162,6 +2175,7 @@ def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
 
         result = {
             "clientes_pagados": clientes_pagados,
+            "clientes_al_dia": contador_clientes_al_dia,
             "cantidad_clientes_pagados": cantidad_clientes_pagados,
             "suma_total_dinero_quincenal_dolares": suma_total_dinero_quincenal_dolares_formateado,
             "suma_total_dinero_quincenal_cordobas":suma_total_dinero_quincenal_cordobas_formateado

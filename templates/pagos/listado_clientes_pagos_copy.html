@@ -154,7 +154,7 @@
                     </div>
                     <div class="content">
                         <h6 class="text-bold mb-10">Total clientes al día</h6>
-                        <h3 class="text-bold mb-10 ">{{ total_dinero_personas_pagadas.cantidad_clientes_pagados }} <span
+                        <h3 class="text-bold mb-10 ">{{ total_dinero_personas_pagadas.clientes_al_dia }}<span
                                 class="text">de {{ total_clientes }}</span></h3>
                         <p class="text-sm">
                             <span class="text-bold"></span>
@@ -237,17 +237,23 @@
                     <h2>Datos del cliente</h2>
                     <!-- <h4 id="nombre_cliente" class="text-bold mb-2"></h4> -->
 
+                    
+
 
 
                     <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
                         <i class="lni lni-cross-circle"></i>
                     </button>
                 </div>
+                
                 <div class="modal-body px-0">
                     <div class="content mb-30">
                         <form action="/clientes" method="POST" enctype="multipart/form-data" id="anadirClientes"
                             class="detalles-clientes">
                             <div class="row">
+                                <div class="col mt-5">
+                                    <span id="ultimoPago">Pruebita</span>
+                                </div>
                                 <div class="tab-style-3 mb-30 card-style">
                                     <nav class="nav" id="nav-tab">
                                         <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
@@ -429,7 +435,7 @@
                                                 <!-- end col -->
                                             </div>
                                         </div>
-                                        <span id="ultimoPago">Pruebita</span>
+                                        
                                     </div>
                                     <div class="container mb-3">
                                         <div class="row">
