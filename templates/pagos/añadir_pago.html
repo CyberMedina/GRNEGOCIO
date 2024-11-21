@@ -5,22 +5,7 @@
 
 {% block customCSS %}
 
-<style>
-    @media (max-width: 576px) {
-        #tooltip-iconPersonalize {
-            font-size: 1rem;
-            /* Ajusta este valor según tus necesidades */
-            display: flex;
-
-        }
-    }
-    @media (max-width: 992px) {
-        #fechaPagoReal{
-            margin-top: 20px !important;
-        }
-    }
-
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pagos/añadir_pago.css') }}">
 
 {% endblock %}
 
@@ -101,7 +86,7 @@
 
                                 <div class="col-md-8 mb-5">
                                     <div class="row">
-                                        <div class="col-12">
+                                        <div class="col-12 detallesCliente">
                                             {% if estado_pago_corte.estado == 0 %}
                                             <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No ha
                                                 pagado</span>
@@ -116,52 +101,69 @@
                                             {% endif %}
                                             <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
                                                     dataCliente.nombre_tipoCliente }}</span></p>
+                                            <p><strong>Paga de manera: </strong><span id="tiempo_pago"
+                                                    data-tiempo-pago="{{ dataCliente.tiempo_pago }}">{{
+                                                    dataCliente.tiempo_pago }}</span></p>
+                                            <a id="aCapital" href="javascript:void(0);"
+                                                data-capital="{{ dataCliente.monto_solicitado }}"
+                                                data-original="{{ dataCliente.monto_solicitado }}">
+                                                <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                            dataCliente.monto_solicitado }}</span></strong></p>
+                                            </a>
+                                            <p><strong>Tasa de interés: <span
+                                                        data-tasa-interes="{{ dataCliente.tasa_interes }}">{{
+                                                        dataCliente.tasa_interes }}%</span></strong></p>
+                                            <a id="aAbonoMensual" href="javascript:void(0)"
+                                                data-abono-mensual="{{ dataCliente.pagoMensual }}"
+                                                data-original="{{ dataCliente.pagoMensual }}">
+                                                <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
+                                                            dataCliente.pagoMensual }}</span></strong></p>
+                                            </a>
+                                            <a id="aAbonoQuincenal" href="javascript:void(0)"
+                                                data-abono-quincenal="{{ dataCliente.pagoQuincenal }}"
+                                                data-original="{{ dataCliente.pagoQuincenal }}">
+                                                <p><strong>Abono Quincenal: <span>{{ dataCliente.pagoQuincenal
+                                                            }}</span></strong></p>
+                                            </a>
                                             {% if dataCliente.id_tipoCliente == 3 %}
                                             <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
-                                                        dataCliente.monto_solicitado }}</span> </strong></p>
+                                                        dataCliente.monto_solicitado }}</span></strong></p>
                                             <p><strong>Saldo a la fecha: </strong><span id="nombre_negocio">{{
                                                     saldo_pendiente }}</span></p>
                                             {% endif %}
                                             <a id="btnMostrarDetallesCliente" href="#0"
                                                 class="text-medium text-dark">[Leer más]</a>
                                             <div class="detallesCliente" id="detallesCliente" hidden>
-                                                <p><strong>Paga de manera: </strong><span id="tiempo_pago">{{
-                                                        dataCliente.tiempo_pago }}</span></p>
-                                                <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo">{{
+                                                <p><strong>Fecha del préstamo: </strong><span id="fecha_prestamo"
+                                                        data-fecha-prestamo="{{ dataCliente.fechaPrestamo }}">{{
                                                         dataCliente.fechaPrestamo }}</span></p>
-                                                <p><strong>Cliente desde hace: </strong><span id="cliente_desde">{{
+                                                <p><strong>Cliente desde hace: </strong><span id="cliente_desde"
+                                                        data-cliente-desde="{{ dataCliente.fecha_prestamo_desde }}">{{
                                                         dataCliente.fecha_prestamo_desde }}</span></p>
-                                                <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
-                                                            dataCliente.monto_solicitado }}</span> </strong></p>
-                                                <p><strong>Tasa de interes: <span>{{ dataCliente.tasa_interes
-                                                            }}%</span></strong>
-                                                </p>
-                                                <p><strong>Abono Mensual: <span>{{ dataCliente.codigoMoneda }} {{
-                                                            dataCliente.pagoMensual }}</span></strong></p>
-                                                <p><strong>Abono Quincenal: <span>{{ dataCliente.codigoMoneda }} {{
-                                                            dataCliente.pagoQuincenal }}</span></strong></p>
                                             </div>
-
                                             <a id="btnOcultarDetallesCliente" href="#0" class="text-medium text-dark"
                                                 hidden>[Leer menos]</a>
-
-
-
                                             {% if saldo_pendiente.estado == 2 and saldo_pendiente.cifraSaldo > 0.00 %}
-                                            <p><strong class="text-danger">Saldo pendiente: {{
-                                                    saldo_pendiente.codigoMoneda }}
-                                                    {{ saldo_pendiente.cifraSaldo }} <span></span></strong></p>
+                                            <a id="aSaldoPendiente" href="javascript:void(0);"
+                                                data-cliente-saldo-pendiente="{{ saldo_pendiente.cifraSaldo }}"
+                                                data-original="{{ saldo_pendiente.cifraSaldo }}">
+                                                <p><strong class="text-danger">
+                                                        Saldo pendiente: {{ saldo_pendiente.codigoMoneda }} {{
+                                                        saldo_pendiente.cifraSaldo }} <span></span>
+                                                    </strong></p>
+                                            </a>
                                             {% elif saldo_pendiente.estado == 1 and saldo_pendiente.cifraSaldo > 0.00 %}
-                                            <p><strong class="text-success">Saldo a favor: {{
-                                                    saldo_pendiente.codigoMoneda }}
-                                                    {{ saldo_pendiente.cifraSaldo }}<span></span></strong></p>
-                                            <span></span></strong></p>
+                                            <a id="aSaldoAFavor" href="javascript:void(0);"
+                                                data-cliente-saldo-a-favor="{{ saldo_a_favor.cifraSaldo }}"
+                                                data-original="{{ saldo_a_favor.cifraSaldo }}">
+                                                <p><strong class="text-success">
+                                                        Saldo a favor: {{ saldo_a_favor.codigoMoneda }} {{
+                                                        saldo_a_favor.cifraSaldo }} <span></span>
+                                                    </strong></p>
+                                            </a>
                                             {% endif %}
-
-
                                         </div>
                                     </div>
-
                                 </div>
 
                                 <div class="col-md-4 mb-5">
@@ -470,8 +472,11 @@
 
                                     <div class="col-6" id="divInputFechaPagoReal" hidden>
                                         <div class="input-style-1">
-                                            <label class="text-bold">Fecha del pago* <span id="spanIgualarFechaQuincenaAFechaReal" class="text-success-emphasis text-bold">(¿Igualar?)</span></label>
-                                            <input class="mt-1" type="date" required name="fechaPagoReal" id="fechaPagoReal" />
+                                            <label class="text-bold">Fecha del pago* <span
+                                                    id="spanIgualarFechaQuincenaAFechaReal"
+                                                    class="text-success-emphasis text-bold">(¿Igualar?)</span></label>
+                                            <input class="mt-1" type="date" required name="fechaPagoReal"
+                                                id="fechaPagoReal" />
                                             <p id="tiempoPagoLetrasReal"></p>
                                         </div>
                                     </div>
@@ -502,8 +507,8 @@
 
                             </div>
 
-                                                            
-      
+
+
 
                             <div class="row">
                                 <div class="col-4 col-sm-2 col-md-2">
@@ -534,7 +539,8 @@
                                 dataCliente.pagoQuincenal %}
                                 <div class="col-6 col-sm-4">
                                     <div class="input-style-3">
-                                        <label for="">Pago en $ <span id="spanpagoCompletoDlrs" class="text-success-emphasis text-bold">(todo)</span></label>
+                                        <label for="">Pago en $ <span id="spanpagoCompletoDlrs"
+                                                class="text-success-emphasis text-bold">(todo)</span></label>
                                         <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$"
                                             id="cantidadPagar$" required />
                                         <span class="icon" style="z-index: 1 !important;"><i

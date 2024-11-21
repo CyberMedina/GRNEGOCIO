@@ -25,6 +25,13 @@ let btnOcultarDetallesCliente = document.getElementById('btnOcultarDetallesClien
 let spanIgualarFechaQuincenaAFechaReal = document.getElementById('spanIgualarFechaQuincenaAFechaReal');
 let spanpagoCompletoDlrs = document.getElementById('spanpagoCompletoDlrs');
 
+//Seccion de etiquetas a para mostrar informacion del pago del cliente
+let aCapital = document.getElementById('aCapital');
+let aAbonoMensual = document.getElementById('aAbonoMensual');
+let aAbonoQuincenal = document.getElementById('aAbonoQuincenal');
+let aSaldoPendiente = document.getElementById('aSaldoPendiente');
+let aSaldoAFavor = document.getElementById('aSaldoAFavor');
+
 
 
 function calculoDolaresCordobas() {
@@ -1110,4 +1117,182 @@ spanIgualarFechaQuincenaAFechaReal.addEventListener("click", function(){
 
   divInputFechaPagoReal.hidden = true;
 
+});
+
+// aCapital.addEventListener('click', function(){
+
+//   CambioEtiquetasACordobasDetallesCliente();
+
+// });
+
+// function CambioEtiquetasACordobasDetallesCliente(){
+
+//   const capital = document.getElementById('aCapital').dataset.capital;
+//   const abonoMensual = document.getElementById('aAbonoMensual').dataset.abonoMensual;
+//   const abonoQuincenal = document.getElementById('aAbonoQuincenal').dataset.abonoQuincenal;
+
+//   const asaldoPendiente = document.getElementById('aSaldoPendiente');
+//   if (asaldoPendiente){
+
+//     const saldoPendiente= asaldoPendiente.dataset.dataClienteSaldoPendiente;
+//   }
+
+//   const aSaldoAFavor = document.getElementById('aSaldoAFavor');
+//   if (aSaldoAFavor){
+//    const saldoAFavor= aSaldoAFavor.dataset.dataClienteSaldoAFavor;
+//   }
+
+//   obtenerValorTasaCambio().then(tasaCambio => {
+//     window.alert('Capital: ' + capital + ' Abono mensual: ' + abonoMensual + ' Abono quincenal: ' + abonoQuincenal + ' tasa de cambio: ' + tasaCambio);
+
+//     capitalCordobas = capital * tasaCambio;
+//     abonoMensualCordobas = abonoMensual * tasaCambio;
+//     abonoQuincenalCordobas = abonoQuincenal * tasaCambio;
+//   });
+
+  
+
+
+
+
+
+  
+
+
+
+
+// }  
+
+
+async function obtenerTasaCambio() {
+  let response = await fetch('/obtener_tasa_cambio');
+  let data = await response.json();
+  return data;
+}
+
+async function obtenerValorTasaCambio() {
+  let data = await obtenerTasaCambio();
+  if (data.tasa_cambio.cifraTasaCambio === "0.00") {
+    throw new Error('Inserte tasa de cambio por favor');
+  } else {
+    return data.tasa_cambio.cifraTasaCambio;
+  }
+}
+
+function formatearNumero(numero) {
+  if (isNaN(numero)) {
+    return "0";
+  }
+  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function cambiarValoresACordobas(tasaCambio) {
+  const capitalElement = document.getElementById('aCapital');
+  const abonoMensualElement = document.getElementById('aAbonoMensual');
+  const abonoQuincenalElement = document.getElementById('aAbonoQuincenal');
+  const saldoPendienteElement = document.getElementById('aSaldoPendiente');
+  const saldoAFavorElement = document.getElementById('aSaldoAFavor');
+
+  if (capitalElement) {
+    const capital = parseFloat(capitalElement.dataset.capital);
+    console.log('Capital:', capital);
+    capitalElement.querySelector('span').textContent = 'C$ ' + formatearNumero((capital * tasaCambio).toFixed(2));
+  }
+
+  if (abonoMensualElement) {
+    const abonoMensual = parseFloat(abonoMensualElement.dataset.abonoMensual);
+    console.log('Abono Mensual:', abonoMensual);
+    abonoMensualElement.querySelector('span').textContent = 'C$ ' + formatearNumero((abonoMensual * tasaCambio).toFixed(2));
+  }
+
+  if (abonoQuincenalElement) {
+    const abonoQuincenal = parseFloat(abonoQuincenalElement.dataset.abonoQuincenal);
+    console.log('Abono Quincenal:', abonoQuincenal);
+    abonoQuincenalElement.querySelector('span').textContent = 'C$ ' + formatearNumero((abonoQuincenal * tasaCambio).toFixed(2));
+  }
+
+  if (saldoPendienteElement) {
+    const saldoPendiente = parseFloat(saldoPendienteElement.dataset.clienteSaldoPendiente);
+    console.log('Saldo Pendiente:', saldoPendiente);
+    saldoPendienteElement.querySelector('span').textContent = 'C$ ' + formatearNumero((saldoPendiente * tasaCambio).toFixed(2));
+  }
+
+  if (saldoAFavorElement) {
+    const saldoAFavor = parseFloat(saldoAFavorElement.dataset.clienteSaldoAFavor);
+    console.log('Saldo a Favor:', saldoAFavor);
+    saldoAFavorElement.querySelector('span').textContent = 'C$ ' + formatearNumero((saldoAFavor * tasaCambio).toFixed(2));
+  }
+}
+
+function restaurarValoresOriginales() {
+  const capitalElement = document.getElementById('aCapital');
+  const abonoMensualElement = document.getElementById('aAbonoMensual');
+  const abonoQuincenalElement = document.getElementById('aAbonoQuincenal');
+  const saldoPendienteElement = document.getElementById('aSaldoPendiente');
+  const saldoAFavorElement = document.getElementById('aSaldoAFavor');
+
+  if (capitalElement) {
+    console.log('Restaurar Capital:', capitalElement.dataset.original);
+    capitalElement.querySelector('span').textContent = '$ ' + formatearNumero(capitalElement.dataset.original);
+  }
+
+  if (abonoMensualElement) {
+    console.log('Restaurar Abono Mensual:', abonoMensualElement.dataset.original);
+    abonoMensualElement.querySelector('span').textContent = '$ ' + formatearNumero(abonoMensualElement.dataset.original);
+  }
+
+  if (abonoQuincenalElement) {
+    console.log('Restaurar Abono Quincenal:', abonoQuincenalElement.dataset.original);
+    abonoQuincenalElement.querySelector('span').textContent = '$ ' + formatearNumero(abonoQuincenalElement.dataset.original);
+  }
+
+  if (saldoPendienteElement) {
+    console.log('Restaurar Saldo Pendiente:', saldoPendienteElement.dataset.original);
+    saldoPendienteElement.querySelector('span').textContent = '$ ' + formatearNumero(saldoPendienteElement.dataset.original);
+  }
+
+  if (saldoAFavorElement) {
+    console.log('Restaurar Saldo a Favor:', saldoAFavorElement.dataset.original);
+    saldoAFavorElement.querySelector('span').textContent = '$ ' + formatearNumero(saldoAFavorElement.dataset.original);
+  }
+}
+
+let valoresEnCordobas = false;
+
+function alternarValores() {
+  if (valoresEnCordobas) {
+    restaurarValoresOriginales();
+  } else {
+    obtenerValorTasaCambio().then(tasaCambio => {
+      cambiarValoresACordobas(tasaCambio);
+    }).catch(error => {
+      console.error(error.message);
+      alert(error.message);
+    });
+  }
+  valoresEnCordobas = !valoresEnCordobas;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const capitalElement = document.getElementById('aCapital');
+  const abonoMensualElement = document.getElementById('aAbonoMensual');
+  const abonoQuincenalElement = document.getElementById('aAbonoQuincenal');
+  const saldoPendienteElement = document.getElementById('aSaldoPendiente');
+  const saldoAFavorElement = document.getElementById('aSaldoAFavor');
+
+  if (capitalElement) {
+    capitalElement.addEventListener('click', alternarValores);
+  }
+  if (abonoMensualElement) {
+    abonoMensualElement.addEventListener('click', alternarValores);
+  }
+  if (abonoQuincenalElement) {
+    abonoQuincenalElement.addEventListener('click', alternarValores);
+  }
+  if (saldoPendienteElement) {
+    saldoPendienteElement.addEventListener('click', alternarValores);
+  }
+  if (saldoAFavorElement) {
+    saldoAFavorElement.addEventListener('click', alternarValores);
+  }
 });

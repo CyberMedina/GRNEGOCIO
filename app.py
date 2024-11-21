@@ -14,7 +14,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
-from urllib.parse import urlencode
 from decimal import Decimal, ROUND_DOWN
 import tempfile
 import weasyprint
@@ -1906,7 +1905,7 @@ def obtener_cantidad_clientes_pagados():
 def obtener_cantidad_total_dinero_quincenal_clientes():
 
     try:
-        cadena_respuesta = crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session, datetime.now())
+        cadena_respuesta = crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session)
         return jsonify({"respuesta": cadena_respuesta}), 200
     except SQLAlchemyError as e:
         db_session.rollback()

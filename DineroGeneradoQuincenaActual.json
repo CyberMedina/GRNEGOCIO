@@ -1,0 +1,35 @@
+{
+    "manifest": {
+      "publishingInformation": {
+        "locales": {
+          "es-MX": {
+            "name": "Dinero generado en la quincena actual",
+            "summary": "Acá se mostrará el total de dinero generado en la quincena actual",
+            "description": "Esta tarea recupera el total de dinero generado en la quincena actual."
+          }
+        }
+      },
+      "apis": {
+        "customTasks": {
+          "endpoint": {
+            "uri": "amzn1.ask.skill.67170720-98de-4f3d-85fb-1e8e0f4b891a"
+          },
+          "tasks": [
+            {
+              "name": "DineroGeneradoQuincenaActual",
+              "input": {
+                "properties": {}
+              },
+              "output": {
+                "properties": {
+                  "dineroGenerado": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
