@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/fullcalendar.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/fullcalendar.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/main.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/navbar_phone.css') }}">
 
 
   {% block customCSS %}{% endblock %}
@@ -27,6 +28,38 @@
 </head>
 
 <body>
+
+  <div class="layout-wrapper layout-content-navbar">
+    <!-- Layout page -->
+    <div class="nav__menu" id="nav-menu">
+      <ul class="nav__list">
+        <li class="nav__item">
+          <a href="/clientes" class="nav__link active-link">
+            <i class='lni lni-users nav__icon'></i>
+            <span class="nav__name">Clientes</span>
+          </a>
+        </li>
+
+        <li class="nav__item">
+          <a href="/prestamos" class="nav__link">
+            <i class='lni lni-customer nav__icon'></i>
+            <span class="nav__name">Préstamos</span>
+          </a>
+        </li>
+
+        <li class="nav__item">
+          <a href="/" class="nav__link">
+            <i class='lni lni-money-location nav__icon'></i>
+            <span class="nav__name">Pagos</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+
+  </div>
+
+
   <!-- ======== Preloader =========== -->
   <div id="preloader">
     <div class="spinner"></div>
@@ -258,7 +291,7 @@
   </main>
 
   <!-- ============ Theme Option Start ============= -->
-  <div class="btn-theme">
+  <!-- <div class="btn-theme">
     <div class="container">
       <label class="toggle" for="switch">
         <input id="switch" class="input" type="checkbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
@@ -271,7 +304,7 @@
       </label>
     </div>
 
-  </div>
+  </div> -->
 
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
     <div class="offcanvas-header">
@@ -384,7 +417,7 @@
 
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('{{ url_for('static', filename='service-worker.js') }}')
+        navigator.serviceWorker.register('{{ url_for('static', filename='service - worker.js') }}')
           .then(registration => {
             console.log('Service Worker registrado con éxito:', registration);
           })
@@ -392,6 +425,50 @@
             console.log('Error al registrar el Service Worker:', error);
           });
       }
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Obtener la URL actual
+        const currentUrl = window.location.pathname;
+
+        // Seleccionar todos los elementos de menú en la primera navbar
+        const menuItems1 = document.querySelectorAll(".menu-item");
+
+        // Recorrer todos los elementos de menú de la primera navbar
+        menuItems1.forEach(item => {
+          // Obtener el enlace dentro del elemento de menú
+          const link = item.querySelector("a");
+
+          // Verificar si la URL del enlace coincide con la URL actual
+          if (link.getAttribute("href") === currentUrl) {
+            // Agregar la clase "active" al elemento de menú
+            item.classList.add("active");
+          } else {
+            // Asegurarse de que los demás elementos no tengan la clase "active"
+            item.classList.remove("active");
+          }
+        });
+
+        // Seleccionar todos los elementos de menú en la segunda navbar
+        const menuItems2 = document.querySelectorAll(".nav__item");
+
+        // Recorrer todos los elementos de menú de la segunda navbar
+        menuItems2.forEach(item => {
+          // Obtener el enlace dentro del elemento de menú
+          const link = item.querySelector("a");
+
+          // Verificar si la URL del enlace coincide con la URL actual
+          if (link.getAttribute("href") === currentUrl) {
+            // Agregar la clase "active-link" al enlace
+            link.classList.add("active-link");
+          } else {
+            // Asegurarse de que los demás enlaces no tengan la clase "active-link"
+            link.classList.remove("active-link");
+          }
+        });
+      });
+
     </script>
 </body>
 

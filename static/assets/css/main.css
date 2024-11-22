@@ -442,7 +442,8 @@ h6,
 /* ========== breadcrumb ============ */
 .title-wrapper .breadcrumb-wrapper,
 .title-wrapper .title {
-  margin-bottom: 30px;
+  margin-top: 90px;
+  margin-bottom: 42px;
 }
 @media (max-width: 767px) {
   .title-wrapper .breadcrumb-wrapper,
