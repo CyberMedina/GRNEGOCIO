@@ -369,6 +369,7 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
     listado_clientesPagosDict = []
 
     listado_clientesPagos = listar_cliesntesPagos(db_session)
+    clientes_total = len(listado_clientesPagos)
 
     for listado in listado_clientesPagos:
         clientePagoDict = {
@@ -380,7 +381,7 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
@@ -408,30 +409,27 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
 
     cantidad_clientes_pagados = len(clientes_pagados)
 
-    lista_clientes_con_pagos = [f"{i+1}. {cliente['nombres']} {cliente['apellidos']} con un pago de: {cliente['Pago']} dólares" for i, cliente in enumerate(clientes_pagados)]
+    lista_clientes_con_pagos = [f"{i+1}. {cliente['nombres']} con {cliente['Pago']} dólares" for i, cliente in enumerate(clientes_pagados)]
     
 
     if cantidad_clientes_pagados == 0:
-        cadenena_texto_respuesta = "Según mis registros, no hay clientes que hayan pagado"
+        cadenena_texto_respuesta = "No hay clientes que hayan pagado"
     elif cantidad_clientes_pagados == 1:
 
         suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
         suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
 
 
-        cadenena_texto_respuesta = f"""Según mis registros es de un total de {suma_total_dinero_quincenal_dolares} dólares, en córdobas vendrían siendo {suma_total_dinero_quincenal_cordobas} córdobas, con el único cliente que ha pagado.
-        A continuación te brindo los detalles:
-        {lista_clientes_con_pagos}"""
-
+        cadenena_texto_respuesta = f""" Ha pagado solamente uno de {clientes_total} clientes. Con un total de {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares. """
     elif cantidad_clientes_pagados > 1:
 
         suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
         suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
 
 
-        cadenena_texto_respuesta = f"""Según mis registros es de un total de {suma_total_dinero_quincenal_dolares} dólares, en córdobas vendrían siendo {suma_total_dinero_quincenal_cordobas} córdobas, con los {cantidad_clientes_pagados} clientes que han pagado.
-        A continuación te brindo los detalles:
-        {lista_clientes_con_pagos}"""
+        cadenena_texto_respuesta = f"""
+        Han pagado {cantidad_clientes_pagados} de {clientes_total} clientes. que suman {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares.
+        Los clientes que han pagado son: {lista_clientes_con_pagos}"""
 
     return cadenena_texto_respuesta
 
