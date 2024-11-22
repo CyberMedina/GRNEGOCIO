@@ -428,8 +428,7 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
 
 
         cadenena_texto_respuesta = f"""
-        Han pagado {cantidad_clientes_pagados} de {clientes_total} clientes. que suman {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares.
-        Los clientes que han pagado son: {lista_clientes_con_pagos}"""
+        Han pagado {cantidad_clientes_pagados} de {clientes_total} clientes. que suman {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares."""
 
     return cadenena_texto_respuesta
 
