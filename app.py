@@ -1,5 +1,6 @@
 from logging import getLogger
 import os
+from urllib.parse import urlencode
 from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
 from flask_session import Session
@@ -110,7 +111,7 @@ def login_system():
 
                 if check_password_hash(user_password, password):
                     session['user_id'] = user_id
-                    return render_template('index.html')
+                    return render_template('/')
             return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
         except SQLAlchemyError as e:
             db_session.rollback()  # Hacer rollback en caso de excepción
@@ -671,41 +672,29 @@ def listado_clientes_pagos_filter():
 @app.route('/', methods=['GET', 'POST'])
 @login_requiredUser
 def listado_clientes_pagos():
-
     if request.method == 'GET':
-
-
-
         date_input = request.args.get('date')
-
         detected_change = session.get('detected_change_date_form')
-    
+
         if detected_change:
-            # Verificar si 'changed' es True
             if detected_change.get('changed') == True and detected_change.get('date') is not None:
-                # Si es True, acceder a 'date'
                 date = detected_change.get('date')
                 date_input = date
-
-                
                 session.pop('detected_change_date_form', None)
             else:
-                # Si 'changed' es False o no está presente
                 date = datetime.now()
                 date_input = date.strftime("%Y-%m-%d")
         else:
             date = datetime.now()
             date_input = date.strftime("%Y-%m-%d")
-        
-        
-
 
         listado_clientesPagosDict = []
-
         listado_clientesPagos = listar_cliesntesPagos(db_session)
 
-        for client_number, listado in enumerate(listado_clientesPagos, start=1):
+        # Mover el cálculo fuera del bucle
+        total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes_real(db_session, date)
 
+        for client_number, listado in enumerate(listado_clientesPagos, start=1):
             clientePagoDict = {
                 "id_cliente": listado[0],
                 "id_tipoCliente": listado[1],
@@ -715,38 +704,26 @@ def listado_clientes_pagos():
                 "pagoMensual": listado[5],
                 "pagoQuincenal": listado[6],
             }
-            
 
+            # Eliminar la comprobación innecesaria
+            # if date is None:
+            #     date = datetime.now()
 
-
-            if date is None:
-                date = datetime.now()
-
-            total_dinero_personas_pagadas = cantidad_total_dinero_quincenal_clientes_real(db_session, date)
-
-            PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], date)
+            PagosEstadosCortes = obtener_estadoPagoClienteCorte(
+                db_session, listado[0], listado[4], listado[6], listado[5], date)
             clientePagoDict.update(PagosEstadosCortes)
             listado_clientesPagosDict.append(clientePagoDict)
 
-            
-
-
-
         quincena, mes, anio = obtener_quincenaActual_letras(date)
-
         quincena_actual = f"{quincena} quincena de {mes} del {anio}"
-
-
-
 
         formulario_clientes_pagos = {
             "listado_clientes_pagos": listado_clientesPagosDict,
-            "total_dinero_personas_pagadas" : total_dinero_personas_pagadas,
-            "total_clientes" : len(listado_clientesPagosDict),
-            "quincena_actual" : quincena_actual,
-            "date_input" : date_input
+            "total_dinero_personas_pagadas": total_dinero_personas_pagadas,
+            "total_clientes": len(listado_clientesPagosDict),
+            "quincena_actual": quincena_actual,
+            "date_input": date_input
         }
-
 
         return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
 

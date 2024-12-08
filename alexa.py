@@ -5,7 +5,7 @@
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
 import logging
-import ask_sdk_core.utils as ask_utils
+import ask_sdk_core.utils as ask_utils # type: ignore
 
 import requests
 import pytz
@@ -604,7 +604,6 @@ class DineroGeneradoQuincenaActualHandler(AbstractRequestHandler):
         headers = {'Content-Type': 'application/json'}
         response = requests.get(url, headers=headers)
 
-        reprompt_text = "¿Necesitas algo más?"
         if response.status_code == 200:
             data = response.json()
             total_quincenal = data.get('total_quincenal', 'desconocido')
@@ -615,10 +614,8 @@ class DineroGeneradoQuincenaActualHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(reprompt_text)
                 .response
         )
-
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
