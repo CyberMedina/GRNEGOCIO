@@ -250,11 +250,11 @@
                   <div class="profile-info">
                     <div class="info">
                       <div class="image">
-                        <img src="https://ui-avatars.com/api/?name=Germán+Medina/?rounded=true" alt="" />
+                        <img src="https://ui-avatars.com/api/?name={{ session['nombre_persona'] }}+{{ session['apellido_persona'] }}/?rounded=true" alt="" />
                       </div>
                       <div>
-                        <h6 class="fw-500">Germán Medina</h6>
-                        <p>Admin</p>
+                        <h6 class="fw-500">{{ session['nombre_persona'] }} {{ session['apellido_persona'] }}</h6>
+                        <p>{{ session['nombre_rol'] }}</p>
                       </div>
                     </div>
                   </div>
@@ -264,10 +264,10 @@
                   <li>
                     <a href="#" onclick="configuracionTasaCambio();"><i class="lni lni-dollar"></i>Tasa de cambio</a>
                   </li>
-                  <li>
+                  <!-- <li>
                     <a href="#0" id="toggleCheckboxLink"> <i class="fa-regular fa-circle-half-stroke"></i></i>
                       Modo:<span id="modoLuz"></span> </a>
-                  </li>
+                  </li> -->
                   <li>
                     <a href="/base_de_datos"> <i class="lni lni-cog"></i> Configuración </a>
                   </li>
@@ -431,15 +431,15 @@
       document.addEventListener("DOMContentLoaded", function () {
         // Obtener la URL actual
         const currentUrl = window.location.pathname;
-
+    
         // Seleccionar todos los elementos de menú en la primera navbar
         const menuItems1 = document.querySelectorAll(".menu-item");
-
+    
         // Recorrer todos los elementos de menú de la primera navbar
         menuItems1.forEach(item => {
           // Obtener el enlace dentro del elemento de menú
           const link = item.querySelector("a");
-
+    
           // Verificar si la URL del enlace coincide con la URL actual
           if (link.getAttribute("href") === currentUrl) {
             // Agregar la clase "active" al elemento de menú
@@ -449,15 +449,15 @@
             item.classList.remove("active");
           }
         });
-
+    
         // Seleccionar todos los elementos de menú en la segunda navbar
         const menuItems2 = document.querySelectorAll(".nav__item");
-
+    
         // Recorrer todos los elementos de menú de la segunda navbar
         menuItems2.forEach(item => {
           // Obtener el enlace dentro del elemento de menú
           const link = item.querySelector("a");
-
+    
           // Verificar si la URL del enlace coincide con la URL actual
           if (link.getAttribute("href") === currentUrl) {
             // Agregar la clase "active-link" al enlace
@@ -467,8 +467,25 @@
             link.classList.remove("active-link");
           }
         });
+    
+        // Seleccionar todos los elementos de menú con la clase "nav-item"
+        const menuItems3 = document.querySelectorAll(".nav-item");
+    
+        // Recorrer todos los elementos de menú con la clase "nav-item"
+        menuItems3.forEach(item => {
+          // Obtener el enlace dentro del elemento de menú
+          const link = item.querySelector("a");
+    
+          // Verificar si la URL del enlace coincide con la URL actual
+          if (link.getAttribute("href") === currentUrl) {
+            // Agregar la clase "active" al elemento de menú
+            item.classList.add("active");
+          } else {
+            // Asegurarse de que los demás elementos no tengan la clase "active"
+            item.classList.remove("active");
+          }
+        });
       });
-
     </script>
 </body>
 

@@ -36,6 +36,7 @@ from models.pagos import *
 from models.contratos import *
 from models.API_Alexa import *
 from models.base_de_datos import *
+from models.info_login import *
 from flask_cors import CORS
 from serverEmail import mail
 from utils import login_requiredUser
@@ -108,10 +109,26 @@ def login_system():
             if user_row:
                 user_password = user_row[5]
                 user_id = user_row[0]
+                id_persona = user_row[1]
+                id_rol = user_row[2]
 
                 if check_password_hash(user_password, password):
+
+                    nombres, apellidos = datos_persona(id_persona)
+                    nombre_rol = datos_rol(id_rol)
+
+                    ## Datos de la persona logueada backend
                     session['user_id'] = user_id
-                    return render_template('/')
+                    session['id_persona'] = id_persona
+                    session['id_rol'] = id_rol
+
+                    ## Datos planos de la persona logueada
+                    session['nombre_persona'] = nombres
+                    session['apellido_persona'] = apellidos
+                    session['nombre_rol'] = nombre_rol
+                
+
+                    return redirect('/')
             return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
         except SQLAlchemyError as e:
             db_session.rollback()  # Hacer rollback en caso de excepción
@@ -1810,7 +1827,7 @@ def Cerrar_Sesion():
     session.pop('user_id', None)
     session.pop('name', None)
     session.pop('lastname', None)
-    return redirect(url_for('index'))
+    return redirect('/')
 
 
 
