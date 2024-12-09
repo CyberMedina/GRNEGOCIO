@@ -1909,6 +1909,19 @@ def obtener_cantidad_total_dinero_quincenal_clientes():
         db_session.rollback()
         print(f"Error: {e}")
         return jsonify({"message": "Error en la base de datos"}), 500
+
+
+@app.route('/api/obtener_clientes_pagados', methods=['GET'])
+@cross_origin()
+def obtener_clientes_pagados():
+
+    try:
+        cadena_respuesta = crear_cadena_respuesta_clientes_pagados(db_session)
+        return jsonify({"respuesta": cadena_respuesta}), 200
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return jsonify({"message": "Error en la base de datos"}), 500
     
 
 @app.route('/api/agendarPagoNormal', methods=['GET', 'POST'])

@@ -433,6 +433,132 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
     return cadenena_texto_respuesta
 
 
+def crear_cadena_respuesta_clientes_pagados(db_session):
+    listado_clientesPagosDict = []
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+
+    for listado in listado_clientesPagos:
+        clientePagoDict = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6],
+        }
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte(
+            db_session,
+            listado[0],
+            listado[4],
+            listado[6],
+            listado[5],
+            datetime.now(),
+        )
+        clientePagoDict.update(PagosEstadosCortes)
+        listado_clientesPagosDict.append(clientePagoDict)
+
+    print(listado_clientesPagosDict)
+
+    clientes_pagados = [
+        cliente
+        for cliente in listado_clientesPagosDict
+        if cliente["estado"] == 1 or cliente["estado"] == 2
+    ]
+
+    cantidad_clientes_pagados = len(clientes_pagados)
+    nombre_clientes_pagados = [
+        f"{cliente['nombres']} {cliente['apellidos']}" for cliente in clientes_pagados
+    ]
+
+    if cantidad_clientes_pagados == 0:
+        cadena_texto_respuesta = "Según mis registros, no hay clientes que hayan pagado"
+    elif cantidad_clientes_pagados == 1:
+        cadena_texto_respuesta = (
+            f"Según mis registros hay {cantidad_clientes_pagados} cliente, "
+            f"el cual es: {nombre_clientes_pagados[0]}"
+        )
+    else:
+        cadena_texto_respuesta = (
+            f"Según mis registros hay {cantidad_clientes_pagados} clientes, "
+            f"los cuales son: {', '.join(nombre_clientes_pagados)}"
+        )
+
+    respuesta = {
+        "alexa_speak": cadena_texto_respuesta,
+        "alexa_display": nombre_clientes_pagados,
+    }
+    return respuesta
+
+
+def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
+    listado_clientesPagosDict = []
+
+    listado_clientesPagos = listar_cliesntesPagos(db_session)
+    clientes_total = len(listado_clientesPagos)
+
+    for listado in listado_clientesPagos:
+        clientePagoDict = {
+            "id_cliente": listado[0],
+            "id_tipoCliente": listado[1],
+            "nombres": listado[2],
+            "apellidos": listado[3],
+            "id_contrato": listado[4],
+            "pagoMensual": listado[5],
+            "pagoQuincenal": listado[6]
+        }
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        clientePagoDict.update(PagosEstadosCortes)
+        listado_clientesPagosDict.append(clientePagoDict)
+
+
+
+    clientes_pagados = []
+
+    for cliente in listado_clientesPagosDict:
+        if cliente['estado'] == 1 or cliente['estado'] == 2:
+            # Obtenemos los datos del contrato y del cliente mediante el ID del cliente
+            id_contratoActual = obtener_IdContrato(db_session, cliente['id_cliente'])
+
+            # Obtener datos del ultimo pago
+            ultimo_pago = ultimo_pago_contrato(db_session, id_contratoActual)
+
+            cifra_pago_cliente = ultimo_pago[0][8]
+
+            clientes_pagados.append({
+                "nombres": cliente['nombres'],
+                "apellidos": cliente['apellidos'],
+                "Pago": cifra_pago_cliente,
+            })
+
+    print(clientes_pagados)
+
+    cantidad_clientes_pagados = len(clientes_pagados)
+
+    lista_clientes_con_pagos = [f"{i+1}. {cliente['nombres']} con {cliente['Pago']} dólares" for i, cliente in enumerate(clientes_pagados)]
+    
+
+    if cantidad_clientes_pagados == 0:
+        cadenena_texto_respuesta = "No hay clientes que hayan pagado"
+    elif cantidad_clientes_pagados == 1:
+
+        suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
+        suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
+
+
+        cadenena_texto_respuesta = f""" Ha pagado solamente uno de {clientes_total} clientes. Con un total de {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares. """
+    elif cantidad_clientes_pagados > 1:
+
+        suma_total_dinero_quincenal_dolares = sum([cliente['Pago'] for cliente in clientes_pagados])
+        suma_total_dinero_quincenal_cordobas = math.ceil(suma_total_dinero_quincenal_dolares * obtener_tasa_cambio_local()['cifraTasaCambio'])
+
+
+        cadenena_texto_respuesta = f"""
+        Han pagado {cantidad_clientes_pagados} de {clientes_total} clientes. que suman {suma_total_dinero_quincenal_cordobas} córdobas. en dólares {suma_total_dinero_quincenal_dolares} dólares."""
+
+    return cadenena_texto_respuesta
+
+
 
 
 def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):

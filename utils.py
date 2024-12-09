@@ -429,17 +429,16 @@ def enviar_texto_whatsapp(number, textMessage):
 
     print(response.text)
 
-import time
-import datetime
+
 
 mensajes_enviados = 0
-fecha_actual = datetime.date.today()
+fecha_actual = datetime.today()
 
 def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
     global mensajes_enviados, fecha_actual
 
     # Verificar si es un nuevo día
-    if datetime.date.today() != fecha_actual:
+    if datetime.today() != fecha_actual:
         mensajes_enviados = 0
         fecha_actual = datetime.date.today()
 
