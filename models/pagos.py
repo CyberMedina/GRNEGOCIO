@@ -502,7 +502,6 @@ def ultimo_pago_contrato(db_session, id_contrato):
         db_session.close()
 
 
-
 def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):
     try:
         query = text("""
@@ -523,6 +522,9 @@ AND dp.estado = :estado_detalle_pago;
 """)
         result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
                                     'estado_contrato': estado_contrato, 'estado_detalle_pago': estado_detalle_pago}).fetchall()
+        print("Empieza la depuracion")
+        print("----------------------")
+        print(result)
         
         if tipo_consulta == consulta_normal:
 
@@ -531,39 +533,37 @@ AND dp.estado = :estado_detalle_pago;
             total_cifra = 0
             primer_elemento = True
 
-
             for row in result:
                 if primer_elemento:
                     total_cifra = row[1] - abs(suma_saldo)
                     cifra_anterior = total_cifra
+                    total_cifraAbs = abs(total_cifra)
                     primer_elemento = False
                 else:
                     if row[2] == Aumento:
                         total_cifra = cifra_anterior + abs(row[1])
-
                         cifra_anterior = total_cifra
-
-
+                        total_cifraAbs = abs(total_cifra)
                     else:
                         total_cifra = cifra_anterior - abs(row[1])
-
                         cifra_anterior = total_cifra
+                        total_cifraAbs = abs(total_cifra)
 
+                # Esto lo hago por que la cagué en la BD XD así que si aumenta y disminuir y si disminuye es aumentar xD
+                tipo_transaccion = "Diminuyó" if row[2] == Aumento else "Aumentó"
+            
                 result_dict = {
                     'id_moneda': row[0],
                     'monto': row[1],
-                    'tipo_transaccion': row[2],
+                    'tipo_transaccion': tipo_transaccion,
                     'fecha_transaccion': row[3],
                     'fecha_pago': row[4],
                     'descripcion_quincena': row[5],
                     'id_mes': row[6],
-                    'sumatoria': total_cifra,
+                    'sumatoria': total_cifraAbs,
                 }
               
                 result_list.append(result_dict)
-
-
-
 
             return result_list
         elif tipo_consulta == consulta_sumatoria_total:
@@ -573,35 +573,17 @@ AND dp.estado = :estado_detalle_pago;
 
             for row in result:
                 if primer_elemento:
-
                     cifra_anterior = row[1]
-
                     primer_elemento = False
                 else:
-
                     if row[2] == Aumento:
                         total_cifra = cifra_anterior + abs(row[1])
-
                         cifra_anterior = total_cifra
-
                     else:
                         total_cifra = cifra_anterior - abs(row[1])
-
                         cifra_anterior = total_cifra
 
-
-
-
-
-
             return total_cifra
-
-
-
-
-        
-
-
 
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -609,8 +591,6 @@ AND dp.estado = :estado_detalle_pago;
         return None
     finally:
         db_session.close()
-
-
 # def obtener_años_pagos(db_session, id_cliente, estado):
 #     try:
 #         query = text("""SELECT YEAR(p.fecha_pago) AS años 

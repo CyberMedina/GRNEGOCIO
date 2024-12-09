@@ -10,6 +10,7 @@ import calendar
 import locale
 import pytz
 import dropbox
+import base64
 
 # Establecer el locale a español para formatear los nombres de días y meses
 locale.setlocale(locale.LC_TIME, 'es_ES')
@@ -26,6 +27,9 @@ from pydrive2.drive import GoogleDrive
 from functools import wraps
 from flask import session, redirect, url_for
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def login_requiredUser(f):
@@ -405,3 +409,46 @@ def obtener_str_fecha_hora(datetime):
     return datetime.now().strftime("%Y%m%d%H%M%S")
 
 
+
+
+
+def enviar_texto_whatsapp(number, textMessage):
+    url = f"{os.getenv('URL_SERVER_EVOLUTION_API')}/message/sendText/{os.getenv('EVOLUTION_API_INSTANCE')}"
+
+    payload = {
+        "number": number,
+        "text": textMessage,
+        "delay": 1
+    }
+    headers = {
+        "apikey": os.getenv("EVOLUTION_API_KEY"),
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, json=payload, headers=headers)
+
+    print(response.text)
+
+def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
+    url = f"{os.getenv('URL_SERVER_EVOLUTION_API')}/message/sendMedia/{os.getenv('EVOLUTION_API_INSTANCE')}"
+
+        # Codificar el archivo binario en base64
+    media_base64 = base64.b64encode(media).decode('utf-8')
+
+    payload = {
+        "number": number,
+        "mediatype": mediatype,
+        "mimetype": "application/pdf",
+        "caption": textMessage,
+        "media": media_base64,
+        "fileName": fileName,
+        "delay": 123,
+    }
+    headers = {
+        "apikey": os.getenv("EVOLUTION_API_KEY"),
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", url, json=payload, headers=headers)
+
+    print(response.text)

@@ -951,23 +951,27 @@ def PruebaImprimir_pago():
         html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
 
         if data.get('checkBoxEnvioCorreo'):
-            correo_electronico = data.get('correoElectronico')
+            # correo_electronico = data.get('correoElectronico')
+            print('Se enviará el pdf al numero')
 
             cuerpo = html_formulario
 
             # Genera el PDF desde tu HTML (ya lo tienes)
             pdf_binario = generar_pdf_desde_html(html_formulario)
 
-            with app.app_context():
+            # with app.app_context():
   
-                mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
-                mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
+            #     mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
+            #     mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
-                # Adjuntar el PDF en formato binario
-                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
+            #     # Adjuntar el PDF en formato binario
+            #     mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
 
-                # Enviar el correo electrónico
-                mail.send(mensaje)
+            #     # Enviar el correo electrónico
+            #     mail.send(mensaje)
+            filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf'
+            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}*.'
+            enviar_media_whatsapp(os.getenv("German"), filename, mensajeBbody, "document", pdf_binario)
 
 
         
@@ -2045,16 +2049,19 @@ def imprimir_pago_alexa():
             # Genera el PDF desde tu HTML (ya lo tienes)
             pdf_binario = generar_pdf_desde_html(html_formulario)
 
-            with app.app_context():
+            # with app.app_context():
 
-                mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
-                mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
+            #     mensaje = Message(f'Historial de pagos de: {dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}', recipients=[correo_electronico])
+            #     mensaje.body = 'Hola! Se envía el historial de pagos en formato PDF del cliente solicitado.'
 
-                # Adjuntar el PDF en formato binario
-                mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
+            #     # Adjuntar el PDF en formato binario
+            #     mensaje.attach(filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf', content_type='application/pdf', data=pdf_binario)
 
-                # Enviar el correo electrónico
-                mail.send(mensaje)
+            #     # Enviar el correo electrónico
+            #     mail.send(mensaje)
+            filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf'
+            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}*.'
+            enviar_media_whatsapp(os.getenv("German"), filename, mensajeBbody, "document", pdf_binario)
 
             return jsonify({"respuesta": "Listo, he enviado el historial de pagos a tu teléfono"}), 200
 
