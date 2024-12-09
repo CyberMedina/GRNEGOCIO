@@ -429,10 +429,26 @@ def enviar_texto_whatsapp(number, textMessage):
 
     print(response.text)
 
+import time
+import datetime
+
+mensajes_enviados = 0
+fecha_actual = datetime.date.today()
+
 def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
+    global mensajes_enviados, fecha_actual
+
+    # Verificar si es un nuevo día
+    if datetime.date.today() != fecha_actual:
+        mensajes_enviados = 0
+        fecha_actual = datetime.date.today()
+
+    if mensajes_enviados >= 20:
+        print("Límite diario de mensajes alcanzado.")
+        return
+
     url = f"{os.getenv('URL_SERVER_EVOLUTION_API')}/message/sendMedia/{os.getenv('EVOLUTION_API_INSTANCE')}"
 
-        # Codificar el archivo binario en base64
     media_base64 = base64.b64encode(media).decode('utf-8')
 
     payload = {
@@ -442,13 +458,15 @@ def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
         "caption": textMessage,
         "media": media_base64,
         "fileName": fileName,
-        "delay": 123,
+        "delay": 7,
     }
     headers = {
         "apikey": os.getenv("EVOLUTION_API_KEY"),
         "Content-Type": "application/json"
     }
 
-    response = requests.request("POST", url, json=payload, headers=headers)
-
+    response = requests.post(url, json=payload, headers=headers)
     print(response.text)
+
+    mensajes_enviados += 1
+    time.sleep(7)
