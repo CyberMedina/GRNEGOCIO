@@ -82,7 +82,7 @@ def before_request():
     initialize_session_variable("numero_seleccionado_ordenar_prestamos", '5')
     initialize_session_variable(
         "numero_seleccionado_ordenar_clientesPrestamos", '0')
-    initialize_session_variable("año_seleccionado", datetime.now().year)
+    initialize_session_variable("año_seleccionado", datetime.datetime.now().year)
 
 
 @app.route('/obtener_tasa_cambio', methods=["GET", "POST"])
@@ -211,7 +211,7 @@ def convertir_fechas_a_letras():
 
     # Convertir la cadena de texto a un objeto de fecha
     # Suponiendo que la cadena de texto está en formato 'YYYY-MM-DD'
-    fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+    fecha = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
 
     dia = num2words(fecha.day, lang='es')
     mes = format_date(fecha, format='MMMM', locale='es_ES')
@@ -699,10 +699,10 @@ def listado_clientes_pagos():
                 date_input = date
                 session.pop('detected_change_date_form', None)
             else:
-                date = datetime.now()
+                date = datetime.datetime.now()
                 date_input = date.strftime("%Y-%m-%d")
         else:
-            date = datetime.now()
+            date = datetime.datetime.now()
             date_input = date.strftime("%Y-%m-%d")
 
         listado_clientesPagosDict = []
@@ -724,7 +724,7 @@ def listado_clientes_pagos():
 
             # Eliminar la comprobación innecesaria
             # if date is None:
-            #     date = datetime.now()
+            #     date = datetime.datetime.now()
 
             PagosEstadosCortes = obtener_estadoPagoClienteCorte(
                 db_session, listado[0], listado[4], listado[6], listado[5], date)
@@ -846,7 +846,7 @@ def añadir_pago(id_cliente):
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
-    fecha_actual = datetime.now()
+    fecha_actual = datetime.datetime.now()
 
     monto_pagoEspecial = obtener_pagoEspecial(
         db_session, id_cliente, fecha_actual)
@@ -884,7 +884,7 @@ def añadir_pago(id_cliente):
         "pagos": pagos,
         "años_pagos": años_pagos,
         "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
-        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
+        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.datetime.now()),
     }
 
 
@@ -970,7 +970,7 @@ def PruebaImprimir_pago():
             #     # Enviar el correo electrónico
             #     mail.send(mensaje)
             filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf'
-            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}*.'
+            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}*.'
             enviar_media_whatsapp(os.getenv("German"), filename, mensajeBbody, "document", pdf_binario)
 
 
@@ -1408,7 +1408,7 @@ def backup_database_to_sql_file():
     for table in ordered_tables:
         backup_statements.extend(generate_insert_statements(table))
 
-    str_fechahora = obtener_str_fecha_hora(datetime.now())
+    str_fechahora = obtener_str_fecha_hora(datetime.datetime.now())
     backup_filename = f'backup_{str_fechahora}.sql'
     backup_file_content = '\n'.join(backup_statements)
 
@@ -1567,7 +1567,7 @@ def delete_backup(file_path):
 #         os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
 
 #         # Obtiene la fecha y hora actual y la formatea como una cadena
-#         now = datetime.now()
+#         now = datetime.datetime.now()
 #         timestamp = now.strftime("%Y%m%d_%H%M%S")
 
 #         backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
@@ -1968,7 +1968,7 @@ def procesarPagoNormal():
             cantidadPagarDolares = data['cifra']
             cantidadPagarCordobas = None
             inputTasaCambioPago = obtener_tasa_cambio()
-            fechaPago = datetime.now().strftime('%Y-%m-%d')
+            fechaPago = datetime.datetime.now().strftime('%Y-%m-%d')
             observacionPago = None
             evidenciaPago = None
             tipoPagoCompletoForm = None
@@ -2014,12 +2014,13 @@ def imprimir_pago_alexa():
         try:
 
             # Obtener ID del cliente por nombre
+            
             id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
 
             mes_estatico, dia_estatico = 1, 1  # Mes: enero, Día: 15
-            fecha_inicio = datetime.now().replace(month=mes_estatico, day=dia_estatico).strftime('%Y-%m-%d')
+            fecha_inicio = datetime.datetime.now().replace(month=mes_estatico, day=dia_estatico).strftime('%Y-%m-%d')
 
-            fecha_fin = datetime.now().strftime('%Y-%m-%d')
+            fecha_fin = datetime.datetime.now().strftime('%Y-%m-%d')
 
 
 
@@ -2073,7 +2074,7 @@ def imprimir_pago_alexa():
             #     # Enviar el correo electrónico
             #     mail.send(mensaje)
             filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf'
-            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}*.'
+            mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}*.'
             enviar_media_whatsapp(os.getenv("German"), filename, mensajeBbody, "document", pdf_binario)
 
             return jsonify({"respuesta": "Listo, he enviado el historial de pagos a tu teléfono"}), 200

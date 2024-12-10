@@ -22,6 +22,7 @@ from selenium.webdriver.chrome.options import Options
 import random
 import time
 from datetime import datetime, timedelta
+import datetime
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive 
 from functools import wraps
@@ -195,7 +196,7 @@ def convertir_string_a_decimal(input_str):
 def obtener_quincenaActual_letras(date):
     # Si la entrada es una cadena, convertirla a datetime
     if isinstance(date, str):
-        date = datetime.strptime(date, "%Y-%m-%d")
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
 
     # Obtener el mes y el año de la fecha
     mes = calendar.month_name[date.month]
@@ -213,7 +214,7 @@ def obtener_quincenaActual_letras(date):
 def obtener_quincenaActualStr(date):
         # Si la entrada es una cadena, convertirla a datetime
     if isinstance(date, str):
-        date = datetime.strptime(date, "%Y-%m-%d")
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
 
     # Obtener el mes y el año de la fecha
     mes = calendar.month_name[date.month]
@@ -234,24 +235,24 @@ def obtener_fechaIncioYFin_con_año(año):
     # Verificar si el año es un entero
     if isinstance(año, int):
         # Crear un objeto datetime con el año
-        año = datetime(año, 1, 1)
+        año = datetime.datetime(año, 1, 1)
     elif isinstance(año, str):
         # Si la entrada es una cadena, convertirla a datetime
-        año = datetime.strptime(año, "%Y")
+        año = datetime.datetime.strptime(año, "%Y")
     else:
         # Si el tipo de dato no es ni int ni str, mostrar un mensaje de error
         raise ValueError("El año debe ser un entero o una cadena en formato 'YYYY'.")
 
     # Obtener la fecha de inicio y fin del año
-    fecha_inicio = datetime(año.year, 1, 1)
-    fecha_fin = datetime(año.year, 12, 31)
+    fecha_inicio = datetime.datetime(año.year, 1, 1)
+    fecha_fin = datetime.datetime(año.year, 12, 31)
 
     return fecha_inicio, fecha_fin
 
 
 def sumar_dias(fecha_inicio, dias_a_sumar):
     # Convertir la fecha de inicio a un objeto datetime
-    fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+    fecha_inicio_obj = datetime.datetime.strptime(fecha_inicio, '%Y-%m-%d')
 
     # Sumar los días especificados
     fecha_fin_obj = fecha_inicio_obj + timedelta(days=dias_a_sumar)
@@ -332,7 +333,7 @@ def get_all_sql_files(dbx, folder_path):
 
 # def convertir_fecha(fecha_str):
 #     # Parsear la fecha y hora original
-#     fecha_utc = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+#     fecha_utc = datetime.datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
 #     # Convertir a zona horaria local o a una específica
 #     fecha_local = fecha_utc.replace(tzinfo=pytz.utc).astimezone(pytz.timezone('America/Mexico_City'))
 #     # Ajustar manualmente la hora si es necesario
@@ -406,7 +407,7 @@ def obtener_enlace_descarga(dbx, file_path):
 
 def obtener_str_fecha_hora(datetime):
     """Obtiene la fecha y hora actual en formato de cadena"""
-    return datetime.now().strftime("%Y%m%d%H%M%S")
+    return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
 
 
@@ -432,13 +433,13 @@ def enviar_texto_whatsapp(number, textMessage):
 
 
 mensajes_enviados = 0
-fecha_actual = datetime.today()
+fecha_actual = datetime.datetime.today()
 
 def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
     global mensajes_enviados, fecha_actual
 
     # Verificar si es un nuevo día
-    if datetime.today() != fecha_actual:
+    if datetime.datetime.today() != fecha_actual:
         mensajes_enviados = 0
         fecha_actual = datetime.date.today()
 

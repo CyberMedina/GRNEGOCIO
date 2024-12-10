@@ -36,84 +36,90 @@
             padding: 0.5rem;
             text-align: left;
         }
+
+        .section {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 
 <body>
-    {% for dataCliente in dataPagos_cliente %}
-    <h1>{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h1>
-    <h4>Pago quincenal: {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</h4>
-    <h4>Fecha solicitada: {{ fecha_saldo_inicial }} a la {{ fecha_saldo_final }} </h4>
-    <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo
-        }} </h4>
-    {% endfor %}
-
-    <h3>Historial de pagos</h3>
-    <table style="page-break-inside:avoid">
-        <tr>
-            <th>Fecha</th>
-            <th>Concepto</th>
-            <th>Monto</th>
-        </tr>
-        {% for dataPago in pagos %}
-        <tr>
-            <td>{{dataPago.descripcion_quincena}} ({{ dataPago.fecha_pago }})</td>
-            {% set estado = '' %}
-            {% set estilo = '' %}
-            {% if dataPago.estado_pago == 0 %}
-            {% set estado = 'No pagó' %}
-            {% set estilo = 'color: red;' %}
-            {% elif dataPago.estado_pago == 1 %}
-            {% set estado = 'Pago quincenal' %}
-            {% set estilo = 'color: green;' %}
-            {% elif dataPago.estado_pago == 2 %}
-            {% set estado = 'Pago incompleto' %}
-            {% set estilo = 'color: #ffcc00;' %}
-            {% elif dataPago.estado_pago == 3 %}
-            {% set estado = 'Primer pago' %}
-            {% set estilo = 'color: green;' %}
-            {% elif dataPago.estado_pago == 4 %}
-            {% set estado = 'Pago de más' %}
-            {% set estilo = 'color: green;' %}
-            {% endif %}
-            <td>{{ estado }}</td>
-            <td style="{{ estilo }}">{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</td>
-        </tr>
+    <div class="section">
+        {% for dataCliente in dataPagos_cliente %}
+        <h1>{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h1>
+        <h4>Pago quincenal: {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</h4>
+        <h4>Fecha solicitada: {{ fecha_saldo_inicial }} a la {{ fecha_saldo_final }} </h4>
+        <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }}</h4>
         {% endfor %}
-    </table>
+
+        <h3>Historial de pagos</h3>
+        <table>
+            <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+            </tr>
+            {% for dataPago in pagos %}
+            <tr>
+                <td>{{dataPago.descripcion_quincena}} ({{ dataPago.fecha_pago }})</td>
+                {% set estado = '' %}
+                {% set estilo = '' %}
+                {% if dataPago.estado_pago == 0 %}
+                {% set estado = 'No pagó' %}
+                {% set estilo = 'color: red;' %}
+                {% elif dataPago.estado_pago == 1 %}
+                {% set estado = 'Pago quincenal' %}
+                {% set estilo = 'color: green;' %}
+                {% elif dataPago.estado_pago == 2 %}
+                {% set estado = 'Pago incompleto' %}
+                {% set estilo = 'color: #ffcc00;' %}
+                {% elif dataPago.estado_pago == 3 %}
+                {% set estado = 'Primer pago' %}
+                {% set estilo = 'color: green;' %}
+                {% elif dataPago.estado_pago == 4 %}
+                {% set estado = 'Pago de más' %}
+                {% set estilo = 'color: green;' %}
+                {% endif %}
+                <td>{{ estado }}</td>
+                <td style="{{ estilo }}">{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 
     <br>
     <br>
-    <h3>Sumatorias de saldos</h3>
-
-    <table style="page-break-inside:avoid">
-        <tr>
-            <th>Fecha</th>
-            <th>Descripción</th>
-            <th>Monto</th>
-            <th>Saldo</th>
-        </tr>
-        <tr>
-            <td>Saldo inicial a la {{ fecha_saldo_inicial }}</td>
-            <td></td>
-            <td></td>
-            <td>{{ suma_saldo }}</td>
-
-        </tr>
-        {% for historialSaldo in transacciones_saldos %}
-        <tr>
-            <td>{{ historialSaldo.descripcion_quincena }} ({{ historialSaldo.fecha_pago }})</td>
-            <td>{{ historialSaldo.tipo_transaccion }}</td>
-            <td>{{ historialSaldo.monto }}</td>
-            <td>{{ historialSaldo.sumatoria }}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td>Saldo total a la {{ fecha_saldo_final }}</td>
-            <td></td>
-            <td></td>
-            <td>{{ saldo_pendiente.cifraSaldo }}</td>
-        </tr>
+    <div class="section">
+        <h3>Sumatorias de saldos</h3>
+        <table>
+            <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Saldo</th>
+            </tr>
+            <tr>
+                <td>Saldo inicial a la {{ fecha_saldo_inicial }}</td>
+                <td></td>
+                <td></td>
+                <td>{{ suma_saldo }}</td>
+            </tr>
+            {% for historialSaldo in transacciones_saldos %}
+            <tr>
+                <td>{{ historialSaldo.descripcion_quincena }} ({{ historialSaldo.fecha_pago }})</td>
+                <td>{{ historialSaldo.tipo_transaccion }}</td>
+                <td>{{ historialSaldo.monto }}</td>
+                <td>{{ historialSaldo.sumatoria }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td>Saldo total a la {{ fecha_saldo_final }}</td>
+                <td></td>
+                <td></td>
+                <td>{{ saldo_pendiente.cifraSaldo }}</td>
+            </tr>
+        </table>
+    </div>
 </body>
 
 </html>
