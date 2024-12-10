@@ -4,6 +4,7 @@ beautifulsoup4
 bidict
 blinker
 Brotli
+cachelib
 cachetools
 certifi
 cffi
@@ -17,6 +18,7 @@ dropbox
 Flask
 Flask-Cors
 Flask-Mail
+Flask-Session
 Flask-SocketIO
 fonttools
 fuzzywuzzy
@@ -34,6 +36,7 @@ itsdangerous
 Jinja2
 Levenshtein
 MarkupSafe
+msgspec
 mysqlclient
 num2words
 oauth2client
@@ -75,6 +78,7 @@ tinycss2
 trio
 trio-websocket
 typing_extensions
+Unidecode
 uritemplate
 urllib3
 weasyprint
