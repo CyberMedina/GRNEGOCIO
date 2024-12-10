@@ -154,11 +154,11 @@
                                             </a>
                                             {% elif saldo_pendiente.estado == 1 and saldo_pendiente.cifraSaldo > 0.00 %}
                                             <a id="aSaldoAFavor" href="javascript:void(0);"
-                                                data-cliente-saldo-a-favor="{{ saldo_a_favor.cifraSaldo }}"
-                                                data-original="{{ saldo_a_favor.cifraSaldo }}">
+                                                data-cliente-saldo-a-favor="{{ saldo_pendiente.cifraSaldo }}"
+                                                data-original="{{ saldo_pendiente.cifraSaldo }}">
                                                 <p><strong class="text-success">
-                                                        Saldo a favor: {{ saldo_a_favor.codigoMoneda }} {{
-                                                        saldo_a_favor.cifraSaldo }} <span></span>
+                                                        Saldo a favor: {{ saldo_pendiente.codigoMoneda }} {{
+                                                            saldo_pendiente.cifraSaldo }} <span></span>
                                                     </strong></p>
                                             </a>
                                             {% endif %}

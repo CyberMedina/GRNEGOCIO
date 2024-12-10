@@ -6,7 +6,8 @@ from models.pagos import *
 from db import *
 from utils import *
 from num2words import num2words
-from fuzzywuzzy  import process, fuzz
+from rapidfuzz import process, fuzz
+import unidecode
 import math
 
 
@@ -50,24 +51,29 @@ def seleccionar_clientes_activos(db_session, search_term):
         
         # Convertir los resultados a una lista de diccionarios
         results = [dict(row._mapping) for row in result]
-
-        # Crear una lista de nombres completos y sus respectivos clientes
-        names = [f"{person['nombres']} {person['apellidos']}".lower() for person in results]
-        print(names)
-        name_to_person = {f"{person['nombres']} {person['apellidos']}".lower(): person for person in results}
+        
+        # Normalizar los nombres y el término de búsqueda
+        search_term_normalized = unidecode.unidecode(search_term.lower())
+        names = []
+        name_to_person = {}
+        for person in results:
+            full_name = f"{person['nombres']} {person['apellidos']}".lower()
+            full_name_normalized = unidecode.unidecode(full_name)
+            names.append(full_name_normalized)
+            name_to_person[full_name_normalized] = person
         
         # Buscar coincidencias difusas
-        matches = process.extract(search_term.lower(), names, limit=3, scorer=fuzz.token_set_ratio)
+        matches = process.extract(search_term_normalized, names, limit=3, scorer=fuzz.token_set_ratio)
         print(matches)
-
+    
         # Filtrar resultados para encontrar la mejor coincidencia
         best_match = None
         highest_score = 0
         for match in matches:
-            if match[1] > highest_score and match[1] > 60:  # 60 es el umbral para la coincidencia difusa
+            if match[1] > highest_score and match[1] > 50:  # Ajusta el umbral según sea necesario
                 best_match = match[0]
                 highest_score = match[1]
-
+    
         if best_match:
             return name_to_person[best_match]['id_cliente']  # Retorna el id_cliente que coincide
         else:
@@ -76,7 +82,9 @@ def seleccionar_clientes_activos(db_session, search_term):
         db_session.rollback()
         print(f"Error: {e}")
         return None
-    
+    finally:
+        db_session.close()
+
 
 def obtenerDatosClienteporID(db_session, id_cliente):
 
