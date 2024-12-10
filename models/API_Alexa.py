@@ -455,7 +455,7 @@ def crear_cadena_respuesta_clientes_pagados(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6],
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte(
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(
             db_session,
             listado[0],
             listado[4],
