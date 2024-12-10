@@ -98,7 +98,7 @@ def obtenerDatosClienteporID(db_session, id_cliente):
     # Definimos la cifra pago especial
     monto_pagoEspecial = 0.00
 
-    fecha_actual = datetime.now()
+    fecha_actual = datetime.datetime.now()
 
     monto_pagoEspecial = obtener_pagoEspecial(
         db_session, id_cliente, fecha_actual)
@@ -125,7 +125,7 @@ def obtenerDatosClienteporID(db_session, id_cliente):
         "pagos": pagos,
         "años_pagos": años_pagos,
         "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
-        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.now()),
+        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.datetime.now()),
     }
 
 
@@ -151,7 +151,7 @@ def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
 
 
     # Obtener la quincena actual
-    quincena, mes, anio = obtener_quincenaActual_letras(datetime.now())
+    quincena, mes, anio = obtener_quincenaActual_letras(datetime.datetime.now())
     quincena_actual = f"{quincena} quincena de {mes} de {anio}"
 
     # Extraer datos necesarios del cliente
@@ -265,7 +265,7 @@ def obtener_pagoClienteTexto(db_session, nombre_cliente):
     # Obtener ID del cliente por nombre
     id_cliente = obtenerIdClientePorNombre(db_session, nombre_cliente)
 
-    monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
+    monto_pagoEspecial = obtener_pagoEspecial(db_session, id_cliente, datetime.datetime.now())
     print(monto_pagoEspecial)
 
     tasa_cambio = obtener_tasa_cambio_local()
@@ -339,7 +339,7 @@ def crear_cadena_respuesta_cantidad_de_clientes_pagados(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
@@ -389,7 +389,7 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
@@ -461,7 +461,7 @@ def crear_cadena_respuesta_clientes_pagados(db_session):
             listado[4],
             listado[6],
             listado[5],
-            datetime.now(),
+            datetime.datetime.now(),
         )
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
@@ -515,7 +515,7 @@ def crear_cadena_respuesta_cantidad_total_dinero_quincenal_clientes(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
@@ -580,7 +580,7 @@ def crear_cadena_respuesta_obtener_pago_normal(db_session, nombre_cliente):
 
     datos_cliente = seleccionar_datos_cliente(db_session, id_cliente)
 
-    pago = obtener_pagoEspecial(db_session, id_cliente, datetime.now())
+    pago = obtener_pagoEspecial(db_session, id_cliente, datetime.datetime.now())
 
     if pago['estado'] == 2:
 
