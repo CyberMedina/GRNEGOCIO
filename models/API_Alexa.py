@@ -339,7 +339,7 @@ def crear_cadena_respuesta_cantidad_de_clientes_pagados(db_session):
             "pagoMensual": listado[5],
             "pagoQuincenal": listado[6]
         }
-        PagosEstadosCortes = obtener_estadoPagoClienteCorte(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
+        PagosEstadosCortes = obtener_estadoPagoClienteCorte_real(db_session, listado[0], listado[4], listado[6], listado[5], datetime.now())
         clientePagoDict.update(PagosEstadosCortes)
         listado_clientesPagosDict.append(clientePagoDict)
 
