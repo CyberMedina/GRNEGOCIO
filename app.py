@@ -1408,7 +1408,8 @@ def backup_database_to_sql_file():
     for table in ordered_tables:
         backup_statements.extend(generate_insert_statements(table))
 
-    str_fechahora = obtener_str_fecha_hora(datetime.datetime.now())
+        # En app.py
+    str_fechahora = obtener_str_fecha_hora()
     backup_filename = f'backup_{str_fechahora}.sql'
     backup_file_content = '\n'.join(backup_statements)
 

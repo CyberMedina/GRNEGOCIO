@@ -404,13 +404,9 @@ def obtener_enlace_descarga(dbx, file_path):
         print(f"Error creating or retrieving shared link: {e}")
         return None
     
-
-def obtener_str_fecha_hora(datetime):
+def obtener_str_fecha_hora():
     """Obtiene la fecha y hora actual en formato de cadena"""
     return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
-
-
 
 
 def enviar_texto_whatsapp(number, textMessage):
