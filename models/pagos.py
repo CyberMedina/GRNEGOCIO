@@ -634,14 +634,22 @@ ORDER BY YEAR(fecha_pago) DESC;""")
 
 def obtener_quincena_actual(fecha_actual, dia_mes):
 
-    # Si el día del mes es menor o igual a 15, es la primera quincena
     if dia_mes <= 15:
         inicio_quincena = fecha_actual.replace(day=1)
         fin_quincena = fecha_actual.replace(day=15)
-    else:  # Si el día del mes es mayor que 15, es la segunda quincena
-        # Obtener el último día del mes
-        ultimo_dia_mes = fecha_actual.replace(
-            day=1, month=fecha_actual.month+1) - timedelta(days=1)
+    else:
+        # Ajustar el mes y el año si el mes supera 12
+        mes_siguiente = fecha_actual.month + 1
+        año_siguiente = fecha_actual.year
+        if mes_siguiente > 12:
+            mes_siguiente = 1
+            año_siguiente += 1
+
+        # Obtener el último día del mes actual
+        primer_dia_mes_siguiente = fecha_actual.replace(
+            year=año_siguiente, month=mes_siguiente, day=1)
+        ultimo_dia_mes = primer_dia_mes_siguiente - timedelta(days=1)
+
         inicio_quincena = fecha_actual.replace(day=16)
         fin_quincena = ultimo_dia_mes
 

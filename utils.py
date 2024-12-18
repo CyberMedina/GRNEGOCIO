@@ -432,20 +432,10 @@ def enviar_texto_whatsapp(number, textMessage):
 
 
 
-mensajes_enviados = 0
-fecha_actual = datetime.datetime.today()
+
 
 def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
-    global mensajes_enviados, fecha_actual
 
-    # Verificar si es un nuevo día
-    if datetime.datetime.today() != fecha_actual:
-        mensajes_enviados = 0
-        fecha_actual = datetime.date.today()
-
-    if mensajes_enviados >= 20:
-        print("Límite diario de mensajes alcanzado.")
-        return
 
     url = f"{os.getenv('URL_SERVER_EVOLUTION_API')}/message/sendMedia/{os.getenv('EVOLUTION_API_INSTANCE')}"
 
@@ -468,5 +458,3 @@ def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
     response = requests.post(url, json=payload, headers=headers)
     print(response.text)
 
-    mensajes_enviados += 1
-    time.sleep(7)
