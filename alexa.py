@@ -5,7 +5,7 @@
 # session persistence, api calls, and more.
 # This sample is built using the handler classes approach in skill builder.
 import logging
-import ask_sdk_core.utils as ask_utils # type: ignore
+import ask_sdk_core.utils as ask_utils
 
 import requests
 import pytz
@@ -17,13 +17,24 @@ from ask_sdk_core.dispatch_components import AbstractExceptionHandler
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model.dialog import ElicitSlotDirective
 from ask_sdk_model.intent import Intent
-from ask_sdk_core.utils import is_intent_name
+from ask_sdk_core.utils import is_intent_name, get_supported_interfaces
 from ask_sdk_core.utils import is_request_type
+from ask_sdk_core.utils import get_supported_interfaces
+from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
+import ask_sdk_core.utils as ask_utils
+
+from ask_sdk_core.dispatch_components import AbstractRequestHandler
+from ask_sdk_core.handler_input import HandlerInput
+from ask_sdk_model import Response
+from ask_sdk_model.interfaces.alexa.presentation.apl import RenderDocumentDirective
+from ask_sdk_model.ui import SimpleCard
 
 from ask_sdk_model import Response
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+URL_API = "https://grmedina.pythonanywhere.com"
 
 class LaunchRequestHandler(AbstractRequestHandler):
     """Handler for Skill Launch."""
@@ -47,7 +58,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
         reprompt_text = "¿Necesitas algo más?"
 
         try:
-            response = requests.get('https://grmedina.pythonanywhere.com/pruebita', timeout=300)
+            response = requests.get(f'{URL_API}/pruebita', timeout=300)
             if response.status_code == 200:
                 speak_output = f"{greeting} Bienvenido al negocio, ¿en qué puedo ayudarte hoy?"
             else:
@@ -74,7 +85,7 @@ class GetCapitalIntentHandler(AbstractRequestHandler):
 
         # Aquí es donde haces la solicitud POST a tu API
         data = {'person': person}
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_estadoCliente'
+        url = f'{URL_API}/api/obtener_estadoCliente'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, headers=headers, json=data)
         
@@ -105,7 +116,7 @@ class cantidadPagoClienteIntentHandler(AbstractRequestHandler):
 
         # Aquí es donde haces la solicitud POST a tu API
         data = {'person': person}
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_cantidad_pago_cliente'
+        url = f'{URL_API}/api/obtener_cantidad_pago_cliente'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, headers=headers, json=data)
         
@@ -133,7 +144,7 @@ class obtener_cantidad_clientes_pagadosIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
 
         # Aquí es donde haces la solicitud GET a tu API
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_cantidad_clientes_pagados'
+        url = f'{URL_API}/api/obtener_cantidad_clientes_pagados'
         headers = {'Content-Type': 'application/json'}
         response = requests.get(url, headers=headers)
         
@@ -147,8 +158,8 @@ class obtener_cantidad_clientes_pagadosIntentHandler(AbstractRequestHandler):
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(reprompt_text)
-                .response
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
         )
         
 class obtener_cantidad_total_dinero_quincenal_clientesIntentHandler(AbstractRequestHandler):
@@ -160,7 +171,7 @@ class obtener_cantidad_total_dinero_quincenal_clientesIntentHandler(AbstractRequ
     def handle(self, handler_input):
 
         # Aquí es donde haces la solicitud GET a tu API
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_cantidad_total_dinero_quincenal_clientes'
+        url = f'{URL_API}/api/obtener_cantidad_total_dinero_quincenal_clientes'
         headers = {'Content-Type': 'application/json'}
         response = requests.get(url, headers=headers)
         
@@ -169,13 +180,13 @@ class obtener_cantidad_total_dinero_quincenal_clientesIntentHandler(AbstractRequ
             data_json = response.json()  # Asume que la respuesta es JSON
             speak_output = data_json['respuesta']
         else:
-            speak_output = f"Lo siento, no encuentro a {person} en la base de datos.  <break time='1s'/> ¿Necesitas algo más?"
+            speak_output = f"Lo siento, no encuentro a {person} en la base de datos.  <break time='1s'/> ��Necesitas algo más?"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(reprompt_text)
-                .response
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
         )
 
 
@@ -191,9 +202,9 @@ class enviar_correo_intent(AbstractRequestHandler):
 
         # Aquí es donde haces la solicitud POST a tu API
         data = {'person': person}
-        url = 'https://grmedina.pythonanywhere.com/api/imprimir_pago_alexa'
+        url = f'{URL_API}/api/imprimir_pago_alexa'
         headers = {'Content-Type': 'application/json'}
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=data, timeout=10)  # Timeout de 10 segundos
         
         reprompt_text = "¿Necesitas algo más?"
         if response.status_code == 200:
@@ -205,8 +216,8 @@ class enviar_correo_intent(AbstractRequestHandler):
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask(reprompt_text)
-                .response
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
         )
         
         
@@ -219,7 +230,7 @@ class obtener_cantidad_clientes_pagadosIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
 
         # Aquí es donde haces la solicitud GET a tu API
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_cantidad_clientes_pagados'
+        url = f'{URL_API}/api/obtener_cantidad_clientes_pagados'
         headers = {'Content-Type': 'application/json'}
         response = requests.get(url, headers=headers)
         
@@ -248,7 +259,7 @@ class agendarPagoNormalIntentHandler(AbstractRequestHandler):
 
         # Aquí es donde haces la solicitud POST a tu API
         data = {'person': person}
-        url = 'https://grmedina.pythonanywhere.com/api/agendarPagoNormal'
+        url = f'{URL_API}/api/agendarPagoNormal'
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url, headers=headers, json=data)
         
@@ -256,7 +267,14 @@ class agendarPagoNormalIntentHandler(AbstractRequestHandler):
             data_json = response.json()  # Asume que la respuesta es JSON
             
             if data_json['respuesta']['estado'] == 2:
-                message = f"Según mis registros el cliente {data_json['respuesta']['nombres_apellidos_cliente']} debe de pagar {data_json['respuesta']['cifra']} dólares, que en cordobas a una tasa de cambio de {data_json['respuesta']['tasa_cambio']}, son unos {data_json['respuesta']['cifra_cordobas']} córdobas  ¿Está seguro que desea guardar ese pago?"
+                message = f"Según mis registros el cliente {data_json['respuesta']['nombres_apellidos_cliente']} debe de pagar en la quincena {data_json['respuesta']['cifra_cordobas']} córdobas con una tasa de cambio de{data_json['respuesta']['tasa_cambio']}. El equivlante en dolares es {data_json['respuesta']['cifra']} dólares.  ¿Está seguro que desea guardar ese pago?"
+                # Agregar tarjeta SimpleCard
+                handler_input.response_builder.set_card(
+                    SimpleCard(
+                        title= f"{data_json['respuesta']['nombres_apellidos_cliente']}",
+                        content= f"C$ {data_json['respuesta']['cifra_cordobas']} córdobas o $ {data_json['respuesta']['cifra']} dólares",
+                    )
+                )
                 handler_input.attributes_manager.session_attributes["last_message"] = message
                 handler_input.attributes_manager.session_attributes["last_intent"] = "agendarPagoNormalIntent"
                 handler_input.attributes_manager.session_attributes["id_cliente"] = data_json['respuesta']['id_cliente']
@@ -277,13 +295,13 @@ class agendarPagoNormalIntentHandler(AbstractRequestHandler):
                 session_attributes.pop("last_intent", None)
                 speak_output = "El cliente ya tiene registrado un pago en esta quincena!"
         else:
-            speak_output = f"Lo siento, no encuentro a {person} en la base de datos. ¿Necesitas algo más?"
+            speak_output = f"Lo siento, no encuentro a {person} en la base de datos."
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .ask("¿Necesitas algo más?")
-                .response
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
         )
         
 
@@ -427,7 +445,7 @@ class YesIntentHandler(AbstractRequestHandler):
             cifra = session_attributes.get("cifra")
             
             # Enviar POST request al endpoint
-            url = 'https://grmedina.pythonanywhere.com/api/procesarPagoNormal'
+            url = f'{URL_API}/api/procesarPagoNormal'
             headers = {'Content-Type': 'application/json'}
             data = {
                 'id_cliente': id_cliente,
@@ -469,6 +487,12 @@ class NoIntentHandler(AbstractRequestHandler):
 
         if last_intent == "agendarPagoNormalIntent":
             speak_output = "Está bien!, qué otra gestión necesitas realizar?"
+            return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
+        )
         elif last_intent == "OtroIntent":
             speak_output = "Acción cancelada para OtroIntent. ¿Necesitas algo más?"
 
@@ -514,12 +538,24 @@ class CancelOrStopIntentHandler(AbstractRequestHandler):
 
     def handle(self, handler_input):
         # type: (HandlerInput) -> Response
-        speak_output = "Está bien, que pases un lindo día!"
+        # Definir la zona horaria de Managua
+        managua_tz = pytz.timezone('America/Managua')
+        current_time = datetime.now(managua_tz)
+        hour = current_time.hour
+
+        if 5 <= hour < 12:
+            greeting = "un buen día"
+        elif 12 <= hour < 18:
+            greeting = "una buena tarde"
+        else:
+            greeting = "una buena noche"
+        speak_output = f"Está bien, ¡que pases {greeting}!"
 
         return (
             handler_input.response_builder
                 .speak(speak_output)
-                .response
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
         )
 
 class FallbackIntentHandler(AbstractRequestHandler):
@@ -600,22 +636,134 @@ class DineroGeneradoQuincenaActualHandler(AbstractRequestHandler):
         return is_intent_name("DineroGeneradoQuincenaActualIntent")(handler_input)
 
     def handle(self, handler_input):
-        url = 'https://grmedina.pythonanywhere.com/api/obtener_cantidad_total_dinero_quincenal_clientes'
+        url = f'{URL_API}/api/obtener_cantidad_total_dinero_quincenal_clientes'
         headers = {'Content-Type': 'application/json'}
         response = requests.get(url, headers=headers)
-
+    
         if response.status_code == 200:
             data = response.json()
-            total_quincenal = data.get('total_quincenal', 'desconocido')
-            speak_output = f"La cantidad total de dinero generada en la quincena actual es {total_quincenal} córdobas."
+            respuesta = data.get('respuesta', 'No se pudo obtener la información.')
+            # Usar SSML para hacer que Alexa hable más lentamente y suene más natural
+            speak_output = f"<speak><prosody rate='slow'>{respuesta}</prosody></speak>"
+            
+            # Agregar tarjeta SimpleCard
+            handler_input.response_builder.set_card(
+                SimpleCard(
+                    title="Dinero Generado",
+                    content=respuesta
+                )
+            )
+            # Agregar un reprompt para mantener la sesión abierta
+            reprompt_text = "¿Quieres saber algo más?"
         else:
-            speak_output = "Lo siento, no pude obtener la cantidad total de dinero generada en la quincena actual."
+            speak_output = "<speak>Lo siento, no pude obtener la información.</speak>"
+            reprompt_text = "¿Necesitas ayuda con otra consulta?"
+    
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
+        )
+        
+        
+class ObtenerClientesPagadosHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("ObtenerClientesPagadosIntent")(handler_input)
 
+    def handle(self, handler_input):
+        url = f'{URL_API}/api/obtener_clientes_pagados'
+        headers = {'Content-Type': 'application/json'}
+        response = requests.get(url, headers=headers)
+    
+        if response.status_code == 200:
+            data = response.json()
+            respuesta = data.get('respuesta', {})
+            alexa_speak = respuesta.get('alexa_speak', 'No se pudo obtener la información.')
+            alexa_display = respuesta.get('alexa_display', 'No se pudo obtener la información.')
+            
+            # Usar SSML para hacer que Alexa hable más lentamente y suene más natural
+            speak_output = f"<speak>{alexa_speak}</speak>"
+            
+            # Agregar tarjeta SimpleCard
+            handler_input.response_builder.set_card(
+                SimpleCard(
+                    title="Clientes que han pagado",
+                    content="\n".join(alexa_display)
+                )
+            )
+            # Agregar un reprompt para mantener la sesión abierta
+            reprompt_text = "¿Quieres saber algo más?"
+        else:
+            speak_output = "<speak>Lo siento, no pude obtener la información.</speak>"
+            reprompt_text = "¿Necesitas ayuda con otra consulta?"
+    
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .set_should_end_session(True)  # Indica que la sesión debe terminar
+                .response  # Construye y devuelve la respuesta final
+        )
+
+APL_DOCUMENT_ID = "DineroGeneradoQuincenaActual"
+
+APL_DOCUMENT_TOKEN = "documentToken"
+
+DATASOURCE = {
+    "headlineTemplateData": {
+        "type": "object",
+        "objectId": "headlineSample",
+        "properties": {
+            "backgroundImage": {
+                "contentDescription": None,
+                "smallSourceUrl": None,
+                "largeSourceUrl": None,
+                "sources": [
+                    {
+                        "url": "https://d2o906d8ln7ui1.cloudfront.net/images/templates_v3/headline/HeadlineBackground_Dark.png",
+                        "size": "large"
+                    }
+                ]
+            },
+            "textContent": {
+                "primaryText": {
+                    "type": "PlainText",
+                    "text": "Welcome to The Daily Plant Facts"
+                }
+            },
+            "logoUrl": "https://d2o906d8ln7ui1.cloudfront.net/images/templates_v3/logo/logo-modern-botanical-white.png",
+            "hintText": "Try, \"Alexa, what is the plant fact of the day?\""
+        }
+    }
+}
+
+
+
+class PruebitaLHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input):
+        return is_intent_name("pruebita")(handler_input)
+
+    def handle(self, handler_input):
+        # Respuesta de voz
+        speak_output = "Este es un ejemplo de skill con texto visible en tu app Alexa."
+
+        # Agregar una tarjeta SimpleCard
+        handler_input.response_builder.set_card(
+            SimpleCard(
+                title="Mi Skill con Texto",
+                content="¡Hola, este es mi skill! Aquí está el mensaje que querías ver."
+            )
+        )
+
+        # Retornar la respuesta
         return (
             handler_input.response_builder
                 .speak(speak_output)
                 .response
         )
+
+        
+
 # The SkillBuilder object acts as the entry point for your skill, routing all request and response
 # payloads to the handlers above. Make sure any new handlers or interceptors you've
 # defined are included below. The order matters - they're processed top to bottom.
@@ -640,6 +788,9 @@ sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
 sb.add_request_handler(DineroGeneradoQuincenaActualHandler())
+sb.add_request_handler(ObtenerClientesPagadosHandler())
+
+sb.add_request_handler(PruebitaLHandler())
 
 sb.add_request_handler(IntentReflectorHandler()) # make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
 sb.add_exception_handler(CatchAllExceptionHandler())

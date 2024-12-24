@@ -454,3 +454,18 @@ def enviar_media_whatsapp(number, fileName, textMessage, mediatype, media):
     response = requests.post(url, json=payload, headers=headers)
     print(response.text)
 
+def obtener_dia_actual():
+    managua_tz = pytz.timezone('America/Managua')
+    current_time = datetime.datetime.now(managua_tz)
+    hour = current_time.hour
+
+    if 5 <= hour < 12:
+        greeting = "¡Buenos días"
+    elif 12 <= hour < 18:
+        greeting = "¡Buenas tardes"
+    else:
+        greeting = "¡Buenas noches"
+
+    return greeting
+
+

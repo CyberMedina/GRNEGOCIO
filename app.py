@@ -734,12 +734,15 @@ def listado_clientes_pagos():
         quincena, mes, anio = obtener_quincenaActual_letras(date)
         quincena_actual = f"{quincena} quincena de {mes} del {anio}"
 
+        greeting = obtener_dia_actual()
+
         formulario_clientes_pagos = {
             "listado_clientes_pagos": listado_clientesPagosDict,
             "total_dinero_personas_pagadas": total_dinero_personas_pagadas,
             "total_clientes": len(listado_clientesPagosDict),
             "quincena_actual": quincena_actual,
-            "date_input": date_input
+            "date_input": date_input,
+            "greeting": greeting,
         }
 
         return render_template('pagos/listado_clientes_pagos_copy.html', **formulario_clientes_pagos)
