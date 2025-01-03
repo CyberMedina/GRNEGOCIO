@@ -101,6 +101,7 @@
                             <option value="">Seleccione la gestión</option>
                             <option value="Exportar">Exportar / Importar en línea</option>
                             <option value="Importar/restaurar">Exportar / Importar local</option>
+                            <option value="Backups automáticos">Backups automáticos</option>
                           </select>
                         </div>
                       </div>
@@ -112,11 +113,15 @@
                       <section id="seccionExportar" hidden>
                         <div class="container mb-3">
                           <div class="row">
-                            <a href="/backup" class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-12 offset-md-8">
+                            <a href="/backup"
+                              class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-12 offset-md-8">
                               <i class="lni lni-plus"></i>
                               Realizar nuevo reespaldo
                             </a>
                           </div>
+                        </div>
+                        <div class="progress-item progress-item-lg">
+                          <div class="progress-item-bar blue-light-bg" style="width: 89%"></div>
                         </div>
                         <h6 class="mb-2">Backup más reciente</h6>
                         <div class="kanban-header" id="backupBaseDeDatos">
@@ -190,8 +195,8 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
                                   <li class="dropdown-item">
-                                    <a href="{{ files['import_link'] }}" target="_blank"
-                                      class="text-gray text-sm" style="margin-right: 1px !important;">
+                                    <a href="{{ files['import_link'] }}" target="_blank" class="text-gray text-sm"
+                                      style="margin-right: 1px !important;">
                                       <i class="fa-solid fa-file-import"></i>
                                       Importar
                                     </a>
@@ -246,6 +251,86 @@
                         </section>
                         <!-- TERMINA SECCION IMPORTAR -->
                       </form>
+
+
+
+                      <form action="/importar_backup" method="POST" enctype="multipart/form-data">
+                        <!-- INICIA SECCION BACKUPS AUTOMATICOS -->
+                        <section id="seccionBackupsAutomaticos" hidden>
+                          <div class="row">
+
+                            <div class="col-4">
+                              <div class="select-style-1">
+                                <label>Intervalo de tiempo</label>
+                                <div class="select-position">
+                                  <select>
+                                    <option value="">Seleccione</option>
+                                    <option value="">Días</option>
+                                    <option value="">Semanas</option>
+                                    <option value="">Meses</option>
+                                    <option value="">Años</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <!-- end select -->
+                            </div>
+
+                            <div class="col-4">
+                              <div class="select-style-1">
+                                <label>Cantidad</label>
+                                <div class="select-position">
+                                  <select>
+                                    <option value="">Seleccione</option>
+                                    <option value="">Días</option>
+                                    <option value="">Semanas</option>
+                                    <option value="">Meses</option>
+                                    <option value="">Años</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <!-- end select -->
+                            </div>
+
+                            <div class="field-group mb-20">
+                              <label for="" class="text-sm text-gray block mb-10">
+                                Enter Your Money
+                              </label>
+                              <div class="input-group">
+                                <input type="text" placeholder="10000" />
+                                <div class="select-style-1 mb-0">
+                                  <div class="select-position">
+                                    <select>
+                                      <option value="">USD</option>
+                                      <option value="">XMR</option>
+                                      <option value="">BTC</option>
+                                      <option value="">LTC</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+
+                          <div class="row">
+                            <div class="col-6">
+                              <button type="button" data-bs-dismiss="modal" class="btn btn-danger w-100">
+                                Cancelar
+                              </button>
+                            </div>
+                            <div class="col-6">
+                              <button type="submit" class="btn btn-primary w-100">
+                                <i class="lni lni-plus me-1 text-sm text-bold"></i>
+                                Realizar
+                              </button>
+                            </div>
+                          </div>
+                        </section>
+                        <!-- TERMINA SECCION BACKUPS AUTOMATICOS -->
+                      </form>
+
+
+
                     </div>
                     <div class="action d-flex flex-wrap justify-content-end">
                     </div>

@@ -1,6 +1,7 @@
 const comboTipoGestion = document.getElementById('comboTipoGestion');
 const seccionImportar = document.getElementById('seccionImportar');
 const seccionExportar = document.getElementById('seccionExportar');
+const seccionBackupsAutomaticos = document.getElementById('seccionBackupsAutomaticos');
 const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBackupCreacionBd');
 
 
@@ -61,6 +62,14 @@ comboTipoGestion.addEventListener('change', function() {
     } else {
         seccionExportar.hidden = true;
     }
+
+    if (comboTipoGestion.value === 'Backups automáticos') {
+        seccionBackupsAutomaticos.hidden = false;
+    } else {
+        seccionBackupsAutomaticos.hidden = true;
+    }
+
+
 
 
 });

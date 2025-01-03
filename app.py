@@ -814,7 +814,7 @@ def procesar_pago():
     else:
         estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
     
-    print('checkbox_confirmacion' in request.form)
+
 
     if 'checkbox_confirmacion' in request.form:
         procesar_todo =  True
@@ -891,6 +891,8 @@ def añadir_pago(id_cliente):
     }
 
 
+
+
     
     if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
         total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
@@ -913,12 +915,41 @@ def PruebaImprimir_pago():
 
         data = request.get_json()
 
+        
+
         if not data:
             return jsonify({"error": "No se está recibiendo ninguna información"}), 400
 
         id_cliente = data.get('id_cliente')
         fecha_inicio = data.get('fechaInicio')
         fecha_fin = data.get('fechaFin')
+
+        dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+
+        # Verificar si el cliente es especial para hacer que imprima todos
+        if dataPagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+
+            id_contrato = obtener_IdContratoActivo(db_session, id_cliente)
+            primer_pago_efectuado = obtener_primerPagoEfectuadoContrato(db_session, id_contrato)
+            fecha_primer_pago_efectuado = primer_pago_efectuado[5]
+
+             # Obtener la fecha actual
+            fecha_actual = datetime.datetime.now()
+            
+            # Calcular la fecha de inicio restando un año a la fecha actual
+            fecha_inicio = fecha_primer_pago_efectuado.strftime('%Y-%m-%d')
+            
+            # La fecha de fin es la fecha actual
+            fecha_fin = fecha_actual.strftime('%Y-%m-%d')
+
+
+            fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
+
+            fecha_inicio_totalSaldo = '2010-01-01'
+            fecha_fin_totalSaldo = fecha_inicio
+
+
+
 
 
 
@@ -938,24 +969,36 @@ def PruebaImprimir_pago():
         quincenaFechaFin, mesFechaFin, anioFechaFin = obtener_quincenaActual_letras(fecha_fin)
         fecha_finFormateado = f"{quincenaFechaFin} quincena de {mesFechaFin} del {anioFechaFin}"
 
-        dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+        
 
         datos_pago = {
-            'dataPagos_cliente' : dataPagos_cliente,
-            'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
-                                   añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
-            'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal, suma_saldo),
-            'suma_saldo' : suma_saldo,
-            'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
-            'fecha_saldo_final': f'{fecha_finFormateado} ({fecha_fin})',
-            'saldo_pendiente' : validar_existencia_saldo(db_session, id_cliente),
-        }
+        'dataPagos_cliente' : dataPagos_cliente,
+        'pagos' : pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_inicio,
+                            añoFin=fecha_fin, estado_contrato=activo, estado_detalle_pago=monedaOriginal),
+        'transacciones_saldos' : transacciones_saldo_contrato(db_session, id_cliente, fecha_inicio, fecha_fin, activo, monedaOriginal, consulta_normal, suma_saldo),
+        'suma_saldo' : suma_saldo,
+        'fecha_saldo_inicial': f'{fecha_fin_totalSaldoFormateado} ({fecha_fin_totalSaldo})',
+        'fecha_saldo_final': f'{fecha_finFormateado} ({fecha_fin})',
+        'saldo_pendiente' : validar_existencia_saldo(db_session, id_cliente),
+    }
+        
+        
+
+
+        if dataPagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+            id_contrato = obtener_IdContrato(db_session, id_cliente)
+            total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+            capital = Decimal(dataPagos_cliente[0]["monto_solicitado"])
+            saldo_pendiente = capital - total_pagos
+
+            datos_pago.update({"capital_a_la_fecha": saldo_pendiente})
+            datos_pago.update({"total_pagos": total_pagos})
 
         html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
 
         if data.get('checkBoxEnvioCorreo'):
             # correo_electronico = data.get('correoElectronico')
-            print('Se enviará el pdf al numero')
+
 
             cuerpo = html_formulario
 
@@ -1284,6 +1327,16 @@ def base_de_datos():
                 "download_link": download_link,
                 "delete_link": delete_link
             }
+
+            # response = {
+            #     "filename": file.name,
+            #     "fileDate": 'filedate',
+            #     "import_link": f"/restore?file_url=",
+                
+            #     "download_link": 'download_link',
+            #     "delete_link": 'delete_link'
+            # }
+
             backups_files.append(response)
     else:
         backups_files = []
@@ -1433,6 +1486,31 @@ def backup_database_to_sql_file():
         return f"Error uploading to Dropbox: {error_message}", 500
     
 
+
+# Backups automaticos configurables
+# def schedule_backups():
+#     configs = db.session.query(FrecuenciaBackup).all()  # Ajustar a tu modelo/tabla
+#     for config in configs:
+#         if config.tipo == 1:  # días
+#             interval = {'days': config.cantidad}
+#         elif config.tipo == 2:  # meses
+#             interval = {'weeks': config.cantidad * 4}  # aproximación
+#         else:  # años
+#             interval = {'weeks': config.cantidad * 52} # aproximación
+        
+#         scheduler.add_job(
+#             id=f"backup_{config.id}",
+#             func=backup_database_to_sql_file,
+#             trigger='interval',
+#             **interval
+#         )
+
+# scheduler = APScheduler()
+# scheduler.init_app(app)
+# scheduler.start()
+# schedule_backups()
+
+
 @app.route('/restore', methods=['GET'])
 def restore_backup():
     """Restaura la base de datos desde un archivo de respaldo."""
@@ -1441,7 +1519,7 @@ def restore_backup():
     if not file_url:
         return "No file URL provided", 400
 
-    print(file_url)
+
     
     # Asegurarse de que la URL descarga el archivo directamente
     file_url = file_url + "&dl=1"
@@ -1490,7 +1568,7 @@ def get_latest_backup():
 
     # Obtener el archivo SQL más reciente de la carpeta
     latest_file = get_latest_sql_file(dbx, folder_id)
-    print(latest_file)
+
     
     if latest_file:
         download_link = latest_file['alternateLink']
@@ -2020,15 +2098,46 @@ def imprimir_pago_alexa():
             # Obtener ID del cliente por nombre
             
             id_cliente = seleccionar_clientes_activos(db_session, nombre_cliente)
+            dataPagos_cliente = datos_pagov2(id_cliente, db_session)
 
-            mes_estatico, dia_estatico = 1, 1  # Mes: enero, Día: 15
-            fecha_inicio = datetime.datetime.now().replace(month=mes_estatico, day=dia_estatico).strftime('%Y-%m-%d')
-
-            fecha_fin = datetime.datetime.now().strftime('%Y-%m-%d')
-
+              # Obtener la fecha actual
+            fecha_actual = datetime.datetime.now()
+            
+            # Calcular la fecha de inicio restando un año a la fecha actual
+            fecha_inicio = fecha_actual.replace(year=fecha_actual.year - 1).strftime('%Y-%m-%d')
+            
+            # La fecha de fin es la fecha actual
+            fecha_fin = fecha_actual.strftime('%Y-%m-%d')
 
 
             fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
+
+            # Verificar si el cliente es especial para hacer que imprima todos
+            if dataPagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+
+                id_contrato = obtener_IdContratoActivo(db_session, id_cliente)
+                primer_pago_efectuado = obtener_primerPagoEfectuadoContrato(db_session, id_contrato)
+                fecha_primer_pago_efectuado = primer_pago_efectuado[5]
+
+                # Obtener la fecha actual
+                fecha_actual = datetime.datetime.now()
+                
+                # Calcular la fecha de inicio restando un año a la fecha actual
+                fecha_inicio = fecha_primer_pago_efectuado.strftime('%Y-%m-%d')
+                
+                # La fecha de fin es la fecha actual
+                fecha_fin = fecha_actual.strftime('%Y-%m-%d')
+
+
+                fecha_inicio_QUEES = sumar_dias(fecha_inicio, 15)
+
+                fecha_inicio_totalSaldo = '2010-01-01'
+                fecha_fin_totalSaldo = fecha_inicio
+
+
+
+            
+          
 
             fecha_inicio_totalSaldo = '2010-01-01'
             fecha_fin_totalSaldo = fecha_inicio
@@ -2043,8 +2152,7 @@ def imprimir_pago_alexa():
 
             quincenaFechaFin, mesFechaFin, anioFechaFin = obtener_quincenaActual_letras(fecha_fin)
             fecha_finFormateado = f"{quincenaFechaFin} quincena de {mesFechaFin} del {anioFechaFin}"
-
-            dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+            
 
             datos_pago = {
                 'dataPagos_cliente' : dataPagos_cliente,
@@ -2057,6 +2165,15 @@ def imprimir_pago_alexa():
                 'saldo_pendiente' : validar_existencia_saldo(db_session, id_cliente),
             }
 
+            if dataPagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+                id_contrato = obtener_IdContrato(db_session, id_cliente)
+                total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+                capital = Decimal(dataPagos_cliente[0]["monto_solicitado"])
+                saldo_pendiente = capital - total_pagos
+
+                datos_pago.update({"capital_a_la_fecha": saldo_pendiente})
+                datos_pago.update({"total_pagos": total_pagos})
+
             html_formulario = render_template('pagos/imprimir_pago_template.html', **datos_pago)
 
             
@@ -2066,6 +2183,9 @@ def imprimir_pago_alexa():
 
             # Genera el PDF desde tu HTML (ya lo tienes)
             pdf_binario = generar_pdf_desde_html(html_formulario)
+
+                # Codificar el PDF binario en base64
+            pdf_base64 = base64.b64encode(pdf_binario).decode('utf-8')
 
             # with app.app_context():
 
@@ -2079,9 +2199,12 @@ def imprimir_pago_alexa():
             #     mail.send(mensaje)
             filename=f'{dataPagos_cliente[0]["nombres"]}_{dataPagos_cliente[0]["apellidos"]}_historial_pagos.pdf'
             mensajeBbody = f'Hola! Se envía el historial de pagos del cliente *{dataPagos_cliente[0]["nombres"]} {dataPagos_cliente[0]["apellidos"]}*.'
-            enviar_media_whatsapp(os.getenv("German"), filename, mensajeBbody, "document", pdf_binario)
-
-            return jsonify({"respuesta": "Listo, he enviado el historial de pagos a tu teléfono"}), 200
+            return jsonify({
+                "number": os.getenv("German"),
+                "filename": filename,
+                "mensaje": mensajeBbody,
+                "documento": pdf_base64
+            }), 200
 
         except SQLAlchemyError as e:
             print(f"Error: {e}")

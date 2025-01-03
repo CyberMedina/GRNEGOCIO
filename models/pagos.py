@@ -249,8 +249,8 @@ JOIN contrato c ON p.id_contrato = c.id_contrato
     finally:
         db_session.close()
 
-
-def obtener_primerPago(db_session, id_contrato):
+# Se utiliza para obtener el primer pago que se acordó a pagar en el contrato
+def obtener_primerPagoEstipuladoContrato(db_session, id_contrato):
     try:
         query = text("""
         SELECT montoPrimerPago FROM contrato WHERE id_contrato = :id_contrato;""")
@@ -266,6 +266,26 @@ def obtener_primerPago(db_session, id_contrato):
     finally:
         db_session.close()
 
+# Se utiliza para obtener el prime pago efectuado con el prestamo activo
+def obtener_primerPagoEfectuadoContrato(db_session, id_contrato):
+    try:
+        query = text("""
+        SELECT * FROM pagos p  
+INNER JOIN detalle_pagos dp ON p.id_pagos = dp.id_pagos
+WHERE id_contrato = :id_contrato AND dp.cifraPago > 0.00
+ORDER BY fecha_pago ASC
+LIMIT 1;""")
+        result = db_session.execute(
+            query, {'id_contrato': id_contrato, }).fetchone()
+
+        return result
+
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
+    finally:
+        db_session.close()
 
 def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_pago_real, estado):
     try:
@@ -367,63 +387,87 @@ def insertar_detalle_pagos(db_session, id_pagos, id_moneda, cifraPago, tasa_conv
 #     finally:
 #         db_session.close()
 
+# Diccionario para mapear números de mes a nombres en español
+MONTHS_ES = {
+    1: "Enero",
+    2: "Febrero",
+    3: "Marzo",
+    4: "Abril",
+    5: "Mayo",
+    6: "Junio",
+    7: "Julio",
+    8: "Agosto",
+    9: "Septiembre",
+    10: "Octubre",
+    11: "Noviembre",
+    12: "Diciembre"
+}
+
 def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago):
     try:
+        # Consulta SQL sin dependencia de lc_time_names y MONTHNAME
         query = text(""" 
-        SELECT
-            p.id_pagos,
-            p.observacion, 
-            p.evidencia_pago, 
-            p.fecha_pago, 
-            p.fecha_realizacion_pago,
-            p.estado AS estado_pago, 
-            m.codigoMoneda, 
-            m.nombreMoneda, 
-            dp.cifraPago, 
-            dp.tasa_conversion,
-            dp.estado AS estado_detalle_pago,
-            c.id_contrato,
-            c.monto_solicitado,
-            c.fechaPrestamo,
-            c.estado as estado_contrato,
-            
-            CASE 
-                WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-                ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-            END AS descripcion_quincena,
-            MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
-            c.estado
-        FROM 
-            pagos p
-        JOIN 
-            detalle_pagos dp ON p.id_pagos = dp.id_pagos
-        JOIN 
-            moneda m ON dp.id_moneda = m.id_moneda
-        JOIN 
-            contrato c ON p.id_contrato = c.id_contrato
-        WHERE 
-            p.id_cliente = :id_cliente 
-            AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
-            AND dp.estado = :estado_detalle_pago
-        ORDER BY 
-            p.fecha_pago, p.id_pagos ASC;
+            SELECT
+                p.id_pagos,
+                p.observacion, 
+                p.evidencia_pago, 
+                p.fecha_pago, 
+                p.fecha_realizacion_pago,
+                p.estado AS estado_pago, 
+                m.codigoMoneda, 
+                m.nombreMoneda, 
+                dp.cifraPago, 
+                dp.tasa_conversion,
+                dp.estado AS estado_detalle_pago,
+                c.id_contrato,
+                c.monto_solicitado,
+                c.fechaPrestamo,
+                c.estado as estado_contrato,
+                MONTH(p.fecha_pago) AS id_mes, -- Obtener el número del mes
+                c.estado
+            FROM 
+                pagos p
+            JOIN 
+                detalle_pagos dp ON p.id_pagos = dp.id_pagos
+            JOIN 
+                moneda m ON dp.id_moneda = m.id_moneda
+            JOIN 
+                contrato c ON p.id_contrato = c.id_contrato
+            WHERE 
+                p.id_cliente = :id_cliente 
+                AND p.fecha_pago BETWEEN :añoInicio AND :añoFin 
+                AND dp.estado = :estado_detalle_pago
+            ORDER BY 
+                p.fecha_pago, p.id_pagos ASC;
         """)
 
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
-                                            "estado_detalle_pago": estado_detalle_pago}).fetchall()
+        # Ejecutar la consulta con los parámetros proporcionados
+        result = db_session.execute(query, {
+            'id_cliente': id_cliente,
+            'añoInicio': añoInicio,
+            'añoFin': añoFin,
+            "estado_detalle_pago": estado_detalle_pago
+        }).fetchall()
         
         new_result = []
         last_id_contrato = None
         for row in result:
-            row_tuple = tuple(row)
-            if row_tuple[0] != last_id_contrato:
-                new_row = row_tuple + (1,)
-                last_id_contrato = row_tuple[0]
+            # Convertir cada fila a un diccionario usando la propiedad `_mapping`
+            row_dict = dict(row._mapping)  # Forma segura de convertir a dict
+            mes_num = row_dict["id_mes"]
+            mes_es = MONTHS_ES.get(mes_num, "Desconocido")  # Obtener el nombre del mes en español
+            
+            # Construir la descripción de la quincena en español
+            if row_dict["fecha_pago"].day <= 15:
+                descripcion_quincena = f"Primera quincena de {mes_es} de {row_dict['fecha_pago'].year}"
             else:
-                new_row = row_tuple + (None,)
-            new_result.append(new_row)
-        return result
+                descripcion_quincena = f"Segunda quincena de {mes_es} de {row_dict['fecha_pago'].year}"
+            
+            row_dict["descripcion_quincena"] = descripcion_quincena  # Agregar la descripción al diccionario
+            new_result.append(row_dict)
+        
 
+        return new_result
 
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -504,84 +548,132 @@ def ultimo_pago_contrato(db_session, id_contrato):
 
 def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):
     try:
+        # Consulta SQL sin dependencia de lc_time_names y MONTHNAME
         query = text("""
-                     SELECT ts.id_moneda, ts.monto, ts.tipo_transaccion, ts.fecha_transaccion, p.fecha_pago,
-    CASE 
-        WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-        ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-    END AS descripcion_quincena,
-    MONTH(p.fecha_pago) AS id_mes -- Se eliminó la coma aquí
-FROM transacciones_saldos ts
-INNER JOIN detalle_pagos dp ON ts.id_pagos = dp.id_pagos
-INNER JOIN pagos p ON dp.id_pagos = p.id_pagos
-INNER JOIN contrato c ON p.id_contrato = c.id_contrato
-WHERE p.id_cliente = :id_cliente
-AND p.fecha_pago BETWEEN :añoInicio AND :añoFin
-AND c.estado = :estado_contrato
-AND dp.estado = :estado_detalle_pago;
-""")
-        result = db_session.execute(query, {'id_cliente': id_cliente, 'añoInicio': añoInicio, 'añoFin': añoFin,
-                                    'estado_contrato': estado_contrato, 'estado_detalle_pago': estado_detalle_pago}).fetchall()
-        print("Empieza la depuracion")
-        print("----------------------")
-        print(result)
-        
-        if tipo_consulta == consulta_normal:
+            SELECT 
+                ts.id_moneda, 
+                ts.monto, 
+                ts.tipo_transaccion, 
+                ts.fecha_transaccion, 
+                p.fecha_pago,
+                MONTH(p.fecha_pago) AS id_mes -- Obtener el número del mes
+            FROM transacciones_saldos ts
+            INNER JOIN detalle_pagos dp ON ts.id_pagos = dp.id_pagos
+            INNER JOIN pagos p ON dp.id_pagos = p.id_pagos
+            INNER JOIN contrato c ON p.id_contrato = c.id_contrato
+            WHERE 
+                p.id_cliente = :id_cliente
+                AND p.fecha_pago BETWEEN :añoInicio AND :añoFin
+                AND c.estado = :estado_contrato
+                AND dp.estado = :estado_detalle_pago;
+        """)
 
-            result_list = []
+        # Ejecutar la consulta con los parámetros proporcionados
+        result = db_session.execute(query, {
+            'id_cliente': id_cliente,
+            'añoInicio': añoInicio,
+            'añoFin': añoFin,
+            'estado_contrato': estado_contrato,
+            'estado_detalle_pago': estado_detalle_pago
+        }).fetchall()
+
+        # Lista para almacenar los resultados procesados
+        result_list = []
+
+        if tipo_consulta == consulta_normal:
             cifra_anterior = 0
             total_cifra = 0
             primer_elemento = True
 
             for row in result:
+                # Convertir cada fila a un diccionario usando _mapping
+                row_dict = dict(row._mapping)
+
+                mes_num = row_dict["id_mes"]
+                mes_es = MONTHS_ES.get(mes_num, "Desconocido")  # Obtener el nombre del mes en español
+
+                # Construir la descripción de la quincena en español
+                if row_dict["fecha_pago"].day <= 15:
+                    descripcion_quincena = f"Primera quincena de {mes_es} de {row_dict['fecha_pago'].year}"
+                else:
+                    descripcion_quincena = f"Segunda quincena de {mes_es} de {row_dict['fecha_pago'].year}"
+
+                # Actualizar el diccionario con la descripción en español
+                row_dict["descripcion_quincena"] = descripcion_quincena
+
+                # Calcular la sumatoria según el tipo de transacción
                 if primer_elemento:
-                    total_cifra = row[1] - abs(suma_saldo)
+                    total_cifra = row_dict['monto'] - abs(suma_saldo)
                     cifra_anterior = total_cifra
                     total_cifraAbs = abs(total_cifra)
                     primer_elemento = False
                 else:
-                    if row[2] == Aumento:
-                        total_cifra = cifra_anterior + abs(row[1])
+                    if row_dict['tipo_transaccion'] == Aumento:
+                        total_cifra = cifra_anterior + abs(row_dict['monto'])
                         cifra_anterior = total_cifra
                         total_cifraAbs = abs(total_cifra)
                     else:
-                        total_cifra = cifra_anterior - abs(row[1])
+                        total_cifra = cifra_anterior - abs(row_dict['monto'])
                         cifra_anterior = total_cifra
                         total_cifraAbs = abs(total_cifra)
 
-                # Esto lo hago por que la cagué en la BD XD así que si aumenta y disminuir y si disminuye es aumentar xD
-                tipo_transaccion = "Diminuyó" if row[2] == Aumento else "Aumentó"
-            
-                result_dict = {
-                    'id_moneda': row[0],
-                    'monto': row[1],
-                    'tipo_transaccion': tipo_transaccion,
-                    'fecha_transaccion': row[3],
-                    'fecha_pago': row[4],
-                    'descripcion_quincena': row[5],
-                    'id_mes': row[6],
-                    'sumatoria': total_cifraAbs,
-                }
-              
-                result_list.append(result_dict)
+                # Ajustar el tipo de transacción para reflejar el cambio
+                tipo_transaccion = "Diminuyó" if row_dict['tipo_transaccion'] == Aumento else "Aumentó"
+                row_dict['tipo_transaccion'] = tipo_transaccion
 
+                # Crear una nueva clave 'monto_con_signo' con el signo correspondiente
+                if row_dict['monto'] < 0:
+                    row_dict['monto_con_signo'] = f"+{abs(row_dict['monto'])}"  # Monto negativo con '-'
+                else:
+                    row_dict['monto_con_signo'] = f"-{row_dict['monto']}"  # Monto positivo con '+'
+
+                # Agregar la sumatoria al diccionario
+                row_dict['sumatoria'] = total_cifraAbs
+
+                # Añadir el diccionario al resultado final
+                result_list.append(row_dict)
+            print(result_list)
             return result_list
+
         elif tipo_consulta == consulta_sumatoria_total:
             cifra_anterior = 0
             total_cifra = 0
             primer_elemento = True
 
             for row in result:
+                # Convertir cada fila a un diccionario usando _mapping
+                row_dict = dict(row._mapping)
+
+                # Obtener el número del mes y su nombre en español
+                mes_num = row_dict["id_mes"]
+                mes_es = MONTHS_ES.get(mes_num, "Desconocido")
+
+                # Construir la descripción de la quincena en español
+                if row_dict["fecha_pago"].day <= 15:
+                    descripcion_quincena = f"Primera quincena de {mes_es} de {row_dict['fecha_pago'].year}"
+                else:
+                    descripcion_quincena = f"Segunda quincena de {mes_es} de {row_dict['fecha_pago'].year}"
+
+                # Actualizar el diccionario con la descripción en español
+                row_dict["descripcion_quincena"] = descripcion_quincena
+
+                # Calcular la sumatoria según el tipo de transacción
                 if primer_elemento:
-                    cifra_anterior = row[1]
+                    cifra_anterior = row_dict['monto']
                     primer_elemento = False
                 else:
-                    if row[2] == Aumento:
-                        total_cifra = cifra_anterior + abs(row[1])
+                    if row_dict['tipo_transaccion'] == Aumento:
+                        total_cifra = cifra_anterior + abs(row_dict['monto'])
                         cifra_anterior = total_cifra
                     else:
-                        total_cifra = cifra_anterior - abs(row[1])
+                        total_cifra = cifra_anterior - abs(row_dict['monto'])
                         cifra_anterior = total_cifra
+
+                # Crear una nueva clave 'monto_con_signo' con el signo correspondiente
+                if row_dict['monto'] < 0:
+                    row_dict['monto_con_signo'] = f"-{abs(row_dict['monto'])}"  # Monto negativo con '-'
+                else:
+                    row_dict['monto_con_signo'] = f"+{row_dict['monto']}"  # Monto positivo con '+'
 
             return total_cifra
 
@@ -968,7 +1060,7 @@ def eliminar_pago_idPagos(db_session, id_pagos, estado_pago):
 
                 id_contrato = seleccionar_idContrato_con_idPago(db_session, id_pagos)
 
-                primer_pago_contrato = obtener_primerPago(db_session, id_contrato)[0]
+                primer_pago_contrato = obtener_primerPagoEstipuladoContrato(db_session, id_contrato)[0]
 
                 resultado_buscar_detalle_pago_idPagos = buscar_detalle_pago_idPagos(db_session, id_pagos)
                 if "cifraPago$" in resultado_buscar_detalle_pago_idPagos:
@@ -1117,6 +1209,7 @@ WHERE c.id_cliente = :id_cliente;""")
         result = db_sesssion.execute(
             query, {'id_cliente': id_cliente}).fetchone()
         if result:
+            
             return result
         else:
             return None
@@ -1453,7 +1546,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
     if num_pagos[0] == 0:
-        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_primerPago_consulta = obtener_primerPagoEstipuladoContrato(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
 
         # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
@@ -1528,7 +1621,7 @@ def obtener_pagoEspecial(db_session, id_cliente, fecha):
     pagos_cliente = datos_pagov2(id_cliente, db_session)
 
     if num_pagos[0] == 0:
-        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_primerPago_consulta = obtener_primerPagoEstipuladoContrato(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
 
         # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
@@ -1602,7 +1695,7 @@ def obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pago_qui
 
 
     if num_pagos[0] == 0:
-        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_primerPago_consulta = obtener_primerPagoEstipuladoContrato(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
 
         # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
@@ -1677,7 +1770,7 @@ def obtener_estadoPagoClienteCorte_real(db_session, id_cliente, id_contrato, pag
 
 
     if num_pagos[0] == 0:
-        monto_primerPago_consulta = obtener_primerPago(db_session, id_contrato)
+        monto_primerPago_consulta = obtener_primerPagoEstipuladoContrato(db_session, id_contrato)
         monto_pagoEspecial = monto_primerPago_consulta[0]
 
         # monto_primerPago = calcular_primerPago_quincenal(monto_primerPago_consulta[9], monto_primerPago_consulta[11])
@@ -2131,9 +2224,6 @@ def cantidad_total_dinero_quincenal_clientes_real(db_session, date):
                 "monto_ultimo_pago_cordobas": (ultimo_pago[0][8] * tasa_cambio).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
             })
 
-
-    print("empieza la depuracion")
-    print(clientes_pagados)
         
 
 

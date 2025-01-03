@@ -1,125 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pruebita</title>
+    <title>Estado de Cuenta</title>
     <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            margin: 0 auto;
+            margin: 20px auto;
             max-width: 800px;
-            padding: 30px;
             line-height: 1.6;
         }
 
         h1,
-        h3,
-        h4 {
+        h2,
+        h3 {
             color: #333;
+            margin-bottom: 0.5rem;
         }
 
-        table {
+        .resumen,
+        .detalle,
+        .transacciones {
+            margin-bottom: 2rem;
+            border: 1px solid #ccc;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .resumen table,
+        .detalle table,
+        .transacciones table {
             width: 100%;
             border-collapse: collapse;
         }
 
         th,
         td {
-            border: 1px solid #999;
-            padding: 0.5rem;
             text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid #ddd;
         }
 
-        .section {
-            page-break-inside: avoid;
+        .resumen h2,
+        .detalle h2,
+        .transacciones h2 {
+            margin-top: 0;
+        }
+
+        .estado-pago.pago-completo {
+            color: green;
+        }
+
+        .estado-pago.no-pago {
+            color: red;
+        }
+
+        .estado-pago.pago-incompleto {
+            color: orange;
+        }
+
+        /* Ejemplo de clase para resaltar un saldo */
+        .saldo-pendiente {
+            font-weight: bold;
+            color: #ff6600;
         }
     </style>
 </head>
 
 <body>
-    <div class="section">
-        {% for dataCliente in dataPagos_cliente %}
-        <h1>{{ dataCliente.nombres }} {{ dataCliente.apellidos }}</h1>
-        <h4>Pago quincenal: {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</h4>
-        <h4>Fecha solicitada: {{ fecha_saldo_inicial }} a la {{ fecha_saldo_final }} </h4>
-        <h4>Saldo pendiente a la {{ fecha_saldo_final }}: {{ saldo_pendiente.codigoMoneda }} {{ saldo_pendiente.cifraSaldo }}</h4>
-        {% endfor %}
 
-        <h3>Historial de pagos</h3>
+    <!-- Datos del cliente -->
+    {% for dataCliente in dataPagos_cliente %}
+    <div class="detalle">
+        <h2>Datos del Cliente</h2>
+        <p><strong>Nombre:</strong> {{ dataCliente.nombres }} {{ dataCliente.apellidos }}</p>
+        <p><strong>Pago quincenal:</strong> {{ dataCliente.codigoMoneda }} {{ dataCliente.pagoQuincenal }}</p>
+        <p><strong>Periodo:</strong> {{ fecha_saldo_inicial }} a {{ fecha_saldo_final }}</p>
+        {% if saldo_pendiente %}
+        <p class="saldo-pendiente"><strong>Saldo pendiente:</strong> {{ saldo_pendiente.codigoMoneda }} {{
+            saldo_pendiente.cifraSaldo | abs }}</p>
+        {% endif %}
+        {% if dataCliente.id_tipoCliente == 3 %}
+        <p><strong>Capital inicial</strong> $ {{ dataCliente.monto_solicitado }}</p>
+        <p><strong>Capital a la fecha</strong> $ {{ capital_a_la_fecha }}</p>
+        <p><strong>Total entregado</strong> $ {{ total_pagos }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    {% set unique_contratos = pagos | map(attribute='id_contrato') | unique | list %}
+    {% set contrato_count = unique_contratos | length %}
+    {% set current_contract = unique_contratos[-1] if contrato_count > 1 else None %}
+    {% set last_id_contrato = namespace(value=None) %}
+
+    <!-- Historial de pagos -->
+    <div class="transacciones">
+        <h2>Historial de Pagos</h2>
         <table>
             <tr>
                 <th>Fecha</th>
                 <th>Concepto</th>
                 <th>Monto</th>
             </tr>
+
             {% for dataPago in pagos %}
+            {# Verificamos si el contrato cambió y si hay más de un contrato #}
+            {% if contrato_count > 1 and dataPago.id_contrato != last_id_contrato.value %}
             <tr>
-                <td>{{dataPago.descripcion_quincena}} ({{ dataPago.fecha_pago }})</td>
-                {% set estado = '' %}
-                {% set estilo = '' %}
-                {% if dataPago.estado_pago == 0 %}
-                {% set estado = 'No pagó' %}
-                {% set estilo = 'color: red;' %}
-                {% elif dataPago.estado_pago == 1 %}
-                {% set estado = 'Pago quincenal' %}
-                {% set estilo = 'color: green;' %}
-                {% elif dataPago.estado_pago == 2 %}
-                {% set estado = 'Pago incompleto' %}
-                {% set estilo = 'color: #ffcc00;' %}
-                {% elif dataPago.estado_pago == 3 %}
-                {% set estado = 'Primer pago' %}
-                {% set estilo = 'color: green;' %}
-                {% elif dataPago.estado_pago == 4 %}
-                {% set estado = 'Pago de más' %}
-                {% set estilo = 'color: green;' %}
-                {% endif %}
-                <td>{{ estado }}</td>
-                <td style="{{ estilo }}">{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</td>
+                <td colspan="3" style="text-align:center; font-weight:bold;">
+                    Préstamo: ${{ dataPago.monto_solicitado }}
+                    {% if dataPago.id_contrato == current_contract %}
+                    (Actual)
+                    {% endif %}
+                </td>
             </tr>
+            {% set last_id_contrato.value = dataPago.id_contrato %}
+            {% endif %}
+
+            {# Mostrar la fila del pago solo si no se omite según la lógica #}
+            {% if not (dataPago.estado_pago == 3 and dataPago.cifraPago == 0.00) %}
+            <tr>
+                <td>{{ dataPago.descripcion_quincena }} ({{ dataPago.fecha_pago }})</td>
+                {% set estiloClase = '' %}
+                {% if dataPago.estado_pago == 0 %}
+                {% set estiloClase = 'estado-pago no-pago' %}
+                {% elif dataPago.estado_pago in [1,3,4] %}
+                {% set estiloClase = 'estado-pago pago-completo' %}
+                {% elif dataPago.estado_pago == 2 %}
+                {% set estiloClase = 'estado-pago pago-incompleto' %}
+                {% endif %}
+                <td class="{{ estiloClase }}">
+                    {% if dataPago.estado_pago == 0 %}No pagó
+                    {% elif dataPago.estado_pago == 1 %}Pago quincenal
+                    {% elif dataPago.estado_pago == 2 %}Pago incompleto
+                    {% elif dataPago.estado_pago == 3 %}Primer pago
+                    {% elif dataPago.estado_pago == 4 %}Pago de más
+                    {% endif %}
+                </td>
+                <td style="font-weight: bold;">{{ dataPago.codigoMoneda }} {{ dataPago.cifraPago }}</td>
+            </tr>
+            {% endif %}
             {% endfor %}
+            {% if total_pagos %}
+            <td style="text-align:center; font-weight:bold;">Total:</td>
+            <td></td>
+            <td colspan="3" style="text-align:center; font-weight:bold;">$ {{ total_pagos }}</td>
+            {% endif %}
         </table>
     </div>
 
-    <br>
-    <br>
-    <div class="section">
-        <h3>Sumatorias de saldos</h3>
+    {% if saldo_pendiente %}
+
+    <!-- Movimientos de saldo -->
+    <div class="transacciones">
+        <h2>Movimientos de Saldo</h2>
         <table>
             <tr>
                 <th>Fecha</th>
-                <th>Descripción</th>
+                <th>Tipo de Transacción</th>
                 <th>Monto</th>
                 <th>Saldo</th>
             </tr>
             <tr>
-                <td>Saldo inicial a la {{ fecha_saldo_inicial }}</td>
-                <td></td>
-                <td></td>
-                <td>{{ suma_saldo }}</td>
+                <td>Saldo inicial ({{ fecha_saldo_inicial }})</td>
+                <td colspan="3"></td>
             </tr>
             {% for historialSaldo in transacciones_saldos %}
             <tr>
                 <td>{{ historialSaldo.descripcion_quincena }} ({{ historialSaldo.fecha_pago }})</td>
                 <td>{{ historialSaldo.tipo_transaccion }}</td>
-                <td>{{ historialSaldo.monto }}</td>
+                <td>{{ historialSaldo.monto_con_signo }}</td>
                 <td>{{ historialSaldo.sumatoria }}</td>
             </tr>
             {% endfor %}
             <tr>
-                <td>Saldo total a la {{ fecha_saldo_final }}</td>
-                <td></td>
-                <td></td>
-                <td>{{ saldo_pendiente.cifraSaldo }}</td>
+                <td>Saldo total ({{ fecha_saldo_final }})</td>
+                <td colspan="2"></td>
+                <td class="saldo-pendiente">{{ saldo_pendiente.cifraSaldo | abs }}</td>
             </tr>
         </table>
     </div>
+
+    {% endif %}
+
+
 </body>
 
 </html>
