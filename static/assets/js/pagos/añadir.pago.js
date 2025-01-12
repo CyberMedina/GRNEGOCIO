@@ -616,7 +616,6 @@ function obtenerInformacionPagoBorrar(id_pago) {
       console.log(pago);
 
       if (pago.tasa_conversion) {
-
         modalInformacionPago.innerHTML = `
           <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
           <br>
@@ -624,9 +623,7 @@ function obtenerInformacionPagoBorrar(id_pago) {
           <br>
           <strong>Cantidad abonada: </strong><span>${pago.codigoMoneda} ${pago.cifraPago$} ${pago.nombreMoneda}</span>
         `;
-
-      }
-      else {
+      } else {
         modalInformacionPago.innerHTML = `
           <strong>Fecha del pago: </strong><span>${pago.descripcion_quincena}</span>
           <br>
@@ -636,25 +633,17 @@ function obtenerInformacionPagoBorrar(id_pago) {
         `;
       }
 
-
-
-
-
+      // Asignar la función de eliminación al botón
       btnBorrarPago.setAttribute('onclick', `eliminar_pago(${pago.id_pagos})`);
 
-
-
+      // Mostrar el modal de confirmación de borrado
       let modalBorrarPago = new bootstrap.Modal(document.getElementById('modalBorrarPago'));
-
-
-
       modalBorrarPago.show();
     })
     .catch(error => {
       console.error('Error al obtener la información del pago:', error);
     });
 }
-
 
 
 
@@ -674,6 +663,8 @@ function obtenerInformacionPagoEspecifico(id_pago) {
   let fechaPagoVP = document.getElementById('fechaPagoVP');
   let observacionPagoVP = document.getElementById('observacionPagoVP');
   let evidenciaPagoVP = document.getElementById('evidenciaPagoVP');
+  let realizadoPorVP = document.getElementById('realizadoPorVP');
+  let lblFechaRealizacionPagoPorVP = document.getElementById('lblFechaRealizacionPagoPorVP');
 
 
 
@@ -725,6 +716,9 @@ function obtenerInformacionPagoEspecifico(id_pago) {
         observacionPagoVP.value = 'No hay observaciones';
       }
 
+      console.log(pago);
+      realizadoPorVP.value = pago.nombres_usuario + ' ' + pago.apellidos_usuario;
+      lblFechaRealizacionPagoPorVP.textContent = 'Realizado el ' + formatoFechaYHora(pago.fecha_realizacion_pago);
 
       modalVisualizarPago.show();
 
@@ -747,6 +741,34 @@ function formatoFecha(fecha) {
   let año = fechaObjeto.getFullYear();
   return `${dia < 10 ? '0' : ''}${dia}-${mes < 10 ? '0' : ''}${mes}-${año}`;
 }
+
+
+function formatoFechaYHora(fecha) {
+  const dbDate = new Date(fecha);
+
+  let dia = dbDate.getUTCDate();
+  let mes = dbDate.getUTCMonth() + 1;
+  let año = dbDate.getUTCFullYear();
+  let hora = dbDate.getUTCHours();
+  let minutos = dbDate.getUTCMinutes();
+  let segundos = dbDate.getUTCSeconds();
+  let ampm = hora >= 12 ? 'PM' : 'AM';
+
+  hora = hora % 12;
+  hora = hora ? hora : 12;
+
+  const meses = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+  let nombreMes = meses[mes - 1];
+
+  return `${dia} de ${nombreMes} de ${año} a las ${hora}:` +
+         `${minutos < 10 ? '0' : ''}${minutos}:` +
+         `${segundos < 10 ? '0' : ''}${segundos} ${ampm} (UTC)`;
+}
+
+
 
 
 // Funciones para mostrar y ocultar detalles del cliente

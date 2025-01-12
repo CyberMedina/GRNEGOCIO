@@ -287,7 +287,7 @@ LIMIT 1;""")
     finally:
         db_session.close()
 
-def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_pago_real, estado):
+def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_pago_real, estado, id_usuario_creador):
     try:
         # Obtener el ID de la tabla persona
         id_pagos = ObtenerIDTabla(db_session, "id_pagos", "pagos")
@@ -296,12 +296,12 @@ def insertarPago(db_session, id_contrato, id_cliente, observacion, evidencia_pag
 
         # Insertar el pago
         query = text("""
-                     INSERT INTO pagos (id_pagos, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado)
-                        VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, :fecha_pago_real, :estado);
+                     INSERT INTO pagos (id_pagos, id_contrato, id_cliente, observacion, evidencia_pago, fecha_pago, fecha_realizacion_pago, estado, id_usuario)
+                        VALUES (:id_pagos, :id_contrato, :id_cliente, :observacion, :evidencia_pago, :fecha_pago, :fecha_pago_real, :estado, :id_usuario_creador);
                         """
                      )
         db_session.execute(query, {'id_pagos': id_pagos, 'id_contrato': id_contrato, 'id_cliente': id_cliente,
-                           'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'fecha_pago_real':fecha_pago_real, 'estado': estado})
+                           'observacion': observacion, 'evidencia_pago': evidencia_pago, 'fecha_pago': fecha_pago, 'fecha_pago_real':fecha_pago_real, 'estado': estado, 'id_usuario_creador': id_usuario_creador})
         db_session.commit()
         return id_pagos
 
@@ -477,6 +477,21 @@ def pagos_por_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contr
         db_session.close()
 
 
+MONTHS_ES = {
+    1: "Enero",
+    2: "Febrero",
+    3: "Marzo",
+    4: "Abril",
+    5: "Mayo",
+    6: "Junio",
+    7: "Julio",
+    8: "Agosto",
+    9: "Septiembre",
+    10: "Octubre",
+    11: "Noviembre",
+    12: "Diciembre"
+}
+
 def ultimo_pago_contrato(db_session, id_contrato):
     try:
         query = text(""" 
@@ -496,12 +511,8 @@ def ultimo_pago_contrato(db_session, id_contrato):
             c.monto_solicitado,
             c.fechaPrestamo,
             c.estado as estado_contrato,
-            
-            CASE 
-                WHEN DAY(p.fecha_pago) <= 15 THEN CONCAT('Primera quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-                ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
-            END AS descripcion_quincena,
-            MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
+            '' AS descripcion_quincena,  -- Se deja la columna vacía para llenarla en Python
+            MONTH(p.fecha_pago) AS id_mes,
             c.estado
         FROM 
             pagos p
@@ -513,30 +524,64 @@ def ultimo_pago_contrato(db_session, id_contrato):
             contrato c ON p.id_contrato = c.id_contrato
         WHERE 
             p.id_contrato = :id_contrato 
-            AND (p.estado = :estado_detalle_pago1 OR p.estado = :estado_detalle_pago2
-                      OR p.estado = :estado_detalle_pago3 
-                     OR p.estado = :estado_detalle_pago4)
+            AND (
+                p.estado = :estado_detalle_pago1 
+                OR p.estado = :estado_detalle_pago2
+                OR p.estado = :estado_detalle_pago3 
+                OR p.estado = :estado_detalle_pago4
+            )
         ORDER BY 
             p.id_pagos DESC
         LIMIT 1;
         """)
 
-        result = db_session.execute(query, {'id_contrato': id_contrato, "estado_detalle_pago1": pago_completo,
-                                            'estado_detalle_pago2': pago_incompleto, 'estado_detalle_pago3': primer_pago_del_prestamo,
-                                            'estado_detalle_pago4': pago_de_mas}).fetchall()
+        # Ajusta los valores de estado según tu implementación
+        result = db_session.execute(
+            query,
+            {
+                'id_contrato': id_contrato,
+                'estado_detalle_pago1': pago_completo,
+                'estado_detalle_pago2': pago_incompleto,
+                'estado_detalle_pago3': primer_pago_del_prestamo,
+                'estado_detalle_pago4': pago_de_mas
+            }
+        ).fetchall()
         
         new_result = []
         last_id_contrato = None
+
         for row in result:
             row_tuple = tuple(row)
+
+            fecha_pago = row_tuple[3]  # p.fecha_pago (posición 3 en 0-based)
+            if fecha_pago:
+                # Se asume que fecha_pago es un objeto datetime o date
+                dia = fecha_pago.day
+                anio = fecha_pago.year
+                mes = fecha_pago.month
+
+                if dia <= 15:
+                    desc_quincena = f"Primera quincena de {MONTHS_ES.get(mes, 'Mes desconocido')} de {anio}"
+                else:
+                    desc_quincena = f"Segunda quincena de {MONTHS_ES.get(mes, 'Mes desconocido')} de {anio}"
+            else:
+                # Si no existe fecha_pago
+                desc_quincena = ""
+
+            # Convertimos a lista para poder modificar la columna 'descripcion_quincena' (index 15)
+            row_list = list(row_tuple)
+            row_list[15] = desc_quincena  # Sobrescribimos el valor vacío con la descripción en español
+
+            # Respetar la lógica de (1,) o (None,)
             if row_tuple[0] != last_id_contrato:
-                new_row = row_tuple + (1,)
+                tmp_row = tuple(row_list) + (1,)
                 last_id_contrato = row_tuple[0]
             else:
-                new_row = row_tuple + (None,)
-            new_result.append(new_row)
-        return result
+                tmp_row = tuple(row_list) + (None,)
 
+            new_result.append(tmp_row)
+
+        return new_result
 
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -545,7 +590,7 @@ def ultimo_pago_contrato(db_session, id_contrato):
     finally:
         db_session.close()
 
-
+        
 def transacciones_saldo_contrato(db_session, id_cliente, añoInicio, añoFin, estado_contrato, estado_detalle_pago, tipo_consulta, suma_saldo):
     try:
         # Consulta SQL sin dependencia de lc_time_names y MONTHNAME
@@ -839,7 +884,9 @@ def buscar_detalle_pago_idPagos(db_session, id_pagos):
     p.id_pagos,
     p.observacion, 
     p.evidencia_pago, 
-    p.fecha_pago, 
+    p.fecha_pago,
+    per.nombres,
+    per.apellidos, 
     p.fecha_realizacion_pago,
     p.estado AS 'estado_pagos', 
     m.codigoMoneda, 
@@ -861,6 +908,10 @@ JOIN
     moneda m ON dp.id_moneda = m.id_moneda
 JOIN 
     contrato c ON p.id_contrato = c.id_contrato
+JOIN
+    usuarios u ON u.id_usuario = p.id_usuario
+JOIN
+    persona per ON per.id_persona = u.id_persona
 WHERE 
     p.id_pagos = :id_pagos""")
 
@@ -868,6 +919,7 @@ WHERE
         
 
         result_list = []
+        print(result)
 
         if len(result) == 1:
 
@@ -879,16 +931,18 @@ WHERE
                 'observacion': row[2],
                 'evidencia_pago': row[3],
                 'fecha_pago': row[4],
-                'fecha_realizacion_pago': row[5],
-                'estado_pagos': row[6],
-                'codigoMoneda': row[7],
-                'nombreMoneda': row[8],
-                'cifraPago': row[9],
-                'tasa_conversion': row[10],
-                'estado_detallePagos': row[11],
-                'descripcion_quincena': row[12],
-                'id_mes': row[13],
-                'estado_contrato': row[14],
+                'nombres_usuario': row[5],
+                'apellidos_usuario': row[6],
+                'fecha_realizacion_pago': row[7],
+                'estado_pagos': row[8],
+                'codigoMoneda': row[9],
+                'nombreMoneda': row[10],
+                'cifraPago': row[11],
+                'tasa_conversion': row[12],
+                'estado_detallePagos': row[13],
+                'descripcion_quincena': row[14],
+                'id_mes': row[15],
+                'estado_contrato': row[16],
             }
         elif len(result) == 2:
             # Hay dos registros
@@ -900,13 +954,15 @@ WHERE
                 'observacion': row1[2],
                 'evidencia_pago': row1[3],
                 'fecha_pago': row1[4],
-                'fecha_realizacion_pago': row1[5],
-                'estado_pagos': row1[6],
-                'codigoMoneda': row1[7],
-                'nombreMoneda': row1[8],
-                'cifraPago$': row1[9],
-                'cifraPagoC$': row2[9],
-                'tasa_conversion': row2[10],
+                'nombres_usuario': row1[5],
+                'apellidos_usuario': row1[6],
+                'fecha_realizacion_pago': row1[7],
+                'estado_pagos': row1[8],
+                'codigoMoneda': row1[9],
+                'nombreMoneda': row1[10],
+                'cifraPago$': row1[11],
+                'cifraPagoC$': row2[11],
+                'tasa_conversion': row2[12],
             }
 
         return result_list
@@ -1900,7 +1956,7 @@ def verificar_pago(db_session, id_cliente, id_moneda, cantidadPagarDolares, esta
 
 def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
                 fechaPago, fecha_pago_real, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                monedaConversion):
+                monedaConversion, id_usuario_creador):
     
 
     id_moneda = int(id_moneda)
@@ -1927,7 +1983,7 @@ def proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPaga
         num_pagos = comprobar_primerPago(db_session, id_contrato)
 
         id_pagos = insertarPago(
-            db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, fecha_pago_real, estadoPago)
+            db_session, id_contrato, id_cliente, observacionPago, evidenciaPago, fechaPago, fecha_pago_real, estadoPago, id_usuario_creador)
         insertar_detalle_pagos(
             db_session, id_pagos, dolares, cantidadPagarDolares, None, monedaOriginal)
 

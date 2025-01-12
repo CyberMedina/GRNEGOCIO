@@ -250,7 +250,9 @@
                   <div class="profile-info">
                     <div class="info">
                       <div class="image">
-                        <img src="https://ui-avatars.com/api/?name={{ session['nombre_persona'] }}+{{ session['apellido_persona'] }}/?rounded=true" alt="" />
+                        <img
+                          src="https://ui-avatars.com/api/?name={{ session['nombre_persona'] }}+{{ session['apellido_persona'] }}/?rounded=true"
+                          alt="" />
                       </div>
                       <div>
                         <h6 class="fw-500">{{ session['nombre_persona'] }} {{ session['apellido_persona'] }}</h6>
@@ -264,10 +266,10 @@
                   <li>
                     <a href="#" onclick="configuracionTasaCambio();"><i class="lni lni-dollar"></i>Tasa de cambio</a>
                   </li>
-                  <!-- <li>
+                  <li>
                     <a href="#0" id="toggleCheckboxLink"> <i class="fa-regular fa-circle-half-stroke"></i></i>
                       Modo:<span id="modoLuz"></span> </a>
-                  </li> -->
+                  </li>
                   <li>
                     <a href="/base_de_datos"> <i class="lni lni-cog"></i> Configuración </a>
                   </li>
@@ -291,7 +293,7 @@
   </main>
 
   <!-- ============ Theme Option Start ============= -->
-  <!-- <div class="btn-theme">
+  <div class="btn-theme">
     <div class="container">
       <label class="toggle" for="switch">
         <input id="switch" class="input" type="checkbox" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight"
@@ -304,7 +306,7 @@
       </label>
     </div>
 
-  </div> -->
+  </div>
 
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
     <div class="offcanvas-header">
@@ -378,115 +380,116 @@
         </div>
       </div>
     </div>
-    <!-- ModalThree End -->
-    <!-- ============ Theme Option End ============= -->
+  </div>
+  <!-- ModalThree End -->
+  <!-- ============ Theme Option End ============= -->
 
 
-    <!-- ========= All Javascript files linkup ======== -->
-    <script src="{{ url_for('static', filename='assets/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/Chart.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/dynamic-pie-chart.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/moment.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/fullcalendar.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/jvectormap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/world-merc.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/polyfill.js') }}"></script>
-    <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
-    <script src="https://kit.fontawesome.com/9b8b75d2fb.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
-      integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
-      crossorigin="anonymous"></script>
+  <!-- ========= All Javascript files linkup ======== -->
+  <script src="{{ url_for('static', filename='assets/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/Chart.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/dynamic-pie-chart.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/moment.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/fullcalendar.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/jvectormap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/world-merc.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/polyfill.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
+  <script src="https://kit.fontawesome.com/9b8b75d2fb.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+    integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
+    crossorigin="anonymous"></script>
 
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const toggleCheckboxLink = document.getElementById("toggleCheckboxLink");
-        const checkbox = document.getElementById("switch");
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const toggleCheckboxLink = document.getElementById("toggleCheckboxLink");
+      const checkbox = document.getElementById("switch");
 
-        // Agregar evento de clic al enlace
-        toggleCheckboxLink.addEventListener("click", function (event) {
-          event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
+      // Agregar evento de clic al enlace
+      toggleCheckboxLink.addEventListener("click", function (event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
 
-          // Cambiar el estado del checkbox
-          checkbox.checked = !checkbox.checked;
-        });
+        // Cambiar el estado del checkbox
+        checkbox.checked = !checkbox.checked;
       });
-    </script>
+    });
+  </script>
 
-    {% block customJS %}{% endblock %}
+  {% block customJS %}{% endblock %}
 
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('{{ url_for('static', filename='service-worker.js') }}')
-          .then(registration => {
-            console.log('Service Worker registrado con éxito:', registration);
-          })
-          .catch(error => {
-            console.log('Error al registrar el Service Worker:', error);
-          });
-      }
-    </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('{{ url_for('static', filename='service - worker.js') }}')
+        .then(registration => {
+          console.log('Service Worker registrado con éxito:', registration);
+        })
+        .catch(error => {
+          console.log('Error al registrar el Service Worker:', error);
+        });
+    }
+  </script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Obtener la URL actual
-        const currentUrl = window.location.pathname;
-    
-        // Seleccionar todos los elementos de menú en la primera navbar
-        const menuItems1 = document.querySelectorAll(".menu-item");
-    
-        // Recorrer todos los elementos de menú de la primera navbar
-        menuItems1.forEach(item => {
-          // Obtener el enlace dentro del elemento de menú
-          const link = item.querySelector("a");
-    
-          // Verificar si la URL del enlace coincide con la URL actual
-          if (link.getAttribute("href") === currentUrl) {
-            // Agregar la clase "active" al elemento de menú
-            item.classList.add("active");
-          } else {
-            // Asegurarse de que los demás elementos no tengan la clase "active"
-            item.classList.remove("active");
-          }
-        });
-    
-        // Seleccionar todos los elementos de menú en la segunda navbar
-        const menuItems2 = document.querySelectorAll(".nav__item");
-    
-        // Recorrer todos los elementos de menú de la segunda navbar
-        menuItems2.forEach(item => {
-          // Obtener el enlace dentro del elemento de menú
-          const link = item.querySelector("a");
-    
-          // Verificar si la URL del enlace coincide con la URL actual
-          if (link.getAttribute("href") === currentUrl) {
-            // Agregar la clase "active-link" al enlace
-            link.classList.add("active-link");
-          } else {
-            // Asegurarse de que los demás enlaces no tengan la clase "active-link"
-            link.classList.remove("active-link");
-          }
-        });
-    
-        // Seleccionar todos los elementos de menú con la clase "nav-item"
-        const menuItems3 = document.querySelectorAll(".nav-item");
-    
-        // Recorrer todos los elementos de menú con la clase "nav-item"
-        menuItems3.forEach(item => {
-          // Obtener el enlace dentro del elemento de menú
-          const link = item.querySelector("a");
-    
-          // Verificar si la URL del enlace coincide con la URL actual
-          if (link.getAttribute("href") === currentUrl) {
-            // Agregar la clase "active" al elemento de menú
-            item.classList.add("active");
-          } else {
-            // Asegurarse de que los demás elementos no tengan la clase "active"
-            item.classList.remove("active");
-          }
-        });
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Obtener la URL actual
+      const currentUrl = window.location.pathname;
+
+      // Seleccionar todos los elementos de menú en la primera navbar
+      const menuItems1 = document.querySelectorAll(".menu-item");
+
+      // Recorrer todos los elementos de menú de la primera navbar
+      menuItems1.forEach(item => {
+        // Obtener el enlace dentro del elemento de menú
+        const link = item.querySelector("a");
+
+        // Verificar si la URL del enlace coincide con la URL actual
+        if (link.getAttribute("href") === currentUrl) {
+          // Agregar la clase "active" al elemento de menú
+          item.classList.add("active");
+        } else {
+          // Asegurarse de que los demás elementos no tengan la clase "active"
+          item.classList.remove("active");
+        }
       });
-    </script>
+
+      // Seleccionar todos los elementos de menú en la segunda navbar
+      const menuItems2 = document.querySelectorAll(".nav__item");
+
+      // Recorrer todos los elementos de menú de la segunda navbar
+      menuItems2.forEach(item => {
+        // Obtener el enlace dentro del elemento de menú
+        const link = item.querySelector("a");
+
+        // Verificar si la URL del enlace coincide con la URL actual
+        if (link.getAttribute("href") === currentUrl) {
+          // Agregar la clase "active-link" al enlace
+          link.classList.add("active-link");
+        } else {
+          // Asegurarse de que los demás enlaces no tengan la clase "active-link"
+          link.classList.remove("active-link");
+        }
+      });
+
+      // Seleccionar todos los elementos de menú con la clase "nav-item"
+      const menuItems3 = document.querySelectorAll(".nav-item");
+
+      // Recorrer todos los elementos de menú con la clase "nav-item"
+      menuItems3.forEach(item => {
+        // Obtener el enlace dentro del elemento de menú
+        const link = item.querySelector("a");
+
+        // Verificar si la URL del enlace coincide con la URL actual
+        if (link.getAttribute("href") === currentUrl) {
+          // Agregar la clase "active" al elemento de menú
+          item.classList.add("active");
+        } else {
+          // Asegurarse de que los demás elementos no tengan la clase "active"
+          item.classList.remove("active");
+        }
+      });
+    });
+  </script>
 </body>
 
 

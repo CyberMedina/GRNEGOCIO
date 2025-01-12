@@ -67,3 +67,6 @@ checbox_activo = 1
 proceder_pago_estado = 1
 verificar_pago_estado = 2
 
+# Constantes para proveedores de imagnes
+VarCloudinary = 1
+

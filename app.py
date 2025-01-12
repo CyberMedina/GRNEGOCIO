@@ -5,12 +5,15 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
 from io import BytesIO
 from sqlalchemy import create_engine, text, MetaData
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
+import cloudinary
+import cloudinary.uploader
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
 from datetime import datetime
@@ -34,6 +37,7 @@ from models.constantes import *
 from models.prestamos import *
 from models.pagos import *
 from models.contratos import *
+from models.notificaciones import *
 from models.API_Alexa import *
 from models.base_de_datos import *
 from models.info_login import *
@@ -796,6 +800,7 @@ def procesar_pago():
     evidenciaPago = request.files['evidenciaPago']
     tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
     fechaPagoReal = request.form['fechaPagoReal']
+    id_usuario_creador = session.get('user_id')
 
     
     procesar_todo = False
@@ -821,11 +826,161 @@ def procesar_pago():
 
     response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
                 fechaPago, fechaPagoReal, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                monedaConversion)
+                monedaConversion, id_usuario_creador)
     return response
         
 
 
+@app.route('/api/prueba', methods=['POST'])
+def prueba():
+    data = request.get_json()
+    print(data)
+    return jsonify(data), 200
+
+
+@app.route('/checkNumber', methods=['POST'])
+def check_number():
+    phone_raw = request.json.get('phone')
+    #Elimina los primeros 505 del numero telefonico
+    phone_number = phone_raw[3:]
+    print(phone_number)
+
+    #Buscamos en la base de datos si existe el numero de telefono
+    id_cliente = buscar_existenciaNumeroTelefono(db_session, phone_number)
+
+    print(id_cliente)
+
+
+    if id_cliente:
+        return jsonify({'found': True, 'id_cliente': id_cliente})
+    else:
+        return jsonify({'found': False})
+
+
+
+# Configuración para subir archivos
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
+
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'imagen' not in request.files:
+        return jsonify({'error': 'No se encontró el archivo de imagen'}), 400
+
+    file = request.files['imagen']
+    numero = request.form.get('numero', '')
+    id_cliente = request.form.get('id_cliente', None)
+    resultado_gemini = json.loads(request.form.get('resultado_gemini', '{}'))
+    if resultado_gemini:
+        monto_sugerido = resultado_gemini.get('monto', None)
+        if resultado_gemini.get('retiro_sin_tarjeta',) == True:
+            Observacion_sugerida = "Retiro sin tarjeta"
+        else:
+            Observacion_sugerida = "Deposito bancario"
+    else:
+        monto_sugerido = None
+        Observacion_sugerida = None
+
+
+    filename = secure_filename(file.filename)
+    local_path = os.path.join('temp_uploads', filename)
+    os.makedirs('temp_uploads', exist_ok=True)
+
+    # Guarda la imagen en una carpeta temporal
+    file.save(local_path)
+
+    try:
+        # Sube la imagen a Cloudinary
+        cloud_response = cloudinary.uploader.upload(
+            local_path,
+            resource_type='image',
+            type='authenticated',
+            folder='my_private_folder'
+        )
+
+        # Extrae datos de Cloudinary
+        public_id = cloud_response.get("public_id")
+        secure_url = cloud_response.get("secure_url")
+
+        # Limpia el archivo local
+        if os.path.exists(local_path):
+            os.remove(local_path)
+
+        if not public_id or not secure_url:
+            return jsonify({'error': 'No se recibió respuesta válida de Cloudinary'}), 500
+
+        # Inicia una transacción de base de datos
+        with db_session.begin():
+            id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
+
+            if id_cliente:
+                print("SI HAY ID_CLIENTE " + str(id_cliente))
+                id_cliente = int(id_cliente)
+            insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, Observacion_sugerida, monto_sugerido, activo)
+
+        return jsonify({
+            'mensaje': 'Archivo subido e información insertada con éxito',
+            'numero': numero,
+            'cloudinary_public_id': public_id,
+            'cloudinary_info': cloud_response
+        }), 200
+
+    except SQLAlchemyError as db_error:
+        print("Entró en 'except SQLAlchemyError'")
+        if public_id:
+            print("Eliminando foto subida a Cloudinary")
+            result = cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+            print(result)
+        return jsonify({'error': f'Error de base de datos: {str(db_error)}'}), 500
+
+    except Exception as e:
+        print("Entró en 'except Exception'")
+        if public_id:
+            print("Eliminando foto subida a Cloudinary")
+            result = cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+            print(result)
+        return jsonify({'error': f'Error generalizado: {str(e)}'}), 500
+
+    finally:
+        db_session.close()
+    
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Recibe los datos JSON enviados por Evolution API
+    data = request.json
+
+    # Validación básica
+    if not data:
+        return jsonify({"error": "No se recibieron datos"}), 400
+
+    # Identifica el tipo de evento
+    event_type = data.get('event')
+    payload = data.get('payload')
+
+    # Procesa el evento de nuevos mensajes
+    if event_type == 'MESSAGES_UPSERT':
+        for message in payload.get('messages', []):
+            sender = message.get('from')  # Número del remitente
+            content = message.get('content')  # Contenido del mensaje
+
+            # Imprime el mensaje recibido
+            print(f"Mensaje recibido de {sender}: {content}")
+
+    # Retorna una respuesta para confirmar que el webhook fue procesado
+    return jsonify({"status": "Mensaje procesado"}), 200
 
 
 @app.route('/añadir_pago/<int:id_cliente>', methods=['GET', 'POST'])
@@ -2051,6 +2206,7 @@ def procesarPagoNormal():
             cantidadPagarCordobas = None
             inputTasaCambioPago = obtener_tasa_cambio()
             fechaPago = datetime.datetime.now().strftime('%Y-%m-%d')
+            fecha_pago_real = datetime.datetime.now().strftime('%Y-%m-%d')
             observacionPago = None
             evidenciaPago = None
             tipoPagoCompletoForm = None
@@ -2065,15 +2221,14 @@ def procesarPagoNormal():
 
             estadoPago = pago_completo  # Utiliza el estado de pago completo
 
-            response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
-                        fechaPago, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                        monedaConversion)
-            return response
-            #Convierte el objeto a una cadena JSON
-            json_response = json.dumps({"data": cadena_respuesta})
-            print(json_response)  # Imprime la cadena JSON
+            Amazon_Alexa = 3
 
-            return jsonify({"respuesta": cadena_respuesta}), 200
+            response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
+                         fechaPago, fecha_pago_real, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
+                         monedaConversion, Amazon_Alexa)
+
+        
+            return response
         except SQLAlchemyError as e:
             db_session.rollback()
             print(f"Error: {e}")
@@ -2217,7 +2372,6 @@ def imprimir_pago_alexa():
         finally:
             db_session.close()
 
-from flask import request, jsonify
 
 @app.route('/api/registrar_pago_completo', methods=['POST'])
 def registrar_pago_completo():

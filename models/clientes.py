@@ -638,5 +638,28 @@ WHERE cl.id_cliente = :id_cliente;""")
         print(f"Error: {e}")
         return None
     
+
+def buscar_existenciaNumeroTelefono(db_session, numeroTelefono):
+    try:
+        query = text("""SELECT c.id_cliente, t.numero_telefono 
+FROM telefono t
+INNER JOIN direccion_telefono dt ON t.id_telefono = dt.id_telefono
+INNER JOIN persona_direccion pd ON dt.id_direccion = pd.id_direccion
+INNER JOIN persona p ON pd.id_persona = p.id_persona
+INNER JOIN cliente c ON pd.id_persona = c.id_persona
+WHERE t.numero_telefono = :numeroTelefono AND t.estado = '1';""")
+        result = db_session.execute(query, {"numeroTelefono": numeroTelefono}).fetchone()
+
+        #Si no retorna ningun registro es false pero si registra un registro es true
+        if result:
+            return result[0]
+        else:
+            return False
     
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        return None
     
+    finally:
+        db_session.close()

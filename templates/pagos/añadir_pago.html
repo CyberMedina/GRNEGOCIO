@@ -158,7 +158,7 @@
                                                 data-original="{{ saldo_pendiente.cifraSaldo }}">
                                                 <p><strong class="text-success">
                                                         Saldo a favor: {{ saldo_pendiente.codigoMoneda }} {{
-                                                            saldo_pendiente.cifraSaldo }} <span></span>
+                                                        saldo_pendiente.cifraSaldo }} <span></span>
                                                     </strong></p>
                                             </a>
                                             {% endif %}
@@ -757,12 +757,29 @@
                             <span class="icon"><i class="fa-solid fa-receipt"></i></span>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div id="cantidadPagoCordobasRowVP" class="col-6 col-sm-6">
+                            <div class="input-style-3">
+                                <label for="">Pago realizado por: </label>
+                                <input type="text" placeholder="" inputmode="text" name="realizadoPorVP"
+                                    id="realizadoPorVP" readonly />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                <p id="lblFechaRealizacionPagoPorVP" style="font-size: small;"><span
+                                        id="lblFechaRealizacionPagoPorVP"></span>
+                                </p>
+                            </div>
+                            <!-- end select -->
+                        </div>
+                    </div>
                 </div>
+                <!-- end row -->
+                </form>
             </div>
-            <!-- end row -->
-            </form>
         </div>
     </div>
+    <!-- end col -->
+    <!-- end input -->
 </div>
 
 
@@ -815,15 +832,17 @@
                         <p class="text-sm">
                         <div class="row">
                             {% for dataClientes in datos_cliente %}
-                            
-                            <div class="row seccion_fechas" {% if dataClientes.id_tipoCliente == 3 %}hidden{% else %}{% endif %}>
+
+                            <div class="row seccion_fechas" {% if dataClientes.id_tipoCliente==3 %}hidden{% else %}{%
+                                endif %}>
                                 <div class="col-6 col-sm-6 col-md-6">
                                     <div class="input-style-1">
                                         <label class="text-bold">Incio fecha</label>
-                                        <input type="date" required name="inicioFechaImpresion" id="inicioFechaImpresion" />
+                                        <input type="date" required name="inicioFechaImpresion"
+                                            id="inicioFechaImpresion" />
                                         <p id="tiempoLetrasInicioFechaImpresion"></p>
                                     </div>
-    
+
                                 </div>
 
                                 <div class="col-6 col-sm-6 col-md-6">
@@ -836,7 +855,8 @@
 
                             </div>
 
-                            {% if dataClientes.id_tipoCliente == 3 %}El cliente es especial por ende se visualizarán todos los pagos existentes.{% else %}{% endif %}
+                            {% if dataClientes.id_tipoCliente == 3 %}El cliente es especial por ende se visualizarán
+                            todos los pagos existentes.{% else %}{% endif %}
 
 
 

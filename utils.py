@@ -469,3 +469,22 @@ def obtener_dia_actual():
     return greeting
 
 
+
+def subirImagen(db_session, url, public_id, proveedorImagen, estado):
+    try:
+        # Obtener el ID de la tabla persona
+        id_imagen = (ObtenerIDTabla(
+                db_session, "id_imagen", "imagenes"))
+
+        query = text("""INSERT INTO imagenes (id_imagen, id_proveedorImagen, url_imagen, public_id, fechaHoraCreacion, estado)
+VALUES (:id_imagen, :id_proveedorImagen, :url_imagen, :public_id, NOW(), :estado);""")
+        db_session.execute(query, {"id_imagen": id_imagen,
+                                    "id_proveedorImagen": proveedorImagen,
+                                    "url_imagen": url,
+                                    "public_id": public_id,
+                                    "estado": estado})
+        return id_imagen
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        print(f"Error: {e}")
+        raise

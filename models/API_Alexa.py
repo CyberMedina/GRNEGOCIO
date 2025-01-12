@@ -160,11 +160,12 @@ def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
 
     if ultimo_pago:
     #Extraer datos necesarios del ultimo pago
-        cifra_ultimo_pago = num2words(ultimo_pago[0][8], lang='es')
+        cifra_ultimo_pago_letras = num2words(ultimo_pago[0][8], lang='es')
+        cifra_ultimo_pago = ultimo_pago[0][8]
         fecha_ultimo_pago = ultimo_pago[0][3]
         fecha_ultimo_pago_letras = ultimo_pago[0][15]
 
-        str_pago = f"el último pago que tengo registrado es el {fecha_ultimo_pago}, osea en la {fecha_ultimo_pago_letras}, con un monto de {cifra_ultimo_pago} dólares"
+        str_pago = f"el último pago que tengo registrado es el {fecha_ultimo_pago}, osea en la {fecha_ultimo_pago_letras}, con un monto de {cifra_ultimo_pago_letras} dólares"
     else:
         str_pago = "no tengo registrado ningún pago"
     
@@ -180,19 +181,46 @@ def crear_cadena_respuesta_estado_cliente(db_session, nombre_cliente):
 
     # Determinar si el cliente tiene saldo pendiente
     if datos_cliente['saldo_pendiente'] is not None and datos_cliente['saldo_pendiente'][3] is not None:
-        saldo_pendiente = num2words(datos_cliente['saldo_pendiente'][3], lang='es')
-        saldo_pendiente = f"tiene un saldo de {saldo_pendiente} dólares"
+        saldo_pendiente_letras = num2words(datos_cliente['saldo_pendiente'][3], lang='es')
+        saldo_pendiente_letras = f"tiene un saldo de {saldo_pendiente_letras} dólares"
+        saldo_numerico = datos_cliente['saldo_pendiente'][3]
         
     else:
-        saldo_pendiente = "no tiene saldo pendiente"
+        saldo_pendiente_letras = "no tiene saldo pendiente"
+        saldo_numerico = 0
 
 
-    respuesta_cadena_texto = f"A la {quincena_actual}, el cliente {nombres} {apellidos} {estado_pago}, de hecho {str_pago}  y,  {saldo_pendiente}."
+    respuesta_cadena_texto = f"A la {quincena_actual}, el cliente {nombres} {apellidos} {estado_pago}, de hecho {str_pago}  y,  {saldo_pendiente_letras}."
 
-    # Imprimir la respuesta (opcional)
-    print(respuesta_cadena_texto)
 
-    return respuesta_cadena_texto
+    respuesta ={
+        "alexa_speak": respuesta_cadena_texto,
+        "alexa_display": {
+            "nombre_cliente": f"{nombres} {apellidos}",
+            "estado_pago": estado_pago,
+            "fecha_ultimo_pago": fecha_ultimo_pago_letras,
+            "monto_ultimo_pago": cifra_ultimo_pago,
+            "saldo_pendiente": saldo_numerico,
+        }
+    }
+
+        
+    dataPagos_cliente = datos_pagov2(id_cliente, db_session)
+
+    if dataPagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+            id_contrato = obtener_IdContrato(db_session, id_cliente)
+            total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+            capital = Decimal(dataPagos_cliente[0]["monto_solicitado"])
+            capital_a_la_fecha = capital - total_pagos
+            capital_a_la_fecha_letras = num2words(capital_a_la_fecha, lang='es')
+
+            respuesta['alexa_speak'] += f"El capital a la fecha es de {capital_a_la_fecha_letras} dólares."
+            respuesta['alexa_display']['capital_a_la_fecha'] = capital_a_la_fecha
+
+
+
+
+    return respuesta
 
 
 
