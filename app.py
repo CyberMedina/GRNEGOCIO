@@ -829,7 +829,20 @@ def procesar_pago():
                 monedaConversion, id_usuario_creador)
     return response
         
+########### Termina el modulo de pagos ############
 
+########### Empieza el modulo de notificaciones ############
+
+@app.route('/chats_clientes', methods=['GET', 'POST'])
+def chats_clientes():
+    return render_template('notificaciones/chats_clientes.html')
+
+
+
+
+
+
+########### Termina el modulo de notificaciones ############
 
 @app.route('/api/prueba', methods=['POST'])
 def prueba():
