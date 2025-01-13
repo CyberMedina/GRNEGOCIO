@@ -27,10 +27,23 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive 
 from functools import wraps
 from flask import session, redirect, url_for
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from cloudinary.utils import private_download_url
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
 
 
 def login_requiredUser(f):
@@ -488,3 +501,34 @@ VALUES (:id_imagen, :id_proveedorImagen, :url_imagen, :public_id, NOW(), :estado
         db_session.rollback()
         print(f"Error: {e}")
         raise
+
+
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
+
+
+def obtener_url_temporal_cloudinary(public_id, file_format='jpg'):
+    """
+    Generate a time-limited, signed URL for an authenticated resource in Cloudinary.
+    
+    :param public_id: The public ID of the uploaded asset.
+    :param file_format: The file format/extension for the output (e.g., jpg, png).
+    :return: A signed URL that can be used to access the authenticated asset.
+    """
+    # resource_type defaults to 'image', but can be adjusted (e.g., 'video') if needed.
+    resource_type = 'image'
+    url = private_download_url(
+        public_id=public_id,
+        format=file_format,
+        resource_type=resource_type,
+        type='authenticated',
+        # sign_url is True by default in private_download_url, but we can explicitly set it:
+        sign_url=True
+    )
+    return url

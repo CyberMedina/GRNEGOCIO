@@ -25,3 +25,124 @@ def insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, descripci
         print(e)
         db_session.rollback()
         raise
+    
+
+def obtenerClientesChatNotificaciones(db_session):
+    try:
+        query = text(""" SELECT 
+    ncp.id_notificacionesClientesPagos,
+    ncp.fechaCreacionNotificacion,
+    ncp.descripcion,
+    p.nombres,
+    p.apellidos,
+    c.id_cliente,
+    CASE
+        WHEN TIMESTAMPDIFF(SECOND, ncp.fechaCreacionNotificacion, NOW()) < 60 
+            THEN CONCAT(TIMESTAMPDIFF(SECOND, ncp.fechaCreacionNotificacion, NOW()), ' segundos')
+        WHEN TIMESTAMPDIFF(MINUTE, ncp.fechaCreacionNotificacion, NOW()) < 60 
+            THEN CONCAT(TIMESTAMPDIFF(MINUTE, ncp.fechaCreacionNotificacion, NOW()), ' minutos')
+        WHEN TIMESTAMPDIFF(HOUR, ncp.fechaCreacionNotificacion, NOW()) < 24 
+            THEN CONCAT(TIMESTAMPDIFF(HOUR, ncp.fechaCreacionNotificacion, NOW()), ' horas')
+        WHEN TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()) = 1 
+            THEN '1 día'
+        WHEN TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()) < 7 
+            THEN CONCAT(TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()), ' días')
+        WHEN TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 semana'
+        WHEN TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()) < 4
+            THEN CONCAT(TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()), ' semanas')
+        WHEN TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 mes'
+        WHEN TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()) < 12
+            THEN CONCAT(TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()), ' meses')
+        WHEN TIMESTAMPDIFF(YEAR, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 año'
+        ELSE 
+            CONCAT(TIMESTAMPDIFF(YEAR, ncp.fechaCreacionNotificacion, NOW()), ' años')
+    END AS tiempoTranscurrido
+FROM notificacionesclientespagos AS ncp
+INNER JOIN cliente AS c ON ncp.id_cliente = c.id_cliente
+INNER JOIN persona AS p ON c.id_persona = p.id_persona
+INNER JOIN (
+    SELECT 
+        id_cliente,
+        MAX(fechaCreacionNotificacion) AS max_fecha
+    FROM notificacionesclientespagos
+    GROUP BY id_cliente
+) AS ultimos ON ncp.id_cliente = ultimos.id_cliente
+             AND ncp.fechaCreacionNotificacion = ultimos.max_fecha;""")
+        
+        return db_session.execute(query).fetchall()
+    
+    except Exception as e:
+        print(e)
+        db_session.rollback()
+        raise
+    
+
+def obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente):
+    try:
+        query = text("""
+SELECT 
+    ncp.id_notificacionesClientesPagos,
+    ncp.fechaCreacionNotificacion,
+    img.url_imagen,
+    img.public_id,
+    p.nombres,
+    p.apellidos,
+    CASE
+        WHEN TIMESTAMPDIFF(SECOND, ncp.fechaCreacionNotificacion, NOW()) < 60 
+            THEN CONCAT(TIMESTAMPDIFF(SECOND, ncp.fechaCreacionNotificacion, NOW()), ' segundos')
+        WHEN TIMESTAMPDIFF(MINUTE, ncp.fechaCreacionNotificacion, NOW()) < 60 
+            THEN CONCAT(TIMESTAMPDIFF(MINUTE, ncp.fechaCreacionNotificacion, NOW()), ' minutos')
+        WHEN TIMESTAMPDIFF(HOUR, ncp.fechaCreacionNotificacion, NOW()) < 24 
+            THEN CONCAT(TIMESTAMPDIFF(HOUR, ncp.fechaCreacionNotificacion, NOW()), ' horas')
+        WHEN TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()) = 1 
+            THEN '1 día'
+        WHEN TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()) < 7 
+            THEN CONCAT(TIMESTAMPDIFF(DAY, ncp.fechaCreacionNotificacion, NOW()), ' días')
+        WHEN TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 semana'
+        WHEN TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()) < 4
+            THEN CONCAT(TIMESTAMPDIFF(WEEK, ncp.fechaCreacionNotificacion, NOW()), ' semanas')
+        WHEN TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 mes'
+        WHEN TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()) < 12
+            THEN CONCAT(TIMESTAMPDIFF(MONTH, ncp.fechaCreacionNotificacion, NOW()), ' meses')
+        WHEN TIMESTAMPDIFF(YEAR, ncp.fechaCreacionNotificacion, NOW()) = 1
+            THEN '1 año'
+        ELSE 
+            CONCAT(TIMESTAMPDIFF(YEAR, ncp.fechaCreacionNotificacion, NOW()), ' años')
+    END AS tiempoTranscurrido
+FROM notificacionesclientespagos ncp
+INNER JOIN imagenes img ON ncp.id_imagen = img.id_imagen
+INNER JOIN cliente c ON ncp.id_cliente = c.id_cliente
+INNER JOIN persona p ON c.id_persona = p.id_persona
+WHERE c.id_cliente = :id_cliente """)
+        
+        result = db_session.execute(query, {"id_cliente": id_cliente}).fetchall()
+        
+        if result:
+            # Crear una nueva lista para almacenar los resultados formateados
+            formatted_result = []
+            for row in result:
+                formatted_result.append({
+                    "id_notificacionesClientesPagos": row[0],
+                    "fechaCreacionNotificacion": row[1],
+                    "url_imagen": row[2],
+                    "nombres": row[4],
+                    "apellidos": row[5],
+                    "tiempoTranscurrido": row[6]
+                })
+            return formatted_result
+        else:
+            return None
+
+    except Exception as e:
+        print(e)
+        db_session.rollback()
+        raise e
+    
+
+  
+

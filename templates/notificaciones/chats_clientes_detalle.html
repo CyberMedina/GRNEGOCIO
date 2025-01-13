@@ -1,0 +1,277 @@
+{% extends 'layout.html' %}
+
+
+{% block title %}Chats / {% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-zoom.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-thumbnail.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-rotate.min.css">
+
+{% endblock %}
+
+{% block body %}
+
+<!-- ========== section start ========== -->
+<section class="section">
+    <div class="container-fluid">
+      <!-- ========== title-wrapper start ========== -->
+      <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <div class="title">
+              <h2>Chat</h2>
+            </div>
+          </div>
+          <!-- end col -->
+          <div class="col-md-6">
+            <div class="breadcrumb-wrapper">
+              <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                  <li class="breadcrumb-item">
+                    <a href="#0">Dashboard</a>
+                  </li>
+                  <li class="breadcrumb-item"><a href="#0">Pages</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">
+                    Chat
+                  </li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+          <!-- end col -->
+        </div>
+        <!-- end row -->
+      </div>
+      <!-- ========== title-wrapper end ========== -->
+
+      <div class="row">
+        <div class="col-xxl-12 col-xl-12 col-lg-12 mb-30">
+          <div class="message-box-wrapper card-style h-100">
+            <div>
+              <div class="message-header mb-20">
+                <div class="chat-list-item">
+                  <div class="image">
+                    <img src="https://ui-avatars.com/api/?name={{ nombre_cliente }}+{{ apellido_cliente }}/?rounded=true&size=128" alt="" />
+                    <span class="status"></span>
+                  </div>
+                  <div class="content">
+                    <div class="title">
+                      <h6 class="text-sm text-medium">{{ nombre_cliente }} {{ apellido_cliente }}</h6>
+                      <div class="more-btn-wrapper">
+                        <button class="more-btn dropdown-toggle" id="moreAction" data-bs-toggle="dropdown"
+                          aria-expanded="false">
+                          <i class="lni lni-more-alt"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction">
+                          <li class="dropdown-item">
+                            <a href="#0" class="text-gray">Mark as Read</a>
+                          </li>
+                          <li class="dropdown-item">
+                            <a href="#0" class="text-gray">Reply</a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                    <p class="text-sm">
+<!--                       <span class="mr-10">Last seen 9h ago</span>
+                      <span class="mr-10">Local time Feb 19, 6:32 AM</span> -->
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <!-- end message header -->
+              <div class="message-body">
+                <div id="lightgallery">
+                    {% for imagen in datos_clienteEImagenes %}
+                    <div class="message-box">
+                        <div class="image">
+                            <img src="https://ui-avatars.com/api/?name={{ imagen.nombres }}+{{ imagen.apellidos }}/?rounded=true&size=128" alt="" />
+                        </div>
+                        <div class="content-box">
+                            <div class="title d-sm-flex mb-2 justify-content-between align-items-center">
+                                <h6 class="text-sm text-medium">{{ imagen.nombres }} {{ imagen.apellidos }}</h6>
+                                <span class="text-sm">
+                                    Hace {{ imagen.tiempoTranscurrido }} {{ imagen.fechaCreacionNotificacion }}
+                                </span>
+                            </div>
+                            <div class="content">
+                                <a 
+                                    data-src="{{ imagen.url_imagen }}"
+                                    data-lg-size="1400-1400"
+                                    class="gallery-item"
+                                >
+                                    <img src="{{ imagen.url_imagen }}" alt="imagen" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- end message-box-->
+                <!-- <div class="message-box right">
+                  <div class="image">
+                    <img src="assets/images/lead/lead-2.png" alt="" />
+                  </div>
+                  <div class="content-box">
+                    <div class="title d-sm-flex mb-2 justify-content-between align-items-center">
+                      <h6 class="text-sm text-medium">Me</h6>
+                      <span class="text-sm">Feb 18, 10:31 PM</span>
+                    </div>
+                    <div class="content">
+                      <p>
+                        Hello Jacob, welcome to my gig let me check then we
+                        will discus details
+                      </p>
+                    </div>
+                  </div>
+                </div> -->
+
+              </div>
+            </div>
+            <!-- end message body -->
+            <div class="message-form">
+              <form action="#">
+                <div class="message-field">
+                  <div class="input-style-3">
+                    <input type="text" placeholder="Type..." />
+                    <span class="icon"><i class="lni lni-mic"></i></span>
+                  </div>
+                  <div class="file-emoji">
+                    <button>
+                      <i class="lni lni-happy"></i>
+                    </button>
+                    <div class="file-upload">
+                      <input type="file" />
+                      <span> <i class="lni lni-paperclip"></i> </span>
+                    </div>
+                  </div>
+                </div>
+                <button class="send-btn">
+                  <i class="lni lni-telegram-original"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- end col -->
+<!--         <div class="col-xxl-3 col-xl-5 col-lg-6 col-md-8 mb-30">
+          <div class="card-style chat-about h-100">
+            <h6 class="text-sm text-medium">About</h6>
+            <div class="chat-about-profile">
+              <div class="image mx-auto">
+                <img src="assets/images/profile/profile-image.png" alt="" />
+              </div>
+              <div class="content text-center">
+                <h5 class="text-bold mb-10">John Doe</h5>
+                <p class="text-sm">Founder, Abc Company</p>
+              </div>
+            </div>
+            <div class="activity-meta">
+              <ul>
+                <li>
+                  <span>Avg. Response Time</span>
+                  <span class="text-medium text-dark">1h</span>
+                </li>
+                <li>
+                  <span>From</span>
+                  <span class="text-medium text-dark">United State</span>
+                </li>
+                <li>
+                  <span>Language</span>
+                  <span class="text-medium text-dark">English</span>
+                </li>
+              </ul>
+            </div>
+            <div class="profile-info">
+              <ul>
+                <li>
+                  <span class="text-medium text-dark">Email:</span>
+                  <span>yourmail@gmail.com</span>
+                </li>
+                <li>
+                  <span class="text-medium text-dark">WhatsApp:</span>
+                  <span>+880 123131423 </span>
+                </li>
+                <li>
+                  <span class="text-medium text-dark">Website:</span>
+                  <span>https://youdomain.com</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div> -->
+        <!-- end col -->
+      </div>
+      <!-- end row -->
+    </div>
+    <!-- end container -->
+  </section>
+  <!-- ========== section end ========== -->
+
+{% endblock %}
+
+{% block customJS %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/rotate/lg-rotate.min.js"></script>
+
+<script>
+    const lgContainer = document.getElementById('lightgallery');
+    if (lgContainer) {
+        lightGallery(lgContainer, {
+            selector: '.gallery-item',
+            plugins: [lgZoom, lgThumbnail, lgRotate],
+            speed: 500,
+            download: false,
+            counter: true,
+            zoom: true,
+            zoomFromOrigin: true,
+            actualSize: false,
+            closeOnTap: true,
+            enableZoomAfter: 300,
+            scale: 3,
+            escKey: true,
+            closable: true,
+            closeOnClick: true,
+            rotate: true,
+            rotateLeft: true,
+            rotateRight: true,
+            flipHorizontal: true,
+            flipVertical: true,
+            addClass: 'lg-custom-zoom-class',
+            mobileSettings: {
+                controls: true,
+                showCloseIcon: true,
+                download: false,
+                rotate: true
+            }
+        });
+    }
+</script>
+
+<style>
+    .lg-zoom-in, .lg-zoom-out {
+        cursor: pointer !important;
+    }
+    
+    .lg-toolbar .lg-icon {
+        color: #fff;
+        opacity: 0.8;
+    }
+    
+    .lg-toolbar .lg-icon:hover {
+        opacity: 1;
+    }
+
+    /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
+    .content img {
+        max-width: 200px;  /* o el tamaño que prefieras */
+        height: auto;
+        object-fit: cover;
+    }
+</style>
+
+{% endblock %}

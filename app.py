@@ -72,6 +72,16 @@ app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
+
+
 
 
 
@@ -835,7 +845,35 @@ def procesar_pago():
 
 @app.route('/chats_clientes', methods=['GET', 'POST'])
 def chats_clientes():
-    return render_template('notificaciones/chats_clientes.html')
+
+    Clientes = obtenerClientesChatNotificaciones(db_session)
+
+    formulario_chats_clientes = {
+        "Clientes": Clientes
+    }
+
+    return render_template('notificaciones/chats_clientes.html', **formulario_chats_clientes)
+
+
+@app.route('/chats_clientes_detalle/<int:id_cliente>', methods=['GET', 'POST'])
+def chats_clientes_detalle(id_cliente):
+    print(id_cliente)
+
+    datos_clienteEImagenes = obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente)
+
+    if datos_clienteEImagenes:
+        nombre_cliente = datos_clienteEImagenes[0]["nombres"]
+        apellido_cliente = datos_clienteEImagenes[0]["apellidos"]
+
+    print(datos_clienteEImagenes)
+    formulario_chats_clientes_detalle = {
+        "nombre_cliente": nombre_cliente,
+        "apellido_cliente": apellido_cliente,
+        "datos_clienteEImagenes": datos_clienteEImagenes,
+    }
+    return render_template('notificaciones/chats_clientes_detalle.html', **formulario_chats_clientes_detalle)
+
+
 
 
 
@@ -876,14 +914,6 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configure Cloudinary credentials
-# (You can also store these in environment variables for security)
-cloudinary.config(
-    cloud_name= os.getenv('CLOUD_NAME'),
-    api_key= os.getenv('API_KEY'),
-    api_secret= os.getenv('API_SECRET'),
-    secure=True
-)
 
 
 
