@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, Blueprint
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 
 
 def datos_persona(id_persona):

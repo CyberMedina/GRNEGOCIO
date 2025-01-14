@@ -12,91 +12,90 @@
     .input-style-3 .icon {
         margin-top: 0;
     }
-
 </style>
 
-<!-- ========== section start ========== -->
-<section class="section">
-    <div class="container-fluid">
-        <!-- ========== title-wrapper start ========== -->
-        <div class="title-wrapper pt-30">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="title">
-                        <h2>Chat</h2>
-                    </div>
-                </div>
-                <!-- end col -->
-                <div class="col-md-6">
-                    <div class="breadcrumb-wrapper">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item">
-                                    <a href="#0">Dashboard</a>
-                                </li>
-                                <li class="breadcrumb-item"><a href="#0">Pages</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">
-                                    Chat
-                                </li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-                <!-- end col -->
-            </div>
-            <!-- end row -->
-        </div>
-        <!-- ========== title-wrapper end ========== -->
 
-        <div class="row">
-            <div class="col-xxl-3 col-xl-12 col-lg-5 col-md-8 mb-30">
-                <div class="card-style chat-list-card h-100">
-                    <div class="title mb-20 d-flex justify-content-between align-items-center">
-                        <div class="select-style-3 mb-0">
-                            <div class="select-position">
-                                <select name="" id="">
-                                    <option value="">Todas las conversaciones</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <form action="#">
-                        <div class="input-style-3">
-                            <input type="text" placeholder="Buscar...." />
-                            <span class="icon">
-                                <i class="lni lni-search-alt"></i>
-                            </span>
-                        </div>
-                    </form>
-                    <!-- end search form -->
-                    <div class="chat-list-wrapper">
-                        {% for cliente in Clientes %}
-                        <a href="/chats_clientes_detalle/{{ cliente.id_cliente }}" class="chat-list d-block">
-                            <div class="chat-list-item">
-                                <div class="image">
-                                    <img src="https://ui-avatars.com/api/?name={{ cliente.nombres }}+{{ cliente.apellidos }}/?rounded=true&size=128" alt="" />
-                                    <span class="status bg-success"></span>
-                                </div>
-                                <div class="content">
-                                    <div class="title">
-                                        <h6 class="text-sm text-medium">{{ cliente.nombres }} {{ cliente.apellidos }}</h6>
-                                        <div class="d-flex align-items-center">
-                                            <span>Hace {{ cliente.tiempoTranscurrido }}</span>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm">{{ cliente.descripcion }}</p>
-                                </div>
-                            </div>
-                        </a>
-                        <!-- end chat-list -->
-                        {% endfor %}
-                    </div>
+<div class="container-fluid">
+    <!-- ========== title-wrapper start ========== -->
+    <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2>Chats de pagos</h2>
+                </div>
+            </div>
+            <!-- end col -->
+            <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#0">Dashboard</a>
+                            </li>
+                            <li class="breadcrumb-item"><a href="#0">Pages</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                Chats de pagos
+                            </li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
             <!-- end col -->
         </div>
+        <!-- end row -->
     </div>
-</section>
+    <!-- ========== title-wrapper end ========== -->
+
+    <div class="row">
+        <div class="col-xxl-3 col-xl-12 col-lg-5 col-md-8 mb-30">
+            <div class="card-style chat-list-card h-100">
+                <div class="title mb-20 d-flex justify-content-between align-items-center">
+                    <div class="select-style-3 mb-0">
+                        <div class="select-position">
+                            <select name="" id="">
+                                <option value="">Todas las conversaciones</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <form action="#">
+                    <div class="input-style-3">
+                        <input type="text" placeholder="Buscar...." />
+                        <span class="icon">
+                            <i class="lni lni-search-alt"></i>
+                        </span>
+                    </div>
+                </form>
+                <!-- end search form -->
+                <div class="chat-list-wrapper">
+                    {% for cliente in Clientes %}
+                    <a href="/chats_clientes_detalle/{{ cliente.id_cliente }}" class="chat-list d-block">
+                        <div class="chat-list-item">
+                            <div class="image">
+                                <img src="https://ui-avatars.com/api/?name={{ cliente.nombres }}+{{ cliente.apellidos }}/?rounded=true&size=128"
+                                    alt="" />
+                                <span class="status bg-success"></span>
+                            </div>
+                            <div class="content">
+                                <div class="title">
+                                    <h6 class="text-sm text-medium">{{ cliente.nombres }} {{ cliente.apellidos }}</h6>
+                                    <div class="d-flex align-items-center">
+                                        <span>Hace {{ cliente.tiempoTranscurrido }}</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm">{{ cliente.descripcion }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- end chat-list -->
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+    </div>
+</div>
+
 
 
 

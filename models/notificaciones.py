@@ -1,5 +1,5 @@
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 
 def insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, descripcion, monto_sugerido, estado):
     
@@ -33,6 +33,7 @@ def obtenerClientesChatNotificaciones(db_session):
     ncp.id_notificacionesClientesPagos,
     ncp.fechaCreacionNotificacion,
     ncp.descripcion,
+    ncp.monto_sugerido,
     p.nombres,
     p.apellidos,
     c.id_cliente,
@@ -86,6 +87,8 @@ def obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente):
 SELECT 
     ncp.id_notificacionesClientesPagos,
     ncp.fechaCreacionNotificacion,
+    ncp.descripcion,
+    ncp.monto_sugerido,
     img.url_imagen,
     img.public_id,
     p.nombres,
@@ -129,10 +132,15 @@ WHERE c.id_cliente = :id_cliente """)
                 formatted_result.append({
                     "id_notificacionesClientesPagos": row[0],
                     "fechaCreacionNotificacion": row[1],
-                    "url_imagen": row[2],
-                    "nombres": row[4],
-                    "apellidos": row[5],
-                    "tiempoTranscurrido": row[6]
+                    "fechaCreacionNotificacion_formateada": convertir_fecha_a_string_con_hora(row[1]),
+                    "descripcion": row[2],  
+                    "monto_sugerido": row[3],
+                    "monto_sugerido_formateado": convertir_monto_a_string(row[3]),
+                    "url_imagen": row[4],
+                    "public_id": row[5],
+                    "nombres": row[6],
+                    "apellidos": row[7],
+                    "tiempoTranscurrido": row[8]
                 })
             return formatted_result
         else:

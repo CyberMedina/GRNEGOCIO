@@ -30,8 +30,8 @@ import json
 
 
 # Importando desde archivos locales
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
@@ -43,11 +43,11 @@ from models.base_de_datos import *
 from models.info_login import *
 from flask_cors import CORS
 from serverEmail import mail
-from utils import login_requiredUser
-from utils import obtener_tasa_cambio_local
-from utils import actualizar_tasa_cambio_oficial
-from utils import contar_resultados
-from utils import obtener_index_columna
+from helpers import login_requiredUser
+from helpers import obtener_tasa_cambio_local
+from helpers import actualizar_tasa_cambio_oficial
+from helpers import contar_resultados
+from helpers import obtener_index_columna
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -973,7 +973,17 @@ def upload_file():
                 id_cliente = int(id_cliente)
             insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, Observacion_sugerida, monto_sugerido, activo)
 
+            datos_cliente = seleccionar_datos_cliente(db_session, id_cliente)
+
+            nombre_cliente = datos_cliente[1]
+            apellido_cliente = datos_cliente[2]
+
         return jsonify({
+            "Nombre_cliente": nombre_cliente,
+            "Apellido_cliente": apellido_cliente,
+            "observacion_sugerida": Observacion_sugerida,
+            "monto_sugerido": monto_sugerido,
+            "url_chat": f"{os.getenv('FLASK_SERVER_URL')}/chats_clientes_detalle/{id_cliente}",
             'mensaje': 'Archivo subido e información insertada con éxito',
             'numero': numero,
             'cloudinary_public_id': public_id,

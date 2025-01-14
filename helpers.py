@@ -3,7 +3,7 @@ from flask_mail import Message
 from decimal import Decimal
 import re
 from app import *
-from db import *
+from database_connection import *
 from bs4 import BeautifulSoup
 import requests
 import calendar
@@ -532,3 +532,23 @@ def obtener_url_temporal_cloudinary(public_id, file_format='jpg'):
         sign_url=True
     )
     return url
+
+def convertir_monto_a_string(monto):
+    # Convierte el mont a un string en el siguiente formato C$ 1,000.00
+    return f"C${monto:,.2f}"
+
+def convertir_fecha_a_string(fecha):
+    # Convierte la fecha a un string en el siguiente formato 14 de enero de 2025
+    return fecha.strftime("%d de %B de %Y")
+
+def convertir_fecha_a_string_con_hora(fecha):
+    # Primero formateamos la fecha en español
+    fecha_base = fecha.strftime("%d de %B de %Y a las %I:%M:%S")
+    
+    # Añadimos AM/PM manualmente basado en la hora
+    hora = fecha.hour
+    periodo = "Am" if hora < 12 else "Pm"
+    
+    fecha_formateada = f"{fecha_base} {periodo}"
+    return fecha_formateada
+
