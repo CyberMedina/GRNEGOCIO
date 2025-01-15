@@ -10,27 +10,77 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lg-rotate.min.css">
 
 <style>
-  @media screen and (min-width: 1200px) {
-    .section {
-      padding: 0 !important;
+    @media screen and (min-width: 1200px) {
+        .section {
+            padding: 0 !important;
+        }
     }
-  }
 
-  .section {
-    padding: 0 !important;
-  }
+    .section {
+        padding: 0 !important;
+    }
 
-  .message-box-wrapper {
-    margin-top: 40px;
-  }
+    .message-box-wrapper {
+        margin-top: 20px;
+        height: calc(110vh - 110px) !important;
+        display: flex;
+        flex-direction: column;
+    }
 
-  .main-wrapper {
-    margin-left: 0px !important;
-  }
 
-  .message-box .content-box {
-    width: auto;
-}
+    .message-body {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chat-messages {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+
+
+    .message-box {
+        margin-bottom: 20px;
+    }
+
+    .main-wrapper {
+        margin-left: 0px !important;
+    }
+
+    .message-box .content-box {
+        width: auto;
+    }
+
+    .chat-list-item {
+        padding: 0px !important;
+
+    }
+
+    .chat-list-item .content {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .chat-list-item > :first-child {
+        margin-right: 20px; /* Ajusta el espacio según sea necesario */
+    }
+    
+
+    * {
+        box-sizing: border-box;
+        overflow: hidden;
+
+    }
 </style>
 
 {% endblock %}
@@ -48,85 +98,106 @@
 
 <div class="container-fluid">
 
-  <div class="row">
-    <div class="col-xxl-12 col-xl-12 col-lg-12 mb-30">
-      <div class="message-box-wrapper card-style h-100">
-        <div>
-          <div class="message-header mb-20">
-            <div class="chat-list-item">
-              <div class="image">
-                <img
-                  src="https://ui-avatars.com/api/?name={{ nombre_cliente }}+{{ apellido_cliente }}/?rounded=true&size=128"
-                  alt="" />
-                <span class="status"></span>
-              </div>
-              <div class="content">
-                <div class="title">
-                  <h6 class="text-sm text-medium">{{ nombre_cliente }} {{ apellido_cliente }}</h6>
-                  <div class="more-btn-wrapper">
-                    <button class="more-btn dropdown-toggle" id="moreAction" data-bs-toggle="dropdown"
-                      aria-expanded="false">
-                      <i class="lni lni-more-alt"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction">
-                      <li class="dropdown-item">
-                        <a href="#0" class="text-gray">Mark as Read</a>
-                      </li>
-                      <li class="dropdown-item">
-                        <a href="#0" class="text-gray">Reply</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <p class="text-sm">
-                  <!--                       <span class="mr-10">Last seen 9h ago</span>
-                      <span class="mr-10">Local time Feb 19, 6:32 AM</span> -->
-                </p>
-              </div>
-            </div>
-          </div>
-          <!-- end message header -->
-          <div class="message-body">
-            <div id="lightgallery">
-              {% for imagen in datos_clienteEImagenes %}
-              <div class="message-box">
-                <div class="image">
-                  <img
-                    src="https://ui-avatars.com/api/?name={{ imagen.nombres }}+{{ imagen.apellidos }}/?rounded=true&size=128"
-                    alt="" />
-                </div>
-                <div class="content-box">
-                  <!--                   <div class="title d-sm-flex mb-2 justify-content-between align-items-center">
+    <div class="row">
+        <div class="col-xxl-12 col-xl-12 col-lg-12 mb-30">
+            <div class="message-box-wrapper card-style h-100">
+                <div class="d-flex flex-column h-100">
+                    <div class="message-header mb-20">
+                        <div class="chat-list-item">
+                            <a href="/chats_clientes" class="btn btn-primary ml-5" id="btn_volver_chats">
+                                <i class="lni lni-arrow-left"></i>
+                            </a>
+                            <div class="image">
+                                <img src="https://ui-avatars.com/api/?name={{ nombre_cliente }}+{{ apellido_cliente }}/?rounded=true&size=128"
+                                    alt="" />
+                                <span class="status"></span>
+                            </div>
+                            <div class="content">
+                                <div class="title">
+                                    <h6 class="text-sm text-medium">{{ nombre_cliente }} {{ apellido_cliente }}</h6>
+                                    <!--                                     <div class="more-btn-wrapper">
+                                        <button class="more-btn dropdown-toggle" id="moreAction"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="lni lni-more-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction">
+                                            <li class="dropdown-item">
+                                                <a href="#0" class="text-gray">Mark as Read</a>
+                                            </li>
+                                            <li class="dropdown-item">
+                                                <a href="#0" class="text-gray">Reply</a>
+                                            </li>
+                                        </ul>
+                                    </div> -->
+                                </div>
+                                {% if estado_pago_corte.estado == 0 %}
+                                <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No
+                                    ha
+                                    pagado</span>
+                                {% elif estado_pago_corte.estado == 1 %}
+                                <span class="main-badge success-badge rounded-full mb-2 fs-6 p-3">Al
+                                    día</span>
+                                {% elif estado_pago_corte.estado == 2 %}
+                                <span class="main-badge warning-badge rounded-full mb-2 fs-6 p-3">Pago
+                                    incompleto</span>
+                                {% elif estado_pago_corte.estado == 3 %}
+                                <span class="text-danger">No pagó</span>
+                                {% endif %}
+                                <a type="button" class="btn btn-primary" id="btn_ver_pagos" data-bs-toggle="modal"
+                                    data-bs-target="#modal_chat_cliente">
+                                    Ver pagos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end message header -->
+                    <div class="message-body flex-grow-1">
+                        <div id="lightgallery" class="chat-messages">
+                            {% for imagen in datos_clienteEImagenes %}
+                            <div class="message-box">
+                                <div class="image">
+                                    <img src="https://ui-avatars.com/api/?name={{ imagen.nombres }}+{{ imagen.apellidos }}/?rounded=true&size=128"
+                                        alt="" />
+                                </div>
+                                <div class="content-box">
+                                    <!--                   <div class="title d-sm-flex mb-2 justify-content-between align-items-center">
                     <h6 class="text-sm text-medium">{{ imagen.nombres }} {{ imagen.apellidos }}</h6>
                   </div> -->
-                  <div class="content">
-                    <a data-src="{{ imagen.url_imagen }}" data-lg-size="1400-1400" class="gallery-item">
-                      <img src="{{ imagen.url_imagen }}" alt="imagen" />
-                    </a>
-                  </div>
+                                    <div class="content">
+                                        <a data-src="{{ imagen.url_imagen }}" data-lg-size="1400-1400"
+                                            class="gallery-item">
+                                            <img src="{{ imagen.url_imagen }}" alt="imagen" />
+                                        </a>
+                                    </div>
 
-                  <div class="content">
-                    <p>
-                      {{ imagen.descripcion }}
-                      <br>
-                      <span class="text-sm">
-                        {{ imagen.monto_sugerido_formateado }}
-                      </span>
-                    </p>
-                  </div>
+                                    <div class="content">
+                                        <p>
+                                            {{ imagen.descripcion }}
+                                            <br>
+                                            <span class="text-sm">
+                                                {{ imagen.monto_sugerido_formateado }}
+                                            </span>
+                                            
+                                        </p>
+                                        
+                                    </div>
+
+                                    <a href="/chats_clientes" class="btn btn-primary ml-5 lg-12" id="btn_volver_chats">Añadir pago</a>
 
 
-                  <span id="tooltip-iconPersonalize" class="tooltip-icon fw-bolder d-flex justify-content-end"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="{{ imagen.fechaCreacionNotificacion_formateada }}">
-                    Hace {{ imagen.tiempoTranscurrido }}
-                  </span></a>
+                                    <span id="tooltip-iconPersonalize"
+                                        class="tooltip-icon fw-bolder d-flex justify-content-end"
+                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="{{ imagen.fechaCreacionNotificacion_formateada }}">
+                                        Hace {{ imagen.tiempoTranscurrido }}
+                                    </span></a>
 
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-            <!-- end message-box-->
-            <!-- <div class="message-box right">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <!-- end message-box-->
+                        <!-- <div class="message-box right">
                   <div class="image">
                     <img src="assets/images/lead/lead-2.png" alt="" />
                   </div>
@@ -144,13 +215,13 @@
                   </div>
                 </div> -->
 
-          </div>
-        </div>
+                    </div>
+                </div>
 
-      </div>
-    </div>
-    <!-- end col -->
-    <!--         <div class="col-xxl-3 col-xl-5 col-lg-6 col-md-8 mb-30">
+            </div>
+        </div>
+        <!-- end col -->
+        <!--         <div class="col-xxl-3 col-xl-5 col-lg-6 col-md-8 mb-30">
           <div class="card-style chat-about h-100">
             <h6 class="text-sm text-medium">About</h6>
             <div class="chat-about-profile">
@@ -196,77 +267,1226 @@
             </div>
           </div>
         </div> -->
-    <!-- end col -->
-  </div>
-  <!-- end row -->
+        <!-- end col -->
+    </div>
+    <!-- end row -->
 </div>
 <!-- end container -->
 
+<div class="modal fade" id="modal_chat_cliente" tabindex="-1" aria-labelledby="modal_chat_cliente" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-style">
+            <div class="modal-header px-0 border-0">
+                <h5 class="modal-title" id="modal_chat_cliente_title">{{ nombre_cliente }} {{ apellido_cliente
+                    }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-0">
 
-{% endblock %}
+                <!-- ========== table components start ========== -->
+                <section class="table-components">
+                    <div class="container-fluid-custom">
 
-{% block customJS %}
+                        <!-- ========== tables-wrapper start ========== -->
+                        <div class="tables-wrapper">
+                            <div class="row">
+                                <div class="col-lg-12">
+
+                                    <div class="title d-flex flex-wrap align-items-center justify-content-between">
+                                        <div class="row">
+                                            {% for dataCliente in datos_cliente %}
+                                            <!--                                            <div class="col-12 d-flex align-items-center mb-3">
+                                                <h3 class="mb-0">{{ dataCliente.nombres }} {{ dataCliente.apellidos
+                                                    }}</h3>
+                                                <div class="dropdown ms-3">
+                                                    <button class="more-btn dropdown-toggle" type="button"
+                                                        id="moreAction1" data-bs-toggle="dropdown"
+                                                        aria-expanded="false">
+                                                        <i class="lni lni-more-alt"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end"
+                                                        aria-labelledby="moreAction1">
+                                                        <li class="dropdown-item">
+                                                            <a href="/visualizar_contrato/{{ dataCliente.id_cliente }}"
+                                                                class="text-gray">Ver / Editar contrato</a>
+                                                        </li>
+                                                        <li class="dropdown-item">
+                                                            <a href="#FinalizarDeuda"
+                                                                onclick="finalizarDeuda({{ dataCliente.id_cliente }})"
+                                                                class="text-gray">Finalizar deuda</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div> -->
+                                            <input type="date" value="12-04-22" id="fechaPrestamoInput"
+                                                name="fechaPrestamoInput" hidden>
+                                            <input type="text" value="{{dataCliente.pagoMensual }}" id="pagoMensual"
+                                                name="pagoMensual" hidden>
+                                            <!-- Se coloca acá el script para inicializar los datos al abrir el modal -->
+                                            <script>
+                                                function IniciarliazarcifrasInputsVisualizarPrimerPagoModal() {
+                                                    document.getElementById("fechaPrestamoInput").value = "{{ dataCliente.fechaPrestamo }}";
+                                                    document.getElementById("pagoMensualModal").value = "{{ dataCliente.pagoMensual }}";
+                                                }
+                                            </script>
+
+                                            <div class="col-md-8 mb-5">
+                                                <div class="row">
+                                                    <div class="col-12 detallesCliente">
+                                                        {% if estado_pago_corte.estado == 0 %}
+                                                        <span
+                                                            class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No
+                                                            ha
+                                                            pagado</span>
+                                                        {% elif estado_pago_corte.estado == 1 %}
+                                                        <span
+                                                            class="main-badge success-badge rounded-full mb-2 fs-6 p-3">Al
+                                                            día</span>
+                                                        {% elif estado_pago_corte.estado == 2 %}
+                                                        <span
+                                                            class="main-badge warning-badge rounded-full mb-2 fs-6 p-3">Pago
+                                                            incompleto</span>
+                                                        {% elif estado_pago_corte.estado == 3 %}
+                                                        <span class="text-danger">No pagó</span>
+                                                        {% endif %}
+                                                        <p><strong>Tipo Cliente: </strong><span id="tipo_cliente">{{
+                                                                dataCliente.nombre_tipoCliente }}</span></p>
+                                                        <p><strong>Paga de manera: </strong><span id="tiempo_pago"
+                                                                data-tiempo-pago="{{ dataCliente.tiempo_pago }}">{{
+                                                                dataCliente.tiempo_pago }}</span></p>
+                                                        <a id="aCapital" href="javascript:void(0);"
+                                                            data-capital="{{ dataCliente.monto_solicitado }}"
+                                                            data-original="{{ dataCliente.monto_solicitado }}">
+                                                            <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }}
+                                                                        {{
+                                                                        dataCliente.monto_solicitado
+                                                                        }}</span></strong></p>
+                                                        </a>
+                                                        <p><strong>Tasa de interés: <span
+                                                                    data-tasa-interes="{{ dataCliente.tasa_interes }}">{{
+                                                                    dataCliente.tasa_interes }}%</span></strong></p>
+                                                        <a id="aAbonoMensual" href="javascript:void(0)"
+                                                            data-abono-mensual="{{ dataCliente.pagoMensual }}"
+                                                            data-original="{{ dataCliente.pagoMensual }}">
+                                                            <p><strong>Abono Mensual: <span>{{
+                                                                        dataCliente.codigoMoneda }} {{
+                                                                        dataCliente.pagoMensual }}</span></strong>
+                                                            </p>
+                                                        </a>
+                                                        <a id="aAbonoQuincenal" href="javascript:void(0)"
+                                                            data-abono-quincenal="{{ dataCliente.pagoQuincenal }}"
+                                                            data-original="{{ dataCliente.pagoQuincenal }}">
+                                                            <p><strong>Abono Quincenal: <span>{{
+                                                                        dataCliente.pagoQuincenal
+                                                                        }}</span></strong></p>
+                                                        </a>
+                                                        {% if dataCliente.id_tipoCliente == 3 %}
+                                                        <p><strong>Capital: <span>{{ dataCliente.codigoMoneda }} {{
+                                                                    dataCliente.monto_solicitado }}</span></strong>
+                                                        </p>
+                                                        <p><strong>Saldo a la fecha: </strong><span
+                                                                id="nombre_negocio">{{
+                                                                saldo_pendiente }}</span></p>
+                                                        {% endif %}
+                                                        <a id="btnMostrarDetallesCliente" href="#0"
+                                                            class="text-medium text-dark">[Leer más]</a>
+                                                        <div class="detallesCliente" id="detallesCliente" hidden>
+                                                            <p><strong>Fecha del préstamo: </strong><span
+                                                                    id="fecha_prestamo"
+                                                                    data-fecha-prestamo="{{ dataCliente.fechaPrestamo }}">{{
+                                                                    dataCliente.fechaPrestamo }}</span></p>
+                                                            <p><strong>Cliente desde hace: </strong><span
+                                                                    id="cliente_desde"
+                                                                    data-cliente-desde="{{ dataCliente.fecha_prestamo_desde }}">{{
+                                                                    dataCliente.fecha_prestamo_desde }}</span></p>
+                                                        </div>
+                                                        <a id="btnOcultarDetallesCliente" href="#0"
+                                                            class="text-medium text-dark" hidden>[Leer menos]</a>
+                                                        {% if saldo_pendiente.estado == 2 and
+                                                        saldo_pendiente.cifraSaldo > 0.00 %}
+                                                        <a id="aSaldoPendiente" href="javascript:void(0);"
+                                                            data-cliente-saldo-pendiente="{{ saldo_pendiente.cifraSaldo }}"
+                                                            data-original="{{ saldo_pendiente.cifraSaldo }}">
+                                                            <p><strong class="text-danger">
+                                                                    Saldo pendiente: {{ saldo_pendiente.codigoMoneda
+                                                                    }} {{
+                                                                    saldo_pendiente.cifraSaldo }} <span></span>
+                                                                </strong></p>
+                                                        </a>
+                                                        {% elif saldo_pendiente.estado == 1 and
+                                                        saldo_pendiente.cifraSaldo > 0.00 %}
+                                                        <a id="aSaldoAFavor" href="javascript:void(0);"
+                                                            data-cliente-saldo-a-favor="{{ saldo_pendiente.cifraSaldo }}"
+                                                            data-original="{{ saldo_pendiente.cifraSaldo }}">
+                                                            <p><strong class="text-success">
+                                                                    Saldo a favor: {{ saldo_pendiente.codigoMoneda
+                                                                    }} {{
+                                                                    saldo_pendiente.cifraSaldo }} <span></span>
+                                                                </strong></p>
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!--                                             <div class="col-md-4 mb-5">
+                                                <div class="row">
+                                                    <a data-bs-toggle="modal" data-bs-target="#modalAñadirPago"
+                                                        id="gestionarPago" href="#RealizarPago"
+                                                        class="main-btn primary-btn-light rounded-full btn-hover col-md-8 col-md-8 offset-md-4 offset-lg-4 offset-xl-4 offset-xxl-8">
+                                                        <i class="lni lni-plus"></i>
+                                                        Añadir pago
+                                                    </a>
+                                                </div>
+
+                                            </div> -->
+                                            <div class="d-flex align-items-center">
+                                                <h6>Contrato:</h6>
+                                                <div class="select-style-1 mb-0 ml-10">
+                                                    <div class="select-position">
+                                                        <select id="filtro-comboBoxContrato" class="p-0 pe-5 border-0">
+                                                            <option value="1">Todos</option>
+                                                            <!-- {% for año in años_pagos %}
+                                                {% if año[0] == session['año_seleccionado'] %}
+                                                <option value="{{ año[0] }}" selected>{{ año[0] }}</option>
+                                                {% else %}
+                                                <option value="{{ año[0] }}">{{ año[0] }}</option>
+                                                {% endif %}
+                                                {% endfor %} -->
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <h6>Año:</h6>
+                                                <div class="select-style-1 mb-0 ml-10">
+                                                    <div class="select-position">
+                                                        <select id="filtro-comboBox" class="p-0 pe-5 border-0">
+                                                            {% for año in años_pagos %}
+                                                            {% if año[0] == session['año_seleccionado'] %}
+                                                            <option value="{{ año[0] }}" selected>{{ año[0] }}
+                                                            </option>
+                                                            {% else %}
+                                                            <option value="{{ año[0] }}">{{ año[0] }}</option>
+                                                            {% endif %}
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+
+
+                                        </div>
+
+
+
+
+                                        <!-- 
+                                        <a href="#Impirmir_historial" class="main-btn primary-btn btn-hover btn-sm mt-3"
+                                            onclick="abrirModalOpcionImprimir()">
+                                            <i class="lni lni-printer mr-5"></i> Imprimir Historial
+                                        </a> -->
+
+
+
+                                        <!-- 
+                            <a href="/PruebaImprimir_pago" target="_blank"
+                                class="main-btn primary-btn btn-hover btn-sm mt-3">
+                                <i class="lni lni-printer mr-5"></i> Imprimir Historial
+                            </a> -->
+
+
+
+
+
+                                        <!-- ============ Theme Option Start ============= -->
+                                        <!--                                         <div class="btn-añadirPago">
+                                            <div class="container">
+                                                <label class="label-añadirPago btn-hover" for="" data-bs-toggle="modal"
+                                                    data-bs-target="#modalAñadirPago">
+                                                    <div class="icon">
+                                                        <i class="lni lni-plus"></i>
+                                                    </div>
+                                                </label>
+                                            </div>
+
+                                        </div> -->
+
+                                        <script>
+                                            window.addEventListener('scroll', function () {
+                                                var tableWrapper = document.querySelector('.table-wrapper');
+                                                var rect = tableWrapper.getBoundingClientRect();
+
+                                                // Si el valor top del rectángulo es menor o igual a cero, el elemento está visible en la parte superior de la pantalla
+                                                if (rect.top <= 160) {
+                                                    document.querySelector('.btn-añadirPago').classList.add('show');
+                                                } else {
+                                                    document.querySelector('.btn-añadirPago').classList.remove('show');
+                                                }
+                                            });
+
+
+
+                                        </script>
+
+                                    </div>
+                                    <div class="table-wrapper table-responsive" style="overflow-x: hidden !important;">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="lead-info">
+                                                        <h6>Mes</h6>
+                                                    </th>
+
+                                                    <th class="lead-info">
+                                                        <h6>Monto</h6>
+                                                    </th>
+                                            </thead>
+                                            <tbody>
+                                                {% set last_id_contrato = namespace(value=None) %}
+                                                {% set meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo',
+                                                'Junio', 'Julio',
+                                                'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'] %}
+
+                                                {% for i in range(1, 13) %}
+                                                {% set pagos_mes = pagos | selectattr('id_mes', 'equalto', i) | list
+                                                %}
+
+                                                {% if pagos_mes %}
+                                                {% for pago in pagos_mes %}
+                                                {% if pago.id_contrato != last_id_contrato.value %}
+                                                <!-- Mostrar encabezado de nuevo contrato antes del mes -->
+
+
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        <a href="/visualizar_contrato_id/{{ pago.id_contrato }}">
+                                                            <span id="tooltip-iconPersonalize"
+                                                                class="tooltip-icon text-secondary fw-bolder"
+                                                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                title="{{ pago.fechaPrestamo }}">
+                                                                Pagos del préstamo de: ${{ pago.monto_solicitado }}
+                                                            </span></a>
+                                                    </td>
+
+
+                                                </tr>
+
+                                                {% set last_id_contrato.value = pago.id_contrato %}
+                                                {% endif %}
+
+                                                <!-- Mostrar el nombre del mes una vez -->
+                                                {% if loop.first %}
+                                                <tr>
+                                                    <th
+                                                        style="border-style: none !important; padding-bottom:0 !important">
+                                                        <h6>{{ meses[i-1] }}</h6>
+                                                    </th>
+                                                </tr>
+                                                {% endif %}
+
+                                                <!-- Insertar aquí la estructura de la fila con los detalles del pago -->
+                                                <tr>
+                                                    <td class="min-width">
+                                                        <p>{{ pago.descripcion_quincena }}</p>
+                                                        <p>({{ pago.fecha_pago }})</p>
+                                                        {% if pago.observacion %}
+                                                        <a href="#VerPago" onclick="">
+                                                            <span
+                                                                onclick="obtenerInformacionPagoEspecifico({{pago.id_pagos}})"
+                                                                class="main-badge danger-badge rounded-full">Observación</span>
+                                                        </a>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td class="min-width">
+                                                        <span class="tooltip-icon 
+                                                            {% if pago.estado_pago == 0 %}text-danger
+                                                            {% elif pago.estado_pago == 1 %}text-success
+                                                            {% elif pago.estado_pago == 2 %}text-warning
+                                                            {% elif pago.estado_pago == 3 %}text-secondary
+                                                            {% elif pago.estado_pago == 4 %}text-success
+                                                            {% endif %}" {% if pago.estado_pago==2
+                                                            %}data-bs-toggle="tooltip" data-bs-placement="top"
+                                                            title="Pago incompleto, monto quincenal: {{ dataCliente.codigoMoneda }}{{ dataCliente.pagoQuincenal }}"
+                                                            {% elif pago.estado_pago==0 %}data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" title="No hay pago" {% elif
+                                                            pago.estado_pago==1 %}data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" title="Pago completo" {% elif
+                                                            pago.estado_pago==3 %}data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" title="Primer pago" {% elif
+                                                            pago.estado_pago==4 %}data-bs-toggle="tooltip"
+                                                            data-bs-placement="top" title="Pago de más" {% endif %}>
+                                                            {% if pago.estado_pago == 0 %}-{{ pago.codigoMoneda }}
+                                                            {{ pago.cifraPago
+                                                            }}<br> (NO PAGÓ)
+                                                            {% else %}{{ pago.codigoMoneda }} {{ pago.cifraPago }}{%
+                                                            endif %}
+                                                        </span>
+                                                        <button class="more-btn ml-10 dropdown-toggle" id="moreAction1"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="lni lni-more-alt"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="moreAction1">
+                                                            <li class="dropdown-item">
+                                                                <a href="#0"
+                                                                    onclick="obtenerInformacionPagoEspecifico({{pago.id_pagos}})"
+                                                                    class="text-gray">Ver</a>
+                                                            </li>
+                                                            <li class="dropdown-item">
+                                                                <a href="#0"
+                                                                    onclick="obtenerInformacionPagoBorrar({{pago.id_pagos}})"
+                                                                    class="text-gray">Eliminar</a>
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                                {% else %}
+                                                <tr>
+                                                    <th
+                                                        style="border-style: none !important; padding-bottom:0 !important">
+                                                        <h6>{{ meses[i-1] }}</h6>
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="min-width" colspan="4">
+                                                        <p>No hay pagos realizados</p>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </tbody>
+
+                                            {% endfor %}
+
+
+
+
+
+                                            <!-- <iframe src="https://drive.google.com/embeddedfolderview?id=1k8js1ekmHBSZQJ1oHW8v1nP2FpHjoSGt&resourcekey=RESOURCE-KEY#grid" style="width:100%; height:600px; border:0;"></iframe> -->
+                                        </table>
+                                        <!-- end table -->
+                                    </div>
+                                </div>
+                                <!-- end card -->
+                            </div>
+                            <!-- end col -->
+                        </div>
+                        <!-- end row -->
+                    </div>
+                    <!-- ========== tables-wrapper end ========== -->
+            </div>
+            <!-- end container -->
+            </section>
+            <!-- ========== table components end ========== -->
+
+            <div class="modal fade" id="modalAñadirPago" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content card-style">
+                        <div class="modal-header px-0 border-0">
+                            <h2 class="text-bold">Realizar pago</h2>
+                            <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                <i class="lni lni-cross-circle"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body px-0">
+                            <div class="content mb-30">
+                                {% for dataCliente in datos_cliente %}
+                                <form action="/añadir_pago/{{ dataCliente.id_cliente }}" method="POST"
+                                    enctype="multipart/form-data" id="anadirClientes">
+                                    <input type="text" id="formId_cliente" name="formId_cliente"
+                                        value="{{ dataCliente.id_cliente }}" hidden>
+
+                                    <div class="pagoCompleto" hidden>
+                                        <a id="pagoCompleto" href="#0"
+                                            class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-3 offset-md-8 mb-5">
+                                            Pago completo
+                                        </a>
+
+                                    </div>
+
+
+
+
+                                    <div class="row">
+
+                                        <div class="col-12">
+                                            <div class="col-8 col-sm-4 col-md-4" hidden>
+                                                <div class="select-style-1">
+                                                    <label class="">Sugerencia pago</label>
+                                                    <div class="select-position">
+                                                        <select class="light-bg" required name="comboSugerenciaPago"
+                                                            id="comboSugerenciaPago">
+                                                            <option value="1">Restante a pagar</option selected>
+                                                            <option value="2">Quincenal completo</option>
+
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-6">
+
+                                                    <div class="input-style-1">
+                                                        <label class="text-bold">Quincena correspondiente* <span
+                                                                id="conRetraso" class="text-danger text-bold" hidden>
+                                                                (Con retraso)</span></label>
+                                                        <input type="date" required name="fechaPago" id="fechaPago" />
+                                                        <p id="tiempoPagoLetras"></p>
+                                                    </div>
+
+
+                                                </div>
+
+                                                <div class="col-6" id="divInputFechaPagoReal" hidden>
+                                                    <div class="input-style-1">
+                                                        <label class="text-bold">Fecha del pago* <span
+                                                                id="spanIgualarFechaQuincenaAFechaReal"
+                                                                class="text-success-emphasis text-bold">(¿Igualar?)</span></label>
+                                                        <input class="mt-1" type="date" required name="fechaPagoReal"
+                                                            id="fechaPagoReal" />
+                                                        <p id="tiempoPagoLetrasReal"></p>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+
+
+
+
+                                        </div>
+
+
+
+                                        <div class="row">
+
+                                            <div id="tasaCambioRow" class="col-6 col-sm-4" hidden>
+                                                <div class="input-style-3">
+                                                    <label>Tasa de cambio</label>
+                                                    <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*"
+                                                        inputmode="decimal" name="inputTasaCambioPago"
+                                                        id="inputTasaCambioPago" />
+                                                    <span class="icon" id=""
+                                                        style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                                    <!-- Aquí se mostrará el porcentaje -->
+                                                </div>
+                                                <!-- end select -->
+                                            </div>
+
+
+                                        </div>
+
+
+
+
+                                        <div class="row">
+                                            <div class="col-4 col-sm-2 col-md-2">
+                                                <div class="select-style-1">
+                                                    <label class="">Moneda</label>
+                                                    <div class="select-position">
+                                                        <select class="light-bg" required name="tipoMonedaPago"
+                                                            id="tipoMonedaPago">
+                                                            <option value="1">$</option selected>
+                                                            <option value="2">C$</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <!-- end select -->
+                                            </div>
+                                            <div id="cantidadPagoCordobasRow" class="col-6 col-sm-4" hidden>
+                                                <div class="input-style-3">
+                                                    <label for="">Pago en C$</label>
+                                                    <input type="text" placeholder="0" inputmode="decimal"
+                                                        name="cantidadPagoCordobas" id="cantidadPagoCordobas" />
+                                                    <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                                    <span>C$<span id="lblCantidadPagarC$"></span>
+                                                    </span>
+                                                    <input id="cantidadPagarVerificarC$" type="text" hidden>
+                                                </div>
+                                                <!-- end select -->
+                                            </div>
+                                            {% set cantidad_pagar = monto_pagoEspecial if monto_pagoEspecial else
+                                            dataCliente.pagoQuincenal %}
+                                            <div class="col-6 col-sm-4">
+                                                <div class="input-style-3">
+                                                    <label for="">Pago en $ <span id="spanpagoCompletoDlrs"
+                                                            class="text-success-emphasis text-bold">(todo)</span></label>
+                                                    <input type="text" placeholder="0" inputmode="decimal"
+                                                        name="cantidadPagar$" id="cantidadPagar$" required />
+                                                    <span class="icon" style="z-index: 1 !important;"><i
+                                                            class="fa-solid fa-coins"></i></span>
+                                                    <span id="pCantidadPagarVerificar$"
+                                                        style="position:relative; z-index: 5 !important;"
+                                                        class="tooltip-icon" data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        title="{{monto_pagoEspecial.descripcion }}"></span>
+                                                    <input id="cantidadPagarVerificar$" type="text" value="" hidden>
+                                                </div>
+                                                <!-- end select -->
+                                            </div>
+
+
+                                            {% endfor %}
+
+                                        </div>
+
+
+
+
+                                    </div>
+
+                                    <div class="form-check checkbox-style checkbox-danger mb-20">
+                                        <input class="form-check-input" type="checkbox" value="0" id="checkBoxNoPago"
+                                            name="checkBoxNoPago" />
+                                        <label class="form-check-label" for="checkBoxNoPago">
+                                            No pagó</label>
+                                    </div>
+                                    <!-- end checkbox -->
+
+                                    <div class="form-check checkbox-style checkbox-danger mb-20" hidden>
+                                        <input class="form-check-input" type="checkbox" value="0"
+                                            id="checkBoxPrimerPago" name="checkBoxPrimerPago" />
+                                        <label class="form-check-label" for="checkBoxPrimerPago">
+                                            Primer pago</label>
+                                    </div>
+
+
+
+
+
+                                    <div class="col-8 col-sm-4 col-md-4" hidden>
+                                        <div class="select-style-1">
+                                            <label class="">PAGO COMPLETO O INCOMPLETO</label>
+                                            <div class="select-position">
+                                                <select class="light-bg" name="tipoPagoCompleto" id="tipoPagoCompleto">
+                                                    <option value="0">NO HAY PAGO</option>
+                                                    <option value="1">COMPLETO</option>
+                                                    <option value="2">INCOMPLETO</option>
+                                                    <option value="3">PRIMER PAGO</option>
+                                                    <option value="4">DE MAS</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- end select -->
+                                    </div>
+
+                                    <div class="input-style-3">
+                                        <label>Observación</label>
+                                        <textarea placeholder="Descripción de la observación" rows="5"
+                                            name="observacionPago" id="observacionPago"></textarea>
+                                        <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="input-style-3">
+                                            <label>Evidencia del pago</label>
+                                            <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
+                                                id="evidenciaPago" />
+                                            <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- end col -->
+                                    <div class="col-12">
+                                        <div class="button-group d-flex justify-content-center flex-wrap">
+                                            <button type="POST" id="btnGuardar"
+                                                class="main-btn primary-btn btn-hover m-2">
+                                                Guardar
+                                            </button>
+                                            <button class="main-btn danger-btn-outline m-2" data-bs-dismiss="modal">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- ModalFive start -->
+                                    <div class="warning-modal">
+                                        <div class="modal fade" id="modal_confirmacion_detalle_pago" tabindex="-1"
+                                            aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content card-style">
+                                                    <div class="modal-header px-0 border-0">
+                                                        <h5 class="text-bold">Detalles del pago</h5>
+                                                    </div>
+                                                    <div class="modal-body px-0">
+                                                        <div class="content mb-30" id="content_modal_detalle_pago">
+                                                            <p class="text-sm">
+
+                                                            </p>
+                                                        </div>
+                                                        <div
+                                                            class="action d-flex flex-wrap align-items-center justify-content-between">
+                                                            <div class="form-check checkbox-style m-2">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    value="0" name="checkbox_confirmacion"
+                                                                    id="checkbox_confirmacion" />
+                                                                <label class="form-check-label"
+                                                                    for="checkbox_confirmacion">
+                                                                    Sí, estoy seguro
+                                                                </label>
+                                                            </div>
+                                                            <!-- end checkbox -->
+                                                            <button id="proceder_pago"
+                                                                class="main-btn btn-sm primary-btn btn-hover m-1">
+                                                                Proceder con el pago
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- ModalFive End -->
+                                </form>
+                            </div>
+                            <!-- end row -->
+
+                        </div>
+                    </div>
+                    <!-- end col -->
+                    <!-- end input -->
+                </div>
+            </div>
+
+
+            <!-- ModalFour start -->
+            <div class="warning-modal">
+                <div class="modal fade" id="modalBorrarPago" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content card-style">
+                            <div class="modal-header px-0 border-0">
+                                <h5 class="text-bold">
+                                    <i class="lni lni-warning text-danger me-2"></i> ¿Está seguro que desea eliminar
+                                    este
+                                    pago?
+                                </h5>
+                            </div>
+                            <div class="modal-body px-0">
+                                <div class="content mb-30">
+                                    <p class="text-sm" id="modalInformacionPago">
+                                    </p>
+                                </div>
+                                <div class="action d-flex flex-wrap justify-content-end">
+                                    <button data-bs-dismiss="modal" class="main-btn btn-sm primary-btn  btn-hover m-1">
+                                        Cancelar
+                                    </button>
+                                    <button id="btnBorrarPago" data-bs-dismiss="modal"
+                                        class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                                        Borrar pago
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ModalFour End -->
+
+
+            <!-- ModalOpcionImprimir start -->
+            <div class="warning-modal">
+                <div class="modal fade" id="ModalOpcionImprimir" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content card-style">
+                            <div class="modal-header px-0 border-0">
+                                <h5 class="text-bold">Opción de impresión</h5>
+                                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                    <i class="lni lni-cross-circle"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body px-0">
+                                <div class="content mb-30">
+                                    <p class="text-sm">
+                                    <div class="row">
+                                        {% for dataClientes in datos_cliente %}
+
+                                        <div class="row seccion_fechas" {% if dataClientes.id_tipoCliente==3 %}hidden{%
+                                            else %}{% endif %}>
+                                            <div class="col-6 col-sm-6 col-md-6">
+                                                <div class="input-style-1">
+                                                    <label class="text-bold">Incio fecha</label>
+                                                    <input type="date" required name="inicioFechaImpresion"
+                                                        id="inicioFechaImpresion" />
+                                                    <p id="tiempoLetrasInicioFechaImpresion"></p>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="col-6 col-sm-6 col-md-6">
+                                                <div class="input-style-1">
+                                                    <label class="text-bold">Fin fecha</label>
+                                                    <input type="date" required name="finFechaImpresion"
+                                                        id="finFechaImpresion" />
+                                                    <p id="tiempoLetrasFinFechaImpresion"></p>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        {% if dataClientes.id_tipoCliente == 3 %}El cliente es especial por ende se
+                                        visualizarán
+                                        todos los pagos existentes.{% else %}{% endif %}
+
+
+
+
+                                        {% endfor %}
+
+
+                                        <div class="form-check checkbox-style checkbox-success mb-20">
+                                            <div class="select-style-1">
+                                                <input class="form-check-input" type="checkbox" value="0"
+                                                    id="checkBoxEnvioCorreo" name="checkBoxEnvioCorreo"
+                                                    onclick="enviarImpresionTelefono()" />
+                                                <label class="form-check-label" for="checkBoxNoPago">
+                                                    Enviar estado de cuenta al teléfono</label>
+                                                <div class="select-position"
+                                                    id="divSelectcomboCorreoElectronicoImpresion" hidden>
+                                                    <select class="light-bg" required
+                                                        name="comboCorreoElectronicoImpresion"
+                                                        id="comboCorreoElectronicoImpresion">
+                                                        <option value="medinajhonatan02@gmail.com">
+                                                            medinajhonatan02@gmail.com
+                                                        </option selected>
+                                                        <option value="germanmayorga58@gmail.com">
+                                                            germanmayorga58@gmail.com
+                                                        </option>
+
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </p>
+                                </div>
+                                <div class="action d-flex flex-wrap justify-content-end">
+                                    <button data-bs-dismiss="modal"
+                                        class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                                        Cancelar
+                                    </button>
+                                    <button data-bs-dismiss="modal" class="main-btn btn-sm success-btn btn-hover m-1"
+                                        onclick="enviar_datos_imprimir_backend()">
+                                        Ir a imprimir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ModalOpcionImprimir End -->
+
+            <!-- ModalThree start -->
+            <div class="warning-modal">
+                <div class="modal fade" id="modalCalculoPrimerPago" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content card-style">
+                            <div class="modal-header px-0 border-0">
+                                <h3 class="text-bold">Cálculo primer pago</h3>
+                                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                    <i class="lni lni-cross-circle"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body px-0">
+                                <div class="content mb-30">
+
+                                    <div class="tab-style-3 mb-30">
+                                        <nav class="nav" id="nav-tab">
+                                            <button id="tab-3-1" class="main-btn deactive-btn rounded-full active"
+                                                data-bs-toggle="tab" data-bs-target="#tabContent-3-1">
+                                                Pago diario
+                                            </button>
+                                            <button id="tab-3-2" class="main-btn deactive-btn rounded-full"
+                                                data-bs-toggle="tab" data-bs-target="#tabContent-3-2">
+                                                Primer pago
+                                            </button>
+                                        </nav>
+                                        <div class="tab-content" id="nav-tabContent3">
+                                            <div class="tab-pane fade show active" id="tabContent-3-1">
+
+                                                <div class="row">
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1">
+                                                            <label>Pago mensual</label>
+                                                            <input class="text-center" type="number" placeholder="0"
+                                                                name="pagoMensualModal" id="pagoMensualModal"
+                                                                readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1 text-center">
+                                                            <label>Dividido</label>
+                                                            <input class="text-center" type="text" placeholder=""
+                                                                value="/" readonly>
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-3">
+                                                        <div class="input-style-1 text-center">
+                                                            <label>Mes comercial</label>
+                                                            <input class="text-center" type="text" value="30 días"
+                                                                name="noDiasMesModal" id="noDiasMesModal" readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1 text-center">
+                                                            <label>resultado</label>
+                                                            <input class="text-center" type="text" placeholder=""
+                                                                value="=" readonly>
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-3">
+                                                        <div class="input-style-1 text-center">
+                                                            <label class="text-success text-bold">Pago
+                                                                diario</label>
+                                                            <input class="text-center" type="number"
+                                                                name="resultadoPagoDiarioModal"
+                                                                id="resultadoPagoDiarioModal" readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade" id="tabContent-3-2">
+
+
+                                                <div class="row">
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1">
+                                                            <label>Pago diario</label>
+                                                            <input class="text-center" type="number" placeholder="0"
+                                                                name="pagoMensual" id="pagoDiario2Modal"
+                                                                name="pagoDiario2Modal" readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1 text-center">
+                                                            <label>Multiplicado</label>
+                                                            <input class="text-center" type="text" placeholder=""
+                                                                value="X" readonly>
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-3">
+                                                        <div class="input-style-1 text-center">
+                                                            <label id="diasRestantesCorteModal"></label>
+                                                            <input class="text-center" type="text" value=""
+                                                                id="diasHastaProximoCorte" name="diasHastaProximoCorte"
+                                                                readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-2">
+                                                        <div class="input-style-1 text-center">
+                                                            <label>Resultado</label>
+                                                            <input class="text-center" type="text" placeholder=""
+                                                                value="=" readonly>
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+                                                    <div class="col-sm-3">
+                                                        <div class="input-style-1 text-center">
+                                                            <label class="text-success text-bold">Primer
+                                                                pago</label>
+                                                            <input class="text-center" type="number" value=""
+                                                                id="montoPrimerPagoModal" readonly />
+                                                        </div>
+                                                        <!-- end select -->
+                                                    </div>
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- end card -->
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ModalThree End -->
+
+            <!-- ModalThree start -->
+            <div class="warning-modal">
+                <div class="modal fade" id="modalFinalizarDeuda" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content card-style">
+                            <div class="modal-header px-0 border-0">
+                                <h5 class="text-bold">Finalizar deuda</h5>
+                                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                                    <i class="lni lni-cross-circle"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body px-0">
+                                <form action="/eliminar_todo_rastro_cliente/{{ datos_cliente[0].id_cliente }}"
+                                    method="POST">
+                                    <div class="content mb-30">
+                                        <p class="text-sm">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="input-style-1">
+                                                    <label class="text-bold">Fecha de finalización</label>
+                                                    <input type="date" required name="fechaFinalizacion"
+                                                        id="fechaFinalizacion" />
+                                                    <p id="tiempoLetrasFinalizacion"></p>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="input-style-3">
+                                                    <label>Observación</label>
+                                                    <textarea placeholder="Descripción de la observación" rows="5"
+                                                        name="observacionFinalizacion"
+                                                        id="observacionFinalizacion"></textarea>
+                                                    <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </p>
+
+                                    </div>
+                                    <div class="action d-flex flex-wrap justify-content-end">
+                                        <button data-bs-dismiss="modal"
+                                            class="main-btn btn-sm danger-btn-outline btn-hover m-1">
+                                            Cancelelar
+                                        </button>
+                                        <button type="submit" class="main-btn btn-sm primary-btn btn-hover m-1">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ModalThree End -->
+
+
+
+
+
+            <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
+            <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
+
+            <script>
+
+            </script>
+
+
+
+
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+
+<div class="modal fade" id="modalVisualizarPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content card-style">
+            <div class="modal-header px-0 border-0">
+                <h2 class="text-bold">Visualizar pago</h2>
+
+
+                <button class="border-0 bg-transparent h1" data-bs-dismiss="modal">
+                    <i class="lni lni-cross-circle"></i>
+                </button>
+            </div>
+            <div class="modal-body px-0">
+                <div class="content mb-30">
+                    <div class="row">
+
+                        <div id="tasaCambioRowVP" class="col-6 col-sm-4" hidden>
+                            <div class="input-style-3">
+                                <label>Tasa de cambio</label>
+                                <input type="text" value="" pattern="[0-9]*[.,]?[0-9]*" inputmode="decimal"
+                                    name="inputTasaCambioPagoVP" id="inputTasaCambioPagoVP" readonly />
+                                <span class="icon" id="" style="margin-left: 0rem;  margin-top: 2rem">C$</span>
+                                <!-- Aquí se mostrará el porcentaje -->
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+
+                    </div>
+                    <div class="row">
+                        <div id="cantidadPagoCordobasRowVP" class="col-6 col-sm-6" hidden>
+                            <div class="input-style-3">
+                                <label for="">Pago realizado en C$</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagoCordobasVP"
+                                    id="cantidadPagoCordobasVP" readonly />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                <p id="lblPagoC$VP" style="font-size: small;"><span id="lblCantidadPagarC$VP"></span>
+                                </p>
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+                        <div class="col-6 col-sm-6">
+                            <div class="input-style-3">
+                                <label for="">Pago realizado en $</label>
+                                <input type="text" placeholder="0" inputmode="decimal" name="cantidadPagar$VP"
+                                    id="cantidadPagar$VP" readonly />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                <p id="lblPago$VP" style="font-size: small;"></p>
+
+                            </div>
+                            <!-- end select -->
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="col-12">
+                        <div class="input-style-1">
+                            <label class="text-bold">Fecha del pago*</label>
+                            <input type="text" name="fechaPagoVP" id="fechaPagoVP" readonly />
+                            <p id="tiempoPagoLetrasVP"></p>
+                        </div>
+                    </div>
+
+
+                    <div class="input-style-3">
+                        <label>Observación</label>
+                        <textarea placeholder="Descripción de la observación" rows="10" name="observacionPagoVP"
+                            id="observacionPagoVP" readonly></textarea>
+                        <span class="icon"><i class="fa-solid fa-eye"></i></span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="input-style-3">
+                            <label>Evidencia del pago</label>
+                            <input type="file" placeholder="" accept="image/*" name="evidenciaPagoVP"
+                                id="evidenciaPagoVP" />
+                            <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div id="cantidadPagoCordobasRowVP" class="col-6 col-sm-6">
+                            <div class="input-style-3">
+                                <label for="">Pago realizado por: </label>
+                                <input type="text" placeholder="" inputmode="text" name="realizadoPorVP"
+                                    id="realizadoPorVP" readonly />
+                                <span class="icon"><i class="fa-solid fa-coins"></i></span>
+                                <p id="lblFechaRealizacionPagoPorVP" style="font-size: small;"><span
+                                        id="lblFechaRealizacionPagoPorVP"></span>
+                                </p>
+                            </div>
+                            <!-- end select -->
+                        </div>
+                    </div>
+                </div>
+                <!-- end row -->
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- end col -->
+    <!-- end input -->
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/rotate/lg-rotate.min.js"></script>
 
 <script>
-  const lgContainer = document.getElementById('lightgallery');
-  if (lgContainer) {
-    lightGallery(lgContainer, {
-      selector: '.gallery-item',
-      plugins: [lgZoom, lgThumbnail, lgRotate],
-      speed: 500,
-      download: false,
-      counter: true,
-      zoom: true,
-      zoomFromOrigin: true,
-      actualSize: false,
-      closeOnTap: true,
-      enableZoomAfter: 300,
-      scale: 3,
-      escKey: true,
-      closable: true,
-      closeOnClick: true,
-      rotate: true,
-      rotateLeft: true,
-      rotateRight: true,
-      flipHorizontal: true,
-      flipVertical: true,
-      addClass: 'lg-custom-zoom-class',
-      mobileSettings: {
-        controls: true,
-        showCloseIcon: true,
-        download: false,
-        rotate: true
-      }
-    });
-  }
+    const lgContainer = document.getElementById('lightgallery');
+    if (lgContainer) {
+        lightGallery(lgContainer, {
+            selector: '.gallery-item',
+            plugins: [lgZoom, lgThumbnail, lgRotate],
+            speed: 500,
+            download: false,
+            counter: true,
+            zoom: true,
+            zoomFromOrigin: true,
+            actualSize: false,
+            closeOnTap: true,
+            enableZoomAfter: 300,
+            scale: 3,
+            escKey: true,
+            closable: true,
+            closeOnClick: true,
+            rotate: true,
+            rotateLeft: true,
+            rotateRight: true,
+            flipHorizontal: true,
+            flipVertical: true,
+            addClass: 'lg-custom-zoom-class',
+            mobileSettings: {
+                controls: true,
+                showCloseIcon: true,
+                download: false,
+                rotate: true
+            }
+        });
+    }
 </script>
 
 <style>
-  .lg-zoom-in,
-  .lg-zoom-out {
-    cursor: pointer !important;
-  }
+    .lg-zoom-in,
+    .lg-zoom-out {
+        cursor: pointer !important;
+    }
 
-  .lg-toolbar .lg-icon {
-    color: #fff;
-    opacity: 0.8;
-  }
+    .lg-toolbar .lg-icon {
+        color: #fff;
+        opacity: 0.8;
+    }
 
-  .lg-toolbar .lg-icon:hover {
-    opacity: 1;
-  }
+    .lg-toolbar .lg-icon:hover {
+        opacity: 1;
+    }
 
-  /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
-  .content img {
-    max-width: 200px;
-    /* o el tamaño que prefieras */
-    height: auto;
-    object-fit: cover;
-  }
+    /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
+    .content img {
+        max-width: 150px;
+        /* o el tamaño que prefieras */
+        height: auto;
+        object-fit: cover;
+    }
 </style>
 
 {% endblock %}

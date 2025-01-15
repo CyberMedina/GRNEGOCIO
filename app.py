@@ -865,13 +865,78 @@ def chats_clientes_detalle(id_cliente):
         nombre_cliente = datos_clienteEImagenes[0]["nombres"]
         apellido_cliente = datos_clienteEImagenes[0]["apellidos"]
 
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
+
+
+
+    # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+    # Definimos la cifra pago especial
+    monto_pagoEspecial = 0.00
+
+    fecha_actual = datetime.datetime.now()
+
+    monto_pagoEspecial = obtener_pagoEspecial(
+        db_session, id_cliente, fecha_actual)
+
+    # Procesos para las sesiones de los filtros de los pagos
+    años_pagos = obtener_años_pagos(db_session, id_cliente, activo)
+
+    pagos = []
+
+    if años_pagos:
+        # Convertir los elementos de años_pagos a enteros
+        años_pagos_verificar = [int(año[0]) for año in años_pagos]
+
+        # Luego validamos si está en sesión el año de los pagos de ese contrato
+        if session["año_seleccionado"] in años_pagos_verificar:
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                session.get("año_seleccionado"))
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+
+        else:
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                años_pagos[0][0])
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+    else:
+        pagos = []
+
+
+
+
+    formulario_añadir_pago = {
+        "datos_cliente": pagos_cliente,
+        "monto_pagoEspecial": monto_pagoEspecial,
+        "pagos": pagos,
+        "años_pagos": años_pagos,
+        "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
+        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.datetime.now()),
+    }
+
+
+
+
+    
+    if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+        total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+        capital = Decimal(pagos_cliente[0]["monto_solicitado"])
+        saldo_pendiente = capital - total_pagos
+
+        formulario_añadir_pago.update({"saldo_pendiente": saldo_pendiente})
+        
+
     print(datos_clienteEImagenes)
     formulario_chats_clientes_detalle = {
         "nombre_cliente": nombre_cliente,
         "apellido_cliente": apellido_cliente,
         "datos_clienteEImagenes": datos_clienteEImagenes,
     }
-    return render_template('notificaciones/chats_clientes_detalle.html', **formulario_chats_clientes_detalle)
+    return render_template('notificaciones/chats_clientes_detalle.html', **formulario_chats_clientes_detalle, **formulario_añadir_pago)
 
 
 
