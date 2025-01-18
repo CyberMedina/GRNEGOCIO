@@ -6,6 +6,128 @@
 {% block customCSS %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pagos/añadir_pago.css') }}">
+<!-- Estilos de FilePond -->
+<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css" rel="stylesheet" />
+<link href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" rel="stylesheet"/>
+
+<!-- (Opcional) Estilos de un editor, como Pintura -->
+ <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pintura.css') }}">
+
+<style>
+    /* Ocultar el "Powered by PQINA" */
+    .filepond--credits {
+        display: none !important;
+    }
+
+    /* use a hand cursor intead of arrow for the action buttons */
+    .filepond--file-action-button {
+        cursor: pointer;
+    }
+
+    /* the text color of the drop label*/
+    .filepond--drop-label {
+        color: #555;
+    }
+
+    /* underline color for "Browse" button */
+    .filepond--label-action {
+        text-decoration-color: #aaa;
+    }
+
+    /* the background color of the filepond drop area */
+    .filepond--panel-root {
+        background-color: #eee;
+    }
+
+    /* the border radius of the drop area */
+    .filepond--panel-root {
+        border-radius: 0.5em;
+    }
+
+    /* the border radius of the file item */
+    .filepond--item-panel {
+        border-radius: 0.5em;
+    }
+
+    /* the background color of the file and file panel (used when dropping an image) */
+    .filepond--item-panel {
+        background-color: #555;
+    }
+
+    /* the background color of the drop circle */
+    .filepond--drip-blob {
+        background-color: #999;
+    }
+
+    /* the background color of the black action buttons */
+    .filepond--file-action-button {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* the icon color of the black action buttons */
+    .filepond--file-action-button {
+        color: white;
+    }
+
+    /* the color of the focus ring */
+    .filepond--file-action-button:hover,
+    .filepond--file-action-button:focus {
+        box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
+    }
+
+    /* the text color of the file status and info labels */
+    .filepond--file {
+        color: white;
+    }
+
+    /* error state color */
+    [data-filepond-item-state*='error'] .filepond--item-panel,
+    [data-filepond-item-state*='invalid'] .filepond--item-panel {
+        background-color: red;
+    }
+
+    [data-filepond-item-state='processing-complete'] .filepond--item-panel {
+        background-color: green;
+    }
+
+    /* bordered drop area */
+    .filepond--panel-root {
+        background-color: transparent;
+        border: 2px solid #2c3340;
+    }
+
+    /* Estilos para la animación del indicador de carga */
+    .filepond--processing-progress {
+        background-color: #007bff;
+        height: 4px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        transition: width 0.2s ease-in-out;
+    }
+
+    .filepond--processing-progress-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: #fff;
+        animation: rotate 2s linear infinite;
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+</style>
 
 {% endblock %}
 
@@ -609,9 +731,8 @@
                         <div class="col-12">
                             <div class="input-style-3">
                                 <label>Evidencia del pago</label>
-                                <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
-                                    id="evidenciaPago" />
-                                <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                                <input type="file" class="filepond" name="filepond" id="filepond" multiple data-allow-reorder="false"
+                                    data-max-file-size="10MB" data-max-files="1" />
                             </div>
                         </div>
 
@@ -1083,7 +1204,7 @@
                         </div>
                         <div class="action d-flex flex-wrap justify-content-end">
                             <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
-                                Cancelelar
+                                Cancelar
                             </button>
                             <button type="submit" class="main-btn btn-sm primary-btn btn-hover m-1">
                                 Eliminar
@@ -1102,11 +1223,98 @@
 {% endblock %}
 
 {% block customJS %}
+
+<!-- Scripts de FilePond y Plugins -->
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script
+    src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
-<script>
+<!-- Script de Pintura -->
+ <link rel="stylesheet" href="{{ url_for('static', filename='assets/js/pintura.js') }}">
 
+
+<script>
+    // Registrar los plugins de FilePond
+    FilePond.registerPlugin(
+        FilePondPluginImagePreview,
+        FilePondPluginImageEdit,
+        FilePondPluginFileValidateType
+    );
+
+    // Crear la instancia de Pintura
+    const pinturaEditor = window.pintura ? window.pintura.createDefaultEditor : null;
+
+    // Convertir el input en una instancia de FilePond
+    FilePond.create(document.querySelector('input.filepond'), {
+        allowImagePreview: true,
+        allowImageEdit: true,
+        acceptedFileTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+        dropOnElement: false,
+        dropOnPage: false,
+        allowMultiple: false,
+        maxFiles: 1,
+        fileValidateTypeDetectType: (source, type) => new Promise((resolve, reject) => {
+            // Para archivos
+            if (source instanceof File) {
+                resolve(source.type);
+            }
+            // Para otras fuentes
+            resolve(type);
+        }),
+        imageEditEditor: pinturaEditor,
+        server: {
+            process: (fieldName, file, metadata, load, error, progress, abort) => {
+                // Simular una carga
+                const duration = 2000; // 2 segundos
+                let current = 0;
+                
+                const interval = setInterval(() => {
+                    current += 10;
+                    progress(current);
+                    
+                    if (current >= 100) {
+                        clearInterval(interval);
+                        load(Date.now()); // Simular ID del archivo
+                    }
+                }, duration / 100);
+                
+                // Permitir cancelar la carga
+                return {
+                    abort: () => {
+                        clearInterval(interval);
+                        abort();
+                    }
+                };
+            },
+            // Agregar el método revert para manejar la eliminación
+            revert: (uniqueFileId, load, error) => {
+                // Simular proceso de eliminación
+                setTimeout(() => {
+                    load();
+                }, 1000);
+            }
+        },
+        instantUpload: true,
+        allowRevert: true, // Habilitar la opción de eliminar
+        labelFileRemoveError: 'Error al eliminar el archivo',
+        labelFileProcessingRevertError: 'Error al revertir la carga',
+        labelFileRemove: 'Eliminar',
+        labelIdle: 'Arrastra y suelta tus archivos o <span class="filepond--label-action">Busca</span>',
+        labelFileProcessing: 'Subiendo...',
+        labelFileProcessingComplete: '¡Subida completada!',
+        labelTapToUndo: 'toca para deshacer',
+        labelTapToCancel: 'toca para cancelar',
+        labelInvalidField: 'El archivo no es válido',
+        labelFileTypeNotAllowed: 'Solamente se permite archivos de imagen',
+        fileValidateTypeLabelExpectedTypes: 'Se esperan archivos de tipo: {allTypes}',
+    });
 </script>
 
 

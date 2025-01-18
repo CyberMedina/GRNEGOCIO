@@ -603,11 +603,11 @@ def datos_prestamoV1():
 
     if ultimo_pago:
     #Extraer datos necesarios del ultimo pago
-        cifra_ultimo_pagoDolares = ultimo_pago[0][8]
-        cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][8]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
+        cifra_ultimo_pagoDolares = ultimo_pago[0][7]
+        cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][7]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
 
-        fecha_ultimo_pago = ultimo_pago[0][3]
-        fecha_ultimo_pago_letras = ultimo_pago[0][15]
+        fecha_ultimo_pago = ultimo_pago[0][2]
+        fecha_ultimo_pago_letras = ultimo_pago[0][14]
         ultimoPago_json = {
             "cifra_ultimo_pagoDolares": cifra_ultimo_pagoDolares,
             "cifra_ultimo_pagoCordobas": cifra_ultimo_pagoCordobas,
@@ -776,7 +776,7 @@ def verificar_tipo_saldo_insertar():
         inputTasaCambioPago = request.form['inputTasaCambioPago']
         fechaPago = request.form['fechaPago']
         observacionPago = request.form['observacionPago']
-        evidenciaPago = request.files['evidenciaPago']
+        evidenciaPago = request.files.get('filepond')
         tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
         cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
@@ -799,49 +799,108 @@ def verificar_tipo_saldo_insertar():
 
 @app.route('/procesar_pago', methods=['POST'])
 def procesar_pago():
-
-    id_cliente = request.form['formId_cliente']  # Cambié () a []
+    # Obtener datos del formulario
+    id_cliente = request.form['formId_cliente']
     id_moneda = request.form['tipoMonedaPago']
     cantidadPagarDolares = request.form['cantidadPagar$']
     cantidadPagarCordobas = request.form.get('cantidadPagoCordobas')
     inputTasaCambioPago = request.form['inputTasaCambioPago']
     fechaPago = request.form['fechaPago']
     observacionPago = request.form['observacionPago']
-    evidenciaPago = request.files['evidenciaPago']
+    evidenciaPago = request.files.get('evidenciaPago')
     tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
     fechaPagoReal = request.form['fechaPagoReal']
     id_usuario_creador = session.get('user_id')
 
+    print(evidenciaPago)
     
     procesar_todo = False
-
+    id_imagen = None
+    public_id = None
 
     cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
 
-
-    # Verifica si el checkbox de no pago está marcado
+    # Determinar estado de pago
     if 'checkBoxNoPago' in request.form:
-        estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
-
+        estadoPago = no_hay_pago
     elif 'checkBoxPrimerPago' in request.form:
-        # Establece el estado de pago como primer pago
         estadoPago = primer_pago_del_prestamo
     else:
-        estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
-    
-
+        estadoPago = tipoPagoCompletoForm
 
     if 'checkbox_confirmacion' in request.form:
-        procesar_todo =  True
+        procesar_todo = True
 
-    response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
-                fechaPago, fechaPagoReal, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                monedaConversion, id_usuario_creador)
-    return response
+    try:
+        # Iniciar transacción de base de datos
+        db_session.begin()
         
-########### Termina el modulo de pagos ############
+        try:
+            # Si hay evidencia de pago, subirla primero y obtener id_imagen
+            id_imagen = None  # Por defecto None si no hay evidencia
+            if evidenciaPago:
+                cloud_response = cloudinary.uploader.upload(
+                    evidenciaPago,
+                    resource_type='image',
+                    type='authenticated',
+                    folder='my_private_folder'
+                )
+                
+                public_id = cloud_response.get("public_id")
+                secure_url = cloud_response.get("secure_url")
+                
+                if not public_id or not secure_url:
+                    raise Exception('No se recibió respuesta válida de Cloudinary')
+                
+                # Guardar imagen en la base de datos y obtener id
+                id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
 
-########### Empieza el modulo de notificaciones ############
+                id_imagen = int(id_imagen)
+
+                db_session.commit()
+                
+
+            # Procesar el pago con el id_imagen (que puede ser None)
+            response = proceder_pago(
+                db_session, 
+                procesar_todo, 
+                id_cliente, 
+                id_moneda, 
+                cantidadPagarDolares, 
+                estadoPago, 
+                cantidadPagarCordobas,
+                fechaPago, 
+                fechaPagoReal, 
+                tipoPagoCompletoForm, 
+                observacionPago, 
+                inputTasaCambioPago,
+                monedaConversion, 
+                id_usuario_creador, 
+                id_imagen  # Puede ser None si no hay evidencia
+            )
+            
+            if response is None:
+                raise Exception("Error al procesar el pago: respuesta vacía")
+                
+            db_session.commit()
+            return response
+
+        except Exception as db_error:
+            db_session.rollback()
+            # Si hay error y se subió imagen a Cloudinary, eliminarla
+            if public_id:
+                cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+            raise db_error
+        
+
+
+    except Exception as e:
+        print(f"Error al procesar el pago: {str(e)}")
+        return jsonify({'error': f'Error al procesar el pago: {str(e)}'}), 500
+
+    finally:
+        db_session.close()
+
 
 @app.route('/chats_clientes', methods=['GET', 'POST'])
 def chats_clientes():
@@ -2343,7 +2402,7 @@ def procesarPagoNormal():
 
             response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
                          fechaPago, fecha_pago_real, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                         monedaConversion, Amazon_Alexa)
+                         monedaConversion, Amazon_Alexa, None)
 
         
             return response

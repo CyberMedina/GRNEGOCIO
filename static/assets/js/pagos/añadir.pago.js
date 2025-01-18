@@ -870,8 +870,19 @@ proceder_pago.addEventListener('click', async function (event) {
 
 });
 
+// Inicializar FilePond
+const pond = FilePond.create(document.querySelector('input[name="filepond"]'));
+
+// Modificar la función procesar_pago para manejar el archivo
 async function procesar_pago() {
   let formData = new FormData(document.getElementById('anadirClientes'));
+  
+  // Obtener el archivo de FilePond
+  const files = pond.getFiles();
+  if (files.length > 0) {
+    // Si hay un archivo, agregarlo al FormData
+    formData.append('evidenciaPago', files[0].file);
+  }
 
   try {
     const response = await fetch('/procesar_pago', {
@@ -884,7 +895,6 @@ async function procesar_pago() {
     }
 
     const data = await response.json();
-
     if (data.error) {
       throw new Error(data.error);
     }
@@ -892,9 +902,8 @@ async function procesar_pago() {
     return data;
   } catch (error) {
     console.error('Error al verificar el tipo de saldo:', error);
-    throw error; // Re-lanzar el error para manejarlo en el bloque try-catch del submit 
+    throw error;
   }
-
 }
 
 async function verificar_tipo_saldo_insertar() {

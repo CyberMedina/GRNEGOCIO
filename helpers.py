@@ -512,6 +512,82 @@ cloudinary.config(
     secure=True
 )
 
+def actualizar_imagen(db_session, id_imagen, url, public_id):
+    """
+    Actualiza los datos de una imagen existente en la base de datos.
+    
+    Args:
+        db_session: Sesión de la base de datos
+        id_imagen: ID de la imagen a actualizar
+        url: URL segura de Cloudinary
+        public_id: ID público de Cloudinary
+    """
+    try:
+        query = text("""
+            UPDATE imagenes 
+            SET url_imagen = :url_imagen,
+                public_id = :public_id,
+                fechaHoraModificacion = NOW()
+            WHERE id_imagen = :id_imagen
+        """)
+        
+        db_session.execute(query, {
+            "id_imagen": id_imagen,
+            "url_imagen": url,
+            "public_id": public_id
+        })
+        
+    except SQLAlchemyError as e:
+        print(f"Error al actualizar la imagen: {e}")
+        raise
+
+
+
+def eliminar_imagen(db_session, id_imagen):
+    """
+    Elimina una imagen de Cloudinary y actualiza su estado en la base de datos.
+    
+    Args:
+        db_session: Sesión de la base de datos
+        id_imagen: ID de la imagen a eliminar
+    
+    Returns:
+        bool: True si la eliminación fue exitosa, False en caso contrario
+    """
+    try:
+        # Primero obtener el public_id de la imagen
+        query = text("SELECT public_id FROM imagenes WHERE id_imagen = :id_imagen")
+        result = db_session.execute(query, {"id_imagen": id_imagen}).fetchone()
+        
+        if not result:
+            return False
+            
+        public_id = result[0]
+        
+        # Eliminar la imagen de Cloudinary
+        cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+        
+        # Actualizar el estado de la imagen en la base de datos
+        query = text("""
+            DELETE FROM imagenes WHERE id_imagen = :id_imagen;
+        """)
+        
+        db_session.execute(query, {"id_imagen": id_imagen})
+        
+        return True
+        
+    except cloudinary.exceptions.Error as e:
+        print(f"Error de Cloudinary: {e}")
+        db_session.rollback()
+        return False
+    except SQLAlchemyError as e:
+        print(f"Error de base de datos: {e}")
+        db_session.rollback()
+        return False
+
+
+
+
 
 def obtener_url_temporal_cloudinary(public_id, file_format='jpg'):
     """
