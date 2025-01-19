@@ -2,7 +2,7 @@ from logging import getLogger
 import os
 from urllib.parse import urlencode
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file, make_response
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -19,6 +19,8 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 from babel.dates import format_date
 from decimal import Decimal, ROUND_DOWN
+from functools import wraps
+import jwt
 import tempfile
 import weasyprint
 import smtplib
@@ -26,6 +28,9 @@ import subprocess
 import glob
 import io
 import json
+import time
+import hmac
+import hashlib
 
 
 
@@ -64,6 +69,13 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')
 app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL_USER')
+
+
+# Configura las variables de entorno o usa tus propios métodos de configuración
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUD_NAME')
+CLOUDINARY_API_KEY = os.environ.get('API_KEY')
+CLOUDINARY_API_SECRET = os.environ.get('API_SECRET')
+ELPEPE = os.environ.get('JWT_SECRET')
 
 mail.init_app(app)
 
@@ -127,22 +139,30 @@ def login_system():
                 id_rol = user_row[2]
 
                 if check_password_hash(user_password, password):
-
                     nombres, apellidos = datos_persona(id_persona)
                     nombre_rol = datos_rol(id_rol)
 
-                    ## Datos de la persona logueada backend
+                    # Crear el token JWT sin fecha de expiración
+                    token = jwt.encode({
+                        'user_id': user_id,
+                        'id_persona': id_persona,
+                        'id_rol': id_rol
+                        # Removemos el 'exp' para que no expire
+                    }, os.getenv('JWT_SECRET'), algorithm='HS256')
+
+                    ## Resto del código igual...
                     session['user_id'] = user_id
                     session['id_persona'] = id_persona
                     session['id_rol'] = id_rol
+                    session['token'] = token
 
-                    ## Datos planos de la persona logueada
                     session['nombre_persona'] = nombres
                     session['apellido_persona'] = apellidos
                     session['nombre_rol'] = nombre_rol
-                
 
                     return redirect('/')
+
+
             return render_template('auth/login.html', error="Usuario o contraseña incorrectos")
         except SQLAlchemyError as e:
             db_session.rollback()  # Hacer rollback en caso de excepción
@@ -2245,6 +2265,7 @@ def Cerrar_Sesion():
     session.pop('user_id', None)
     session.pop('name', None)
     session.pop('lastname', None)
+    session.pop('token', None)
     return redirect('/')
 
 
@@ -2590,6 +2611,104 @@ def pruebita():
         return jsonify({"message": "API is working"}), 200
     else:
         return jsonify({"message": "API is notworking"}), 400
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # Verificar si hay una sesión activa y un token
+        if 'token' not in session:
+            return jsonify({'message': 'No hay sesión activa'}), 401
+            
+        token = session['token']
+        
+        try:
+            # Decodifica el token usando tu llave secreta
+            decoded = jwt.decode(token, os.getenv('JWT_SECRET'), algorithms=['HS256'])
+            # Aquí podrías verificar roles o permisos específicos si lo necesitas
+        except Exception as e:
+            return jsonify({'message': 'Token inválido', 'error': str(e)}), 401
+        
+        return f(*args, **kwargs)
+    return decorated
+
+
+
+
+@app.route('/get_cloudinary_signature', methods=['POST'])
+@token_required
+def get_cloudinary_signature():
+    try:
+        data = request.get_json()
+        if not data or 'params_to_sign' not in data:
+            return jsonify({'error': 'Parámetros inválidos'}), 400
+            
+        params_to_sign = data.get('params_to_sign', {})
+        
+        # Validar que los parámetros necesarios estén presentes
+        required_params = ['timestamp']
+        for param in required_params:
+            if param not in params_to_sign:
+                return jsonify({'error': f'Falta el parámetro {param}'}), 400
+
+        # Asegurar que el timestamp sea un string
+        params_to_sign['timestamp'] = str(params_to_sign['timestamp'])
+        
+        signature = cloudinary.utils.api_sign_request(
+            params_to_sign,
+            os.getenv('API_SECRET')
+        )
+        
+        response = {
+            'signature': signature,
+            'timestamp': params_to_sign['timestamp'],
+            'cloudname': os.getenv('CLOUD_NAME'),
+            'apikey': os.getenv('API_KEY'),
+            "fecha" : convertir_fecha_a_string_con_hora(datetime.datetime.now())
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"Error generando firma: {str(e)}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+    
+
+@app.route('/get_cloudinary_delete_signature', methods=['POST'])
+@token_required
+def get_cloudinary_delete_signature():
+    try:
+        data = request.get_json()
+        if not data or 'public_id' not in data:
+            return jsonify({'error': 'Parámetros inválidos'}), 400
+            
+        public_id = data.get('public_id')
+        timestamp = str(int(time.time()))
+        
+        # Construir string para firmar
+        params_to_sign = {
+            'public_id': public_id,
+            'timestamp': timestamp
+        }
+        
+        # Generar firma
+        signature = cloudinary.utils.api_sign_request(
+            params_to_sign,
+            os.getenv('API_SECRET')
+        )
+        
+        response = {
+            'signature': signature,
+            'timestamp': timestamp,
+            'cloudname': os.getenv('CLOUD_NAME'),
+            'apikey': os.getenv('API_KEY')
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"Error generando firma para eliminar: {str(e)}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 
 if __name__ == '__main__':

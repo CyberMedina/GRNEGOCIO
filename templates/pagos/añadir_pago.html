@@ -729,6 +729,7 @@
                         </div>
 
                         <div class="col-12">
+                            <input type="hidden" id="cloudinary_url" name="cloudinary_url">
                             <div class="input-style-3">
                                 <label>Evidencia del pago</label>
                                 <input type="file" class="filepond" name="filepond" id="filepond" multiple data-allow-reorder="false"
@@ -1236,22 +1237,13 @@
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
-<!-- Script de Pintura -->
- <link rel="stylesheet" href="{{ url_for('static', filename='assets/js/pintura.js') }}">
 
 
 <script>
-    // Registrar los plugins de FilePond
-    FilePond.registerPlugin(
-        FilePondPluginImagePreview,
-        FilePondPluginImageEdit,
-        FilePondPluginFileValidateType
-    );
+    // Config básico (solo con cloudName y uploadPreset para referencia)
 
-    // Crear la instancia de Pintura
-    const pinturaEditor = window.pintura ? window.pintura.createDefaultEditor : null;
-
-    // Convertir el input en una instancia de FilePond
+    // Register the plugin
+    FilePond.registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
     FilePond.create(document.querySelector('input.filepond'), {
         allowImagePreview: true,
         allowImageEdit: true,
@@ -1261,48 +1253,129 @@
         allowMultiple: false,
         maxFiles: 1,
         fileValidateTypeDetectType: (source, type) => new Promise((resolve, reject) => {
-            // Para archivos
             if (source instanceof File) {
                 resolve(source.type);
             }
-            // Para otras fuentes
             resolve(type);
         }),
-        imageEditEditor: pinturaEditor,
         server: {
-            process: (fieldName, file, metadata, load, error, progress, abort) => {
-                // Simular una carga
-                const duration = 2000; // 2 segundos
-                let current = 0;
-                
-                const interval = setInterval(() => {
-                    current += 10;
-                    progress(current);
+            process: async (fieldName, file, metadata, load, error, progress, abort) => {
+                try {
+                    // 1. Genera el timestamp y prepara los params a firmar
+                    const timestamp = Math.round(new Date().getTime() / 1000);
+                    const paramsToSign = {
+                        timestamp: timestamp.toString()
+                    };
                     
-                    if (current >= 100) {
-                        clearInterval(interval);
-                        load(Date.now()); // Simular ID del archivo
+                    // 2. Llamada a tu backend para obtener la firma
+                    const signatureResponse = await fetch('/get_cloudinary_signature', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ params_to_sign: paramsToSign })
+                    });
+                    
+                    if (!signatureResponse.ok) {
+                        error('Error al obtener la firma');
+                        return;
                     }
-                }, duration / 100);
-                
-                // Permitir cancelar la carga
-                return {
-                    abort: () => {
-                        clearInterval(interval);
-                        abort();
-                    }
-                };
+                    
+                    const signatureData = await signatureResponse.json();
+                    
+                    
+                    // 3. Crear FormData con la firma recibida (sin upload_preset)
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('timestamp', signatureData.timestamp);
+                    formData.append('signature', signatureData.signature);
+                    formData.append('api_key', signatureData.apikey);
+                    
+                    // 4. Subir directamente a Cloudinary
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', `https://api.cloudinary.com/v1_1/${signatureData.cloudname}/image/upload`);
+                    
+                    xhr.upload.onprogress = (e) => {
+                        progress(e.lengthComputable ? (e.loaded / e.total) * 100 : 0);
+                    };
+                    
+                    xhr.onload = function() {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            const response = JSON.parse(xhr.responseText);
+                            // Manejo del resultado de Cloudinary
+                            document.getElementById('cloudinary_url').value = response.secure_url;
+                            document.getElementById('cloudinary_url').setAttribute('data-public-id', response.public_id);
+                            load(response.public_id);
+                        } else {
+                            error('Error al subir');
+                        }
+                    };
+                    
+                    xhr.onerror = () => error('Error al subir');
+                    xhr.send(formData);
+                    
+                    return {
+                        abort: () => {
+                            xhr.abort();
+                            abort();
+                        }
+                    };
+                } catch (err) {
+                    console.error('Error detallado:', err);
+                    error('Error al subir: ' + (err.message || 'Error desconocido'));
+                    return;
+                }
             },
-            // Agregar el método revert para manejar la eliminación
-            revert: (uniqueFileId, load, error) => {
-                // Simular proceso de eliminación
-                setTimeout(() => {
-                    load();
-                }, 1000);
+
+            revert: async (uniqueFileId, load, error) => {
+                try {
+                    const urlInput = document.getElementById('cloudinary_url');
+                    const publicId = urlInput.getAttribute('data-public-id');
+                    
+                    if (!publicId) {
+                        load();
+                        return;
+                    }
+
+                    const signatureResponse = await fetch('/get_cloudinary_delete_signature', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ public_id: publicId })
+                    });
+                    
+                    const signatureData = await signatureResponse.json();
+
+                    // 3. Construir la petición para eliminar en Cloudinary
+                    const formData = new FormData();
+                    formData.append('public_id', publicId);
+                    formData.append('api_key', signatureData.apikey);
+                    formData.append('timestamp', signatureData.timestamp);
+                    formData.append('signature', signatureData.signature);
+
+                    const response = await fetch(`https://api.cloudinary.com/v1_1/${signatureData.cloudname}/image/destroy`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.result === 'ok') {
+                        urlInput.value = '';
+                        urlInput.removeAttribute('data-public-id');
+                        load();
+                    } else {
+                        error('Error al eliminar la imagen');
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    error('Error al eliminar la imagen');
+                }
             }
         },
         instantUpload: true,
-        allowRevert: true, // Habilitar la opción de eliminar
+        allowRevert: true,
         labelFileRemoveError: 'Error al eliminar el archivo',
         labelFileProcessingRevertError: 'Error al revertir la carga',
         labelFileRemove: 'Eliminar',
@@ -1313,10 +1386,8 @@
         labelTapToCancel: 'toca para cancelar',
         labelInvalidField: 'El archivo no es válido',
         labelFileTypeNotAllowed: 'Solamente se permite archivos de imagen',
-        fileValidateTypeLabelExpectedTypes: 'Se esperan archivos de tipo: {allTypes}',
+        fileValidateTypeLabelExpectedTypes: 'Se esperan archivos de tipo: {allTypes}'
     });
 </script>
-
-
 
 {% endblock %}

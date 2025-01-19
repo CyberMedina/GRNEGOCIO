@@ -1,6 +1,9 @@
 from serverEmail import mail
 from flask_mail import Message
 from decimal import Decimal
+from flask import request, jsonify
+import jwt
+import os
 import re
 from app import *
 from database_connection import *
@@ -44,6 +47,8 @@ cloudinary.config(
     api_secret= os.getenv('API_SECRET'),
     secure=True
 )
+
+
 
 
 def login_requiredUser(f):

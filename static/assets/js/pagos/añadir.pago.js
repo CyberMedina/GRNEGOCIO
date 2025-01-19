@@ -871,18 +871,18 @@ proceder_pago.addEventListener('click', async function (event) {
 });
 
 // Inicializar FilePond
-const pond = FilePond.create(document.querySelector('input[name="filepond"]'));
-
+/* const pond = FilePond.create(document.querySelector('input[name="filepond"]'));
+ */
 // Modificar la función procesar_pago para manejar el archivo
 async function procesar_pago() {
   let formData = new FormData(document.getElementById('anadirClientes'));
   
   // Obtener el archivo de FilePond
-  const files = pond.getFiles();
+/*   const files = pond.getFiles();
   if (files.length > 0) {
     // Si hay un archivo, agregarlo al FormData
     formData.append('evidenciaPago', files[0].file);
-  }
+  } */
 
   try {
     const response = await fetch('/procesar_pago', {
