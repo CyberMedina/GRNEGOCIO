@@ -90,7 +90,9 @@ cloudinary.config(
     cloud_name= os.getenv('CLOUD_NAME'),
     api_key= os.getenv('API_KEY'),
     api_secret= os.getenv('API_SECRET'),
+    api_proxy = 'http://proxy.server:3128',
     secure=True
+
 )
 
 
@@ -2710,6 +2712,63 @@ def get_cloudinary_delete_signature():
         print(f"Error generando firma para eliminar: {str(e)}")
         return jsonify({'error': 'Error interno del servidor'}), 500
 
+@app.route('/get_cloudinary_credentials', methods=['GET'])
+@token_required
+def get_cloudinary_credentials():
+    try:
+        timestamp = str(int(time.time()))
+        # Modificar la forma en que se genera la firma para incluir public_id
+        params_to_sign = {
+            'timestamp': timestamp,
+            'api_key': os.getenv('API_KEY'),
+            'cloud_name': os.getenv('CLOUD_NAME')
+        }
+        
+        response = {
+            'cloudname': os.getenv('CLOUD_NAME'),
+            'apikey': os.getenv('API_KEY'),
+            'timestamp': timestamp
+        }
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error obteniendo credenciales: {str(e)}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+    
+
+@app.route('/get_upload_signature', methods=['POST'])
+@token_required
+def get_upload_signature():
+    try:
+        data = request.json
+        timestamp = data.get('timestamp')
+        public_id = data.get('public_id')
+        
+        # Crear string para firmar incluyendo public_id
+        string_to_sign = f"public_id={public_id}&timestamp={timestamp}{os.getenv('API_SECRET')}"
+        signature = hashlib.sha256(string_to_sign.encode('utf-8')).hexdigest()
+        
+        return jsonify({'signature': signature})
+    except Exception as e:
+        print(f"Error generando firma de subida: {str(e)}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+
+
+@app.route('/get_delete_signature', methods=['POST'])
+@token_required
+def get_delete_signature():
+    try:
+        data = request.json
+        public_id = data.get('public_id')
+        timestamp = data.get('timestamp')
+        
+        # Crear string para firmar incluyendo public_id
+        string_to_sign = f"public_id={public_id}&timestamp={timestamp}{os.getenv('API_SECRET')}"
+        signature = hashlib.sha256(string_to_sign.encode('utf-8')).hexdigest()
+        
+        return jsonify({'signature': signature})
+    except Exception as e:
+        print(f"Error generando firma: {str(e)}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8000, debug=True)
