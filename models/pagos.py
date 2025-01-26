@@ -896,7 +896,8 @@ def buscar_detalle_pago_idPagos(db_session, id_pagos):
         ELSE CONCAT('Segunda quincena de ', MONTHNAME(p.fecha_pago), ' de ', YEAR(p.fecha_pago))
     END AS descripcion_quincena,
     MONTH(p.fecha_pago) AS id_mes, -- Agregando la columna id_mes
-    c.estado AS 'estado_contrato'
+    c.estado AS 'estado_contrato',
+    i.url_imagen
 FROM 
     pagos p
 JOIN 
@@ -909,6 +910,8 @@ JOIN
     usuarios u ON u.id_usuario = p.id_usuario
 JOIN
     persona per ON per.id_persona = u.id_persona
+LEFT JOIN 
+		imagenes i ON p.id_imagen = i.id_imagen
 WHERE 
     p.id_pagos = :id_pagos""")
 
@@ -939,6 +942,7 @@ WHERE
                 'descripcion_quincena': row[13],
                 'id_mes': row[14],
                 'estado_contrato': row[15],
+                'url_imagen': row[16]
             }
         elif len(result) == 2:
             # Hay dos registros
@@ -958,6 +962,7 @@ WHERE
                 'cifraPago$': row1[10],
                 'cifraPagoC$': row2[10],
                 'tasa_conversion': row2[11],
+                'url_imagen': row1[16]
             }
 
         return result_list

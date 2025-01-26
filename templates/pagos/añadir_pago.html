@@ -10,10 +10,10 @@
 <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
 <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
 <link href="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css" rel="stylesheet" />
-<link href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" rel="stylesheet"/>
+<link href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" rel="stylesheet" />
 
 <!-- (Opcional) Estilos de un editor, como Pintura -->
- <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pintura.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pintura.css') }}">
 
 <style>
     /* Ocultar el "Powered by PQINA" */
@@ -123,6 +123,7 @@
         0% {
             transform: translate(-50%, -50%) rotate(0deg);
         }
+
         100% {
             transform: translate(-50%, -50%) rotate(360deg);
         }
@@ -731,8 +732,8 @@
                         <div class="col-12">
                             <div class="input-style-3">
                                 <label>Evidencia del pago</label>
-                                <input type="file" class="filepond" name="filepond" id="filepond" multiple data-allow-reorder="false"
-                                    data-max-file-size="10MB" data-max-files="1" />
+                                <input type="file" class="filepond" name="filepond" id="filepond" multiple
+                                    data-allow-reorder="false" data-max-file-size="10MB" data-max-files="1" />
                             </div>
                         </div>
 
@@ -856,7 +857,7 @@
 
                     <div class="col-12">
                         <div class="input-style-1">
-                            <label class="text-bold">Fecha del pago*</label>
+                            <label class="text-bold">Quincena correspondiente</label>
                             <input type="text" name="fechaPagoVP" id="fechaPagoVP" readonly />
                             <p id="tiempoPagoLetrasVP"></p>
                         </div>
@@ -871,11 +872,11 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="input-style-3">
-                            <label>Evidencia del pago</label>
-                            <input type="file" placeholder="" accept="image/*" name="evidenciaPagoVP"
-                                id="evidenciaPagoVP" />
-                            <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                        <label>Evidencia del pago</label>
+                        <div class="evidenciaPagoVP" id="lightgallery">
+                            <a data-src="" data-lg-size="1400-1400" class="gallery-item">
+                                <img src="" alt="imagen" />
+                            </a>
                         </div>
                     </div>
 
@@ -894,8 +895,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- end row -->
-                </form>
             </div>
         </div>
     </div>
@@ -1225,97 +1224,44 @@
 {% block customJS %}
 
 <!-- Scripts de FilePond y Plugins -->
+
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
 <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
-<script
-    src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js"></script>
-<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
-<script src="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.js"></script>
 <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/rotate/lg-rotate.min.js"></script>
+
 
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
-<!-- Script de Pintura -->
- <link rel="stylesheet" href="{{ url_for('static', filename='assets/js/pintura.js') }}">
+<style>
+    .lg-zoom-in,
+    .lg-zoom-out {
+        cursor: pointer !important;
+    }
 
+    .lg-toolbar .lg-icon {
+        color: #fff;
+        opacity: 0.8;
+    }
 
-<script>
-    // Registrar los plugins de FilePond
-    FilePond.registerPlugin(
-        FilePondPluginImagePreview,
-        FilePondPluginImageEdit,
-        FilePondPluginFileValidateType
-    );
+    .lg-toolbar .lg-icon:hover {
+        opacity: 1;
+    }
 
-    // Crear la instancia de Pintura
-    const pinturaEditor = window.pintura ? window.pintura.createDefaultEditor : null;
-
-    // Convertir el input en una instancia de FilePond
-    FilePond.create(document.querySelector('input.filepond'), {
-        allowImagePreview: true,
-        allowImageEdit: true,
-        acceptedFileTypes: ['image/jpeg', 'image/png', 'image/jpg'],
-        dropOnElement: false,
-        dropOnPage: false,
-        allowMultiple: false,
-        maxFiles: 1,
-        fileValidateTypeDetectType: (source, type) => new Promise((resolve, reject) => {
-            // Para archivos
-            if (source instanceof File) {
-                resolve(source.type);
-            }
-            // Para otras fuentes
-            resolve(type);
-        }),
-        imageEditEditor: pinturaEditor,
-        server: {
-            process: (fieldName, file, metadata, load, error, progress, abort) => {
-                // Simular una carga
-                const duration = 2000; // 2 segundos
-                let current = 0;
-                
-                const interval = setInterval(() => {
-                    current += 10;
-                    progress(current);
-                    
-                    if (current >= 100) {
-                        clearInterval(interval);
-                        load(Date.now()); // Simular ID del archivo
-                    }
-                }, duration / 100);
-                
-                // Permitir cancelar la carga
-                return {
-                    abort: () => {
-                        clearInterval(interval);
-                        abort();
-                    }
-                };
-            },
-            // Agregar el método revert para manejar la eliminación
-            revert: (uniqueFileId, load, error) => {
-                // Simular proceso de eliminación
-                setTimeout(() => {
-                    load();
-                }, 1000);
-            }
-        },
-        instantUpload: true,
-        allowRevert: true, // Habilitar la opción de eliminar
-        labelFileRemoveError: 'Error al eliminar el archivo',
-        labelFileProcessingRevertError: 'Error al revertir la carga',
-        labelFileRemove: 'Eliminar',
-        labelIdle: 'Arrastra y suelta tus archivos o <span class="filepond--label-action">Busca</span>',
-        labelFileProcessing: 'Subiendo...',
-        labelFileProcessingComplete: '¡Subida completada!',
-        labelTapToUndo: 'toca para deshacer',
-        labelTapToCancel: 'toca para cancelar',
-        labelInvalidField: 'El archivo no es válido',
-        labelFileTypeNotAllowed: 'Solamente se permite archivos de imagen',
-        fileValidateTypeLabelExpectedTypes: 'Se esperan archivos de tipo: {allTypes}',
-    });
-</script>
+    /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
+    .content img {
+        max-width: 150px;
+        /* o el tamaño que prefieras */
+        height: auto;
+        object-fit: cover;
+    }
+</style>
 
 
 

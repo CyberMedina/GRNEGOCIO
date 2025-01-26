@@ -13,15 +13,6 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
 import cloudinary
-# Configure Cloudinary credentials
-# (You can also store these in environment variables for security)
-cloudinary.config(
-    cloud_name= os.getenv('CLOUD_NAME'),
-    api_key= os.getenv('API_KEY'),
-    api_secret= os.getenv('API_SECRET'),
-    api_proxy = 'http://proxy.server:3128',
-    secure=True
-)
 import cloudinary.uploader
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
@@ -80,6 +71,16 @@ mail.init_app(app)
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    api_proxy = os.getenv('API_PROXY', default=None),
+    secure=True
+)
 
 
 
@@ -1402,7 +1403,6 @@ def informacion_pagoEspecifico():
         id_pagos = data.get('id_pagos')
 
         pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
-
 
         return jsonify({"pago": pago}), 200
     except SQLAlchemyError as e:

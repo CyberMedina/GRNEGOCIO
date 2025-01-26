@@ -645,7 +645,46 @@ function obtenerInformacionPagoBorrar(id_pago) {
     });
 }
 
-
+// Inicializar LightGallery dentro de la función o evento que abra o muestre el modal:
+function initLightGallery() {
+  const lgContainer = document.getElementById('lightgallery');
+  // Si ya existe una instancia previa, destrúyela para evitar comportamientos extraños
+  if (lgContainer.lgData) {
+    lgContainer.lgData.destroy(true);
+  }
+  // Inicializa LightGallery con los plugins
+  lightGallery(lgContainer, {
+    selector: '.gallery-item',
+    plugins: [lgZoom, lgThumbnail, lgRotate],
+    speed: 500,
+    download: false,
+    counter: true,
+    zoom: true,
+    zoomFromOrigin: true,
+    actualSize: false,
+    closeOnTap: true,
+    enableZoomAfter: 300,
+    scale: 3,
+    escKey: true,
+    closable: true,
+    closeOnClick: true,
+    rotate: true,
+    rotateLeft: true,
+    rotateRight: true,
+    flipHorizontal: true,
+    flipVertical: true,
+    addClass: 'lg-custom-zoom-class',
+    mobileSettings: {
+      controls: true,
+      showCloseIcon: true,
+      download: false,
+      rotate: true
+    },
+    onAfterOpen: () => {
+      console.log('LightGallery se ha abierto');
+    },
+  });
+}
 
 function obtenerInformacionPagoEspecifico(id_pago) {
 
@@ -666,6 +705,7 @@ function obtenerInformacionPagoEspecifico(id_pago) {
   let realizadoPorVP = document.getElementById('realizadoPorVP');
   let lblFechaRealizacionPagoPorVP = document.getElementById('lblFechaRealizacionPagoPorVP');
 
+  console.log(id_pago);
 
 
   fetch('/informacion_pagoEspecifico', {
@@ -716,11 +756,32 @@ function obtenerInformacionPagoEspecifico(id_pago) {
         observacionPagoVP.value = 'No hay observaciones';
       }
 
+      if (pago.url_imagen !== null) {
+
+        const evidenciaPagoVP = document.querySelector('.evidenciaPagoVP .gallery-item');
+        evidenciaPagoVP.setAttribute('data-src', pago.url_imagen);
+        evidenciaPagoVP.querySelector('img').setAttribute('src', pago.url_imagen);
+
+
+
+
+      } else {
+        console.log('No hay evidencia de pago');
+        evidenciaPagoVP = document.querySelector('.evidenciaPagoVP').innerHTML = '<p>No hay evidencia de pago</p>';
+      }
+
       console.log(pago);
       realizadoPorVP.value = pago.nombres_usuario + ' ' + pago.apellidos_usuario;
       lblFechaRealizacionPagoPorVP.textContent = 'Realizado el ' + formatoFechaYHora(pago.fecha_realizacion_pago);
 
       modalVisualizarPago.show();
+
+      // document.getElementById('modalVisualizarPago').addEventListener('shown.bs.modal', () => {
+      //   initLightGallery();
+      // });
+
+
+
 
 
 
@@ -764,8 +825,8 @@ function formatoFechaYHora(fecha) {
   let nombreMes = meses[mes - 1];
 
   return `${dia} de ${nombreMes} de ${año} a las ${hora}:` +
-         `${minutos < 10 ? '0' : ''}${minutos}:` +
-         `${segundos < 10 ? '0' : ''}${segundos} ${ampm} (UTC)`;
+    `${minutos < 10 ? '0' : ''}${minutos}:` +
+    `${segundos < 10 ? '0' : ''}${segundos} ${ampm} (UTC)`;
 }
 
 
@@ -870,13 +931,79 @@ proceder_pago.addEventListener('click', async function (event) {
 
 });
 
-// Inicializar FilePond
-const pond = FilePond.create(document.querySelector('input[name="filepond"]'));
+// Registrar los plugins de FilePond
+FilePond.registerPlugin(
+  FilePondPluginImagePreview,
+  FilePondPluginFileValidateType
+);
+
+// Convertir el input en una instancia de FilePond
+const pond = FilePond.create(document.querySelector('input[name="filepond"]'), {
+  allowImagePreview: true,
+  acceptedFileTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+  dropOnElement: false,
+  dropOnPage: false,
+  allowMultiple: false,
+  maxFiles: 1,
+  fileValidateTypeDetectType: (source, type) => new Promise((resolve, reject) => {
+    // Para archivos
+    if (source instanceof File) {
+      resolve(source.type);
+    }
+    // Para otras fuentes
+    resolve(type);
+  }),
+  server: {
+    process: (fieldName, file, metadata, load, error, progress, abort) => {
+      // Simular una carga
+      const duration = 2000; // 2 segundos
+      let current = 0;
+
+      const interval = setInterval(() => {
+        current += 10;
+        progress(current);
+
+        if (current >= 100) {
+          clearInterval(interval);
+          load(Date.now()); // Simular ID del archivo
+        }
+      }, duration / 100);
+
+      // Permitir cancelar la carga
+      return {
+        abort: () => {
+          clearInterval(interval);
+          abort();
+        }
+      };
+    },
+    // Agregar el método revert para manejar la eliminación
+    revert: (uniqueFileId, load, error) => {
+      // Simular proceso de eliminación
+      setTimeout(() => {
+        load();
+      }, 1000);
+    }
+  },
+  instantUpload: true,
+  allowRevert: true, // Habilitar la opción de eliminar
+  labelFileRemoveError: 'Error al eliminar el archivo',
+  labelFileProcessingRevertError: 'Error al revertir la carga',
+  labelFileRemove: 'Eliminar',
+  labelIdle: 'Arrastra y suelta tus archivos o <span class="filepond--label-action">Busca</span>',
+  labelFileProcessing: 'Subiendo...',
+  labelFileProcessingComplete: '¡Subida completada!',
+  labelTapToUndo: 'toca para deshacer',
+  labelTapToCancel: 'toca para cancelar',
+  labelInvalidField: 'El archivo no es válido',
+  labelFileTypeNotAllowed: 'Solamente se permite archivos de imagen',
+  fileValidateTypeLabelExpectedTypes: 'Se esperan archivos de tipo: {allTypes}',
+});
 
 // Modificar la función procesar_pago para manejar el archivo
 async function procesar_pago() {
   let formData = new FormData(document.getElementById('anadirClientes'));
-  
+
   // Obtener el archivo de FilePond
   const files = pond.getFiles();
   if (files.length > 0) {
@@ -905,7 +1032,6 @@ async function procesar_pago() {
     throw error;
   }
 }
-
 async function verificar_tipo_saldo_insertar() {
   let formData = new FormData(document.getElementById('anadirClientes'));
 
@@ -1047,12 +1173,12 @@ function normalizarFecha(fecha) {
 function actualizarObservacionPago(fechaPagoRealValue, esRetraso) {
   let observacionPago = document.getElementById('observacionPago');
   if (esRetraso) {
-      let fechaPagoRealFormateada = normalizarFecha(fechaPagoRealValue);
-      let opcionesFecha = { day: 'numeric', month: 'long', year: 'numeric' };
-      let fechaPagoRealLetrasFormateada = fechaPagoRealFormateada.toLocaleDateString('es-ES', opcionesFecha);
-      observacionPago.value = 'El cliente tuvo un retraso en su pago y realmente pagó el día ' + fechaPagoRealLetrasFormateada;
+    let fechaPagoRealFormateada = normalizarFecha(fechaPagoRealValue);
+    let opcionesFecha = { day: 'numeric', month: 'long', year: 'numeric' };
+    let fechaPagoRealLetrasFormateada = fechaPagoRealFormateada.toLocaleDateString('es-ES', opcionesFecha);
+    observacionPago.value = 'El cliente tuvo un retraso en su pago y realmente pagó el día ' + fechaPagoRealLetrasFormateada;
   } else {
-      observacionPago.value = '';
+    observacionPago.value = '';
   }
 }
 
@@ -1073,14 +1199,14 @@ fechaPago.addEventListener('input', function () {
   console.log("Fecha de pago normalizada:", fechaPagoValue);
 
   if (fechaPagoValue < fechaActual) {
-      divInputFechaPagoReal.hidden = false;
-      fechaPagoRealValue = fechaActual.toISOString().split('T')[0];
-      actualizarObservacionPago(fechaPagoRealValue, true);
-      conRetraso.hidden = false;
+    divInputFechaPagoReal.hidden = false;
+    fechaPagoRealValue = fechaActual.toISOString().split('T')[0];
+    actualizarObservacionPago(fechaPagoRealValue, true);
+    conRetraso.hidden = false;
   } else {
-      divInputFechaPagoReal.hidden = true;
-      actualizarObservacionPago('', false);
-      conRetraso.hidden = true;
+    divInputFechaPagoReal.hidden = true;
+    actualizarObservacionPago('', false);
+    conRetraso.hidden = true;
   }
 
   fechaPagoReal.value = fechaPagoRealValue;
@@ -1097,27 +1223,27 @@ fechaPagoReal.addEventListener('input', function () {
 
 
   if (fechaPagoRealValue <= fechaPagoValue) {
-      console.log("La fecha real de pago es anterior a la fecha programada.");
-      fechaPagoReal.value = fechaPago.value;
-      actualizarObservacionPago('', false);
-      conRetraso.hidden = true;
+    console.log("La fecha real de pago es anterior a la fecha programada.");
+    fechaPagoReal.value = fechaPago.value;
+    actualizarObservacionPago('', false);
+    conRetraso.hidden = true;
   } else if (fechaPagoRealValue > fechaPagoValue) {
-      console.log("La fecha real de pago es posterior a la fecha programada.");
-      actualizarObservacionPago(fechaPagoReal.value, true);
-      conRetraso.hidden = false;
+    console.log("La fecha real de pago es posterior a la fecha programada.");
+    actualizarObservacionPago(fechaPagoReal.value, true);
+    conRetraso.hidden = false;
   } else {
-      console.log("La fecha real de pago es igual a la fecha programada.");
-      actualizarObservacionPago('', false);
+    console.log("La fecha real de pago es igual a la fecha programada.");
+    actualizarObservacionPago('', false);
 
-      conRetraso.hidden = true;
+    conRetraso.hidden = true;
   }
 
-      // Actualizamos el label de la quincena
-      tiempoPagoLetrasReal.textContent = fechaLetrasFuncion(fechaPagoReal.value, 'minimalista');
+  // Actualizamos el label de la quincena
+  tiempoPagoLetrasReal.textContent = fechaLetrasFuncion(fechaPagoReal.value, 'minimalista');
 });
 
 
-document.getElementById('spanpagoCompletoDlrs').addEventListener('click', function() {
+document.getElementById('spanpagoCompletoDlrs').addEventListener('click', function () {
   calculoDolaresCordobas();
 
   // Set the amount to pay in dollars
@@ -1140,7 +1266,7 @@ document.getElementById('spanpagoCompletoDlrs').addEventListener('click', functi
 });
 
 
-spanIgualarFechaQuincenaAFechaReal.addEventListener("click", function(){
+spanIgualarFechaQuincenaAFechaReal.addEventListener("click", function () {
 
   fechaPagoReal.value = fechaPago.value;
 
@@ -1181,13 +1307,13 @@ spanIgualarFechaQuincenaAFechaReal.addEventListener("click", function(){
 //     abonoQuincenalCordobas = abonoQuincenal * tasaCambio;
 //   });
 
-  
 
 
 
 
 
-  
+
+
 
 
 
@@ -1304,7 +1430,7 @@ function alternarValores() {
   valoresEnCordobas = !valoresEnCordobas;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const capitalElement = document.getElementById('aCapital');
   const abonoMensualElement = document.getElementById('aAbonoMensual');
   const abonoQuincenalElement = document.getElementById('aAbonoQuincenal');
