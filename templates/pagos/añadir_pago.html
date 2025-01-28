@@ -1264,5 +1264,123 @@
 </style>
 
 
+<script>
+    // Primero agregamos los inputs hidden al inicio del script
+    const inputHidden = document.createElement('input');
+    inputHidden.type = 'hidden';
+    inputHidden.name = 'selectProcesoPagoNotificacion';
+    inputHidden.id = 'selectProcesoPagoNotificacion';
+    inputHidden.value = '2'; // Por defecto es false
+    document.querySelector('form').appendChild(inputHidden);
+
+    document.addEventListener("DOMContentLoaded", function(){
+        // Verificar si existen datos en el localStorage
+        const datosPagoNotificacion = localStorage.getItem('datosPagoNotificacion');
+        
+        if (datosPagoNotificacion) {
+            // Convertir el string JSON a objeto
+            const datos = JSON.parse(datosPagoNotificacion);
+            
+            // Marcar como True ya que los datos vienen del localStorage
+            document.getElementById('selectProcesoPagoNotificacion').value = '1';
+            
+            // Agregar input hidden para el id_imagen
+            const inputIdImagen = document.createElement('input');
+            inputIdImagen.type = 'hidden';
+            inputIdImagen.name = 'id_imagen_notificacion';
+            inputIdImagen.value = datos.id_imagen;
+            document.querySelector('form').appendChild(inputIdImagen);
+            
+            // Agregar input hidden para el id_notificacion
+            const inputIdNotificacion = document.createElement('input');
+            inputIdNotificacion.type = 'hidden';
+            inputIdNotificacion.name = 'id_notificacion';
+            inputIdNotificacion.value = datos.id_notificacion;
+            document.querySelector('form').appendChild(inputIdNotificacion);
+            
+            let modalAñadirPago = new bootstrap.Modal(document.getElementById('modalAñadirPago'));
+            modalAñadirPago.show();
+
+            // Seleccionar el tipo de moneda
+            const selectMoneda = document.getElementById('tipoMonedaPago');
+            selectMoneda.value = datos.moneda;
+            
+            // Esperar a que el modal esté completamente mostrado
+            modalAñadirPago._element.addEventListener('shown.bs.modal', function () {
+                setTimeout(async () => {
+                    // Obtener la tasa de cambio actual primero
+                    await obtenerTasaCambioConversion();
+                    
+                    // Disparar el cambio de moneda
+                    selectMoneda.dispatchEvent(new Event('change'));
+                    
+                    // Esperar a que se procese el cambio de moneda
+                    setTimeout(async () => {
+                        // Colocar el monto en el input correspondiente
+                        if (datos.moneda === "2") {
+                            const divCordobas = document.getElementById('cantidadPagoCordobasRow');
+                            divCordobas.hidden = false;
+                            const inputCordobas = document.getElementById('cantidadPagoCordobas');
+                            
+                            // Establecer el valor en córdobas
+                            inputCordobas.value = datos.monto;
+                            // Crear y disparar un evento de input que imite la entrada real
+                            const inputEvent = new InputEvent('input', {
+                                bubbles: true,
+                                cancelable: true,
+                                inputType: 'insertText'
+                            });
+                            inputCordobas.dispatchEvent(inputEvent);
+                        } else {
+                            const inputDolares = document.getElementById('cantidadPagar$');
+                            inputDolares.value = datos.monto;
+                            // Crear y disparar un evento de input que imite la entrada real
+                            const inputEvent = new InputEvent('input', {
+                                bubbles: true,
+                                cancelable: true,
+                                inputType: 'insertText'
+                            });
+                            inputDolares.dispatchEvent(inputEvent);
+                        }
+
+                        // Cargar la imagen
+                        if (datos.url_imagen) {
+                            try {
+                                const response = await fetch(datos.url_imagen);
+                                const blob = await response.blob();
+                                const file = new File([blob], 'imagen.jpg', { type: 'image/jpeg' });
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                const input = document.querySelector('input[name="filepond"]');
+                                input.files = dataTransfer.files;
+                                input.dispatchEvent(new Event('change', { bubbles: true }));
+                            } catch (error) {
+                                console.error('Error al cargar la imagen:', error);
+                            }
+                        }
+                        
+                        // Forzar el cálculo después de todo
+                        setTimeout(() => {
+                            calculoDolaresCordobas();
+                            
+                            // Validar los montos
+                            if (typeof validacionDolares === 'function') {
+                                validacionDolares({ target: document.getElementById('cantidadPagar$') });
+                            }
+                        }, 200);
+                        
+                    }, 200);
+                }, 200);
+            });
+            
+            // Opcional: Limpiar el localStorage después de usarlo
+            localStorage.removeItem('datosPagoNotificacion');
+        }
+    });
+</script>
+
+
+
+
 
 {% endblock %}

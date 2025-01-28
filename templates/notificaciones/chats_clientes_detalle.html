@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 
 
-{% block title %}Chats / {% endblock %}
+{% block title %}Chats / {{ nombre_cliente }} {{ apellido_cliente }} {% endblock %}
 
 {% block customCSS %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery.min.css">
@@ -25,6 +25,7 @@
         height: calc(110vh - 110px) !important;
         display: flex;
         flex-direction: column;
+        position: relative;
     }
 
 
@@ -51,6 +52,8 @@
 
     .message-box {
         margin-bottom: 20px;
+        position: relative;
+        transition: padding-right 0.3s ease;
     }
 
     .main-wrapper {
@@ -71,15 +74,225 @@
         margin-bottom: 15px;
     }
 
-    .chat-list-item > :first-child {
-        margin-right: 20px; /* Ajusta el espacio según sea necesario */
+    .chat-list-item> :first-child {
+        margin-right: 20px;
+        /* Ajusta el espacio según sea necesario */
     }
-    
+
 
     * {
         box-sizing: border-box;
         overflow: hidden;
 
+    }
+
+    /* Actualizar los estilos del checkbox */
+    .selection-checkbox {
+        position: absolute;
+        right: -40px;
+        /* Acercamos más el checkbox */
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        /* Hacer el checkbox más visible */
+        accent-color: #0d6efd;
+        border: 2px solid #0d6efd;
+    }
+
+    .selection-mode .message-box {
+        padding-right: 50px;
+        /* Ajustamos el padding */
+    }
+
+    .selection-mode .selection-checkbox {
+        display: block;
+        z-index: 100;
+        /* Aseguramos que esté por encima */
+    }
+
+    .message-box.selectable {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    /* Estilo para hover */
+    .selection-mode .message-box.selectable:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+
+    /* Estilo para elementos seleccionados */
+    .selection-mode .message-box.selected {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    /* Añadir un indicador visual del modo selección */
+    .selection-mode-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #0d6efd;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .selection-mode .selection-mode-indicator {
+        display: block;
+    }
+
+    /* Actualizar estilos de la barra de selección con responsive */
+    .selection-actions-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #1B2B65;
+        padding: 15px 20px;
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 1050;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        min-height: 85px;
+    }
+
+    /* Estilos responsive para móviles */
+    @media (max-width: 768px) {
+        .selection-actions-bar {
+            padding: 10px 15px;
+            min-height: 70px;
+        }
+
+        .selection-actions-bar .left-actions {
+            gap: 10px;
+        }
+
+        .selection-actions-bar .right-actions {
+            gap: 8px;
+        }
+
+        .selection-actions-bar .btn-action {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .selection-count {
+            font-size: 13px;
+        }
+
+        /* Modificar los estilos de los botones en móvil */
+        .selection-actions-bar .btn-action .btn-text {
+            display: none;
+        }
+
+        /* Mantener visible el contador en el botón eliminar */
+        .selection-actions-bar .btn-delete:not([disabled]) span {
+            display: inline;
+            margin-left: 4px;
+            font-size: 13px;
+        }
+
+        /* Ajustar tamaño de iconos */
+        .selection-actions-bar .btn-action i {
+            font-size: 18px;
+        }
+    }
+
+    /* Ajustes adicionales para pantallas muy pequeñas */
+    @media (max-width: 375px) {
+        .selection-actions-bar {
+            padding: 8px 12px;
+            min-height: 60px;
+        }
+
+        .selection-actions-bar .btn-action {
+            padding: 5px 8px;
+        }
+
+        .selection-count {
+            font-size: 12px;
+        }
+    }
+
+    /* Mostrar la barra cuando el contenedor principal está en modo selección */
+    .message-box-wrapper.selection-mode .selection-actions-bar {
+        display: flex !important;
+    }
+
+    /* Ocultar el header original cuando está en modo selección */
+    .message-box-wrapper.selection-mode .message-header {
+        display: none;
+    }
+
+    /* Ajustar el espacio para la barra */
+    .message-box-wrapper.selection-mode {
+        padding-top: 0;
+    }
+
+    /* Asegurar que el contenedor principal tenga position relative */
+    .message-box-wrapper {
+        position: relative !important;
+    }
+
+    /* Estilos para los botones y texto en la barra */
+    .selection-actions-bar .left-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .selection-actions-bar .right-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .selection-count {
+        font-size: 15px;
+        color: #ffffff;
+        opacity: 0.8;
+    }
+
+    .selection-actions-bar .btn-action {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        background: transparent;
+        color: white;
+    }
+
+    .selection-actions-bar .btn-action:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .selection-actions-bar .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-select-all {
+        color: #ffffff !important;
+    }
+
+    .btn-delete {
+        color: #ff4d4f !important;
+    }
+
+    .btn-exit {
+        color: #ffffff !important;
     }
 </style>
 
@@ -101,6 +314,26 @@
     <div class="row">
         <div class="col-xxl-12 col-xl-12 col-lg-12 mb-30">
             <div class="message-box-wrapper card-style h-100">
+                <div class="selection-actions-bar">
+                    <div class="left-actions">
+                        <button class="btn-action btn-select-all" onclick="toggleSelectAll()">
+                            <i class="lni lni-checkbox"></i>
+                            <span class="btn-text">Seleccionar todo</span>
+                        </button>
+                        <span class="selection-count">0 seleccionados</span>
+                    </div>
+                    <div class="right-actions">
+                        <button class="btn-action btn-delete" onclick="eliminarImagenesSeleccionadas()" disabled>
+                            <i class="lni lni-trash-can"></i>
+                            <span class="btn-text">Eliminar</span>
+                        </button>
+                        <button class="btn-action btn-exit" onclick="toggleSelectionMode(event)">
+                            <i class="lni lni-close"></i>
+                            <span class="btn-text">Salir</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="d-flex flex-column h-100">
                     <div class="message-header mb-20">
                         <div class="chat-list-item">
@@ -115,20 +348,18 @@
                             <div class="content">
                                 <div class="title">
                                     <h6 class="text-sm text-medium">{{ nombre_cliente }} {{ apellido_cliente }}</h6>
-                                    <!--                                     <div class="more-btn-wrapper">
+                                    <div class="more-btn-wrapper">
                                         <button class="more-btn dropdown-toggle" id="moreAction"
                                             data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="lni lni-more-alt"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreAction">
                                             <li class="dropdown-item">
-                                                <a href="#0" class="text-gray">Mark as Read</a>
-                                            </li>
-                                            <li class="dropdown-item">
-                                                <a href="#0" class="text-gray">Reply</a>
+                                                <a href="#0" onclick="toggleSelectionMode(event)"
+                                                    class="text-gray">Seleccionar</a>
                                             </li>
                                         </ul>
-                                    </div> -->
+                                    </div>
                                 </div>
                                 {% if estado_pago_corte.estado == 0 %}
                                 <span class="main-badge danger-badge rounded-full mb-2 fs-6 p-3">No
@@ -153,36 +384,63 @@
                     <!-- end message header -->
                     <div class="message-body flex-grow-1">
                         <div id="lightgallery" class="chat-messages">
+                            {% if datos_clienteEImagenes %}
                             {% for imagen in datos_clienteEImagenes %}
-                            <div class="message-box">
+                            <div class="message-box selectable"
+                                onclick="handleMessageBoxClick(this, {{ imagen.id_imagen }})">
                                 <div class="image">
                                     <img src="https://ui-avatars.com/api/?name={{ imagen.nombres }}+{{ imagen.apellidos }}/?rounded=true&size=128"
                                         alt="" />
                                 </div>
                                 <div class="content-box">
-                                    <!--                   <div class="title d-sm-flex mb-2 justify-content-between align-items-center">
-                    <h6 class="text-sm text-medium">{{ imagen.nombres }} {{ imagen.apellidos }}</h6>
-                  </div> -->
-                                    <div class="content">
-                                        <a data-src="{{ imagen.url_imagen }}" data-lg-size="1400-1400"
-                                            class="gallery-item">
-                                            <img src="{{ imagen.url_imagen }}" alt="imagen" />
-                                        </a>
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="content">
+                                            <a data-src="{{ imagen.url_imagen }}" data-lg-size="1400-1400"
+                                                class="gallery-item">
+                                                <img src="{{ url_for('static', filename= 'assets/images/resources/boucher_thumbnail.png') }}"
+                                                    alt="imagen" />
+                                            </a>
+                                        </div>
                                     </div>
 
                                     <div class="content">
-                                        <p>
-                                            {{ imagen.descripcion }}
-                                            <br>
-                                            <span class="text-sm">
-                                                {{ imagen.monto_sugerido_formateado }}
-                                            </span>
-                                            
-                                        </p>
-                                        
-                                    </div>
+                                        <div
+                                            class="message d-flex flex-column justify-content-center align-items-center">
 
-                                    <a href="/chats_clientes" class="btn btn-primary ml-5 lg-12" id="btn_volver_chats">Añadir pago</a>
+                                            <p>
+                                                {% if imagen.descripcion == 'Deposito bancario' %}
+                                                <span class="badge bg-success text-lg">Deposito bancario</span>
+                                                {% elif imagen.descripcion == 'Retiro sin tarjeta' %}
+                                                <span class="badge bg-danger text-lg">Retiro sin tarjeta</span>
+                                                {% endif %}
+                                                <br>
+                                            <div class="buy-sell-form">
+                                                <div class="field-group mb-20">
+                                                    <div class="input-group">
+                                                        <input type="text" 
+                                                               class="monto-input"
+                                                               placeholder="" 
+                                                               value="{{ '{:,.2f}'.format(imagen.monto_sugerido|float) }}"
+                                                               onblur="formatearNumero(this)"
+                                                               onkeydown="return soloNumerosYPunto(event)" />
+                                                        <div class="select-style-1 mb-0">
+                                                            <div class="select-position">
+                                                                <select class="moneda-select">
+                                                                    <option value="2">C$</option>
+                                                                    <option value="1">$</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a href="javascript:void(0)"
+                                        class="d-flex justify-content-center align-items-center btn btn-primary ml-5 lg-12 btn-anadir-pago"
+                                        data-id-notificacion="{{ imagen.id_notificacionesClientesPagos }}"
+                                        data-id-imagen="{{ imagen.id_imagen }}">Añadir pago</a>
 
 
                                     <span id="tooltip-iconPersonalize"
@@ -193,8 +451,15 @@
                                     </span></a>
 
                                 </div>
+                                <input type="checkbox" class="selection-checkbox"
+                                    data-id-imagen="{{ imagen.id_imagen }}"
+                                    data-id-notificacion="{{ imagen.id_notificacionesClientesPagos }}"
+                                    onclick="event.stopPropagation()">
                             </div>
                             {% endfor %}
+                            {% else %}
+                            <p>No hay bouchers que para mostrar</p>
+                            {% endif %}
                         </div>
                         <!-- end message-box-->
                         <!-- <div class="message-box right">
@@ -1295,11 +1560,176 @@
             <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
             <script>
+                let selectionMode = false;
+                let allSelected = false;
 
+                function updateSelectionCount() {
+                    const selectedCount = document.querySelectorAll('.selection-checkbox:checked').length;
+                    const totalCount = document.querySelectorAll('.selection-checkbox').length;
+                    const countText = `${selectedCount} seleccionados`;
+                    document.querySelector('.selection-count').textContent = countText;
+
+                    // Actualizar botón de seleccionar todo
+                    const selectAllBtn = document.querySelector('.btn-select-all');
+                    const isMobile = window.innerWidth <= 768;
+
+                    selectAllBtn.innerHTML = `
+                    <i class="lni ${allSelected ? 'lni-checkbox-checked' : 'lni-checkbox'}"></i>
+                    <span class="btn-text">${allSelected ? 'Deseleccionar todo' : 'Seleccionar todo'}</span>
+                `;
+
+                    // Actualizar botón de eliminar
+                    const deleteBtn = document.querySelector('.btn-delete');
+                    deleteBtn.disabled = selectedCount === 0;
+
+                    if (selectedCount > 0) {
+                        deleteBtn.innerHTML = `
+                        <i class="lni lni-trash-can"></i>
+                        <span>${isMobile ? `(${selectedCount})` : `Eliminar (${selectedCount})`}</span>
+                    `;
+                    } else {
+                        deleteBtn.innerHTML = `
+                        <i class="lni lni-trash-can"></i>
+                        <span class="btn-text">Eliminar</span>
+                    `;
+                    }
+                }
+
+                function toggleSelectAll() {
+                    allSelected = !allSelected;
+                    document.querySelectorAll('.message-box').forEach(box => {
+                        const checkbox = box.querySelector('.selection-checkbox');
+                        checkbox.checked = allSelected;
+                        box.classList.toggle('selected', allSelected);
+                    });
+                    updateSelectionCount();
+                }
+
+                function toggleSelectionMode(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    selectionMode = !selectionMode;
+                    allSelected = false;
+
+                    // Aplicar la clase al contenedor principal
+                    const wrapper = document.querySelector('.message-box-wrapper');
+                    wrapper.classList.toggle('selection-mode');
+
+                    document.querySelector('.chat-messages').classList.toggle('selection-mode');
+
+                    if (!selectionMode) {
+                        document.querySelectorAll('.message-box').forEach(box => {
+                            const checkbox = box.querySelector('.selection-checkbox');
+                            checkbox.checked = false;
+                            box.classList.remove('selected');
+                        });
+                    }
+                    updateSelectionCount();
+                }
+
+                function handleMessageBoxClick(element, id) {
+                    if (selectionMode) {
+                        const checkbox = element.querySelector('.selection-checkbox');
+                        checkbox.checked = !checkbox.checked;
+                        element.classList.toggle('selected', checkbox.checked);
+                        updateSelectionCount();
+                    }
+                }
+
+                document.addEventListener('change', function (e) {
+                    if (e.target.classList.contains('selection-checkbox')) {
+                        const messageBox = e.target.closest('.message-box');
+                        if (messageBox) {
+                            messageBox.classList.toggle('selected', e.target.checked);
+                            updateSelectionCount();
+                        }
+                    }
+                });
+
+                function eliminarImagenesSeleccionadas() {
+                    const selectedCheckboxes = document.querySelectorAll('.selection-checkbox:checked');
+                    const selectedItems = Array.from(selectedCheckboxes).map(checkbox => ({
+                        id_imagen: checkbox.dataset.idImagen,
+                        id_notificacion: checkbox.dataset.idNotificacion
+                    }));
+
+                    if (selectedItems.length > 0) {
+                        // Realizar la petición POST al backend
+                        fetch('/eliminar_imagenes_notificaciones', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                items: selectedItems
+                            })
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    // Si la respuesta es exitosa, recargar la página
+                                    window.location.reload();
+                                } else {
+                                    // Manejar error
+                                    console.error('Error al eliminar las imágenes');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    }
+                }
+
+                // Añadir listener para actualizar la UI cuando cambie el tamaño de la ventana
+                window.addEventListener('resize', updateSelectionCount);
             </script>
 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.btn-anadir-pago').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Obtener el contenedor padre del botón
+                        const messageBox = this.closest('.message-box');
+                        
+                        // Obtener los valores necesarios
+                        const idNotificacion = this.dataset.idNotificacion;
+                        const idImagen = this.dataset.idImagen;
+                        const montoInput = messageBox.querySelector('.monto-input');
+                        const monedaSelect = messageBox.querySelector('.moneda-select');
+                        
+                        // Obtener la URL de la imagen
+                        const imagenUrl = messageBox.querySelector('.gallery-item').dataset.src;
+                        
+                        // Obtener el monto sin formato (quitar comas)
+                        const monto = montoInput.value.replace(/,/g, '');
+                        const moneda = monedaSelect.value;
 
+                        // Crear objeto con los datos
+                        const datos = {
+                            procesar_pago_notificacionPago: true,
+                            id_notificacion: idNotificacion,
+                            id_imagen: idImagen,
+                            monto: monto,
+                            moneda: moneda,
+                            url_imagen: imagenUrl // Añadimos la URL de la imagen
+                        };
+                        
+                        // Guardar en localStorage
+                        localStorage.setItem('datosPagoNotificacion', JSON.stringify(datos));
 
+                        // Mostrar confirmación
+                        alert('Datos guardados correctamente');
+
+                        // Obtener el ID del cliente de la URL actual
+                        const clienteId = window.location.pathname.split('/').pop();
+
+                        // Opcional: Redireccionar a otra página
+                        window.location.href = `/añadir_pago/${clienteId}`;
+                    });
+                });
+            });
+            </script>
 
         </div>
     </div>
@@ -1436,7 +1866,7 @@
     if (lgContainer) {
         lightGallery(lgContainer, {
             selector: '.gallery-item',
-            plugins: [lgZoom, lgThumbnail, lgRotate],
+            plugins: [lgZoom, lgRotate],
             speed: 500,
             download: false,
             counter: true,
@@ -1482,11 +1912,61 @@
 
     /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
     .content img {
-        max-width: 150px;
+        max-width: 123px;
         /* o el tamaño que prefieras */
         height: auto;
         object-fit: cover;
     }
 </style>
+
+<!-- Añadir el indicador de modo selección -->
+<div class="selection-mode-indicator">
+    Modo selección
+</div>
+
+<script>
+    function soloNumerosYPunto(event) {
+      // Permitir: backspace, delete, tab, escape, enter, punto decimal
+      if (event.key === 'Backspace' || 
+          event.key === 'Delete' || 
+          event.key === 'Tab'     || 
+          event.key === 'Escape'  || 
+          event.key === 'Enter'   || 
+          event.key === '.') {
+        return true;
+      }
+      // Permitir solo números (0-9)
+      return /[0-9]/.test(event.key);
+    }
+    
+    function formatearNumero(input) {
+      // Obtener solo los números y el punto decimal
+      let valor = input.value.replace(/[^\d.]/g, '');
+        
+      // Manejar múltiples puntos decimales (dejar solo el primero)
+      let partes = valor.split('.');
+      if (partes.length > 2) {
+        valor = partes[0] + '.' + partes.slice(1).join('');
+      }
+        
+      // Limitar a 2 decimales si existen
+      if (partes.length > 1) {
+        valor = partes[0] + '.' + partes[1].slice(0, 2);
+      }
+    
+      // Convertir a número
+      let numero = parseFloat(valor);
+        
+      // Si es un número válido, formatear con separadores y 2 decimales
+      if (!isNaN(numero)) {
+        let numeroFormateado = numero
+          .toFixed(2)
+          .replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        input.value = numeroFormateado;
+      } else {
+        input.value = '';
+      }
+    }
+    </script>
 
 {% endblock %}

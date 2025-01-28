@@ -86,6 +86,7 @@ def obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente):
         query = text("""
 SELECT 
     ncp.id_notificacionesClientesPagos,
+    ncp.id_imagen,
     ncp.fechaCreacionNotificacion,
     ncp.descripcion,
     ncp.monto_sugerido,
@@ -131,21 +132,35 @@ WHERE c.id_cliente = :id_cliente """)
             for row in result:
                 formatted_result.append({
                     "id_notificacionesClientesPagos": row[0],
-                    "fechaCreacionNotificacion": row[1],
-                    "fechaCreacionNotificacion_formateada": convertir_fecha_a_string_con_hora(row[1]),
-                    "descripcion": row[2],  
-                    "monto_sugerido": row[3],
-                    "monto_sugerido_formateado": convertir_monto_a_string(row[3]),
-                    "url_imagen": row[4],
-                    "public_id": row[5],
-                    "nombres": row[6],
-                    "apellidos": row[7],
-                    "tiempoTranscurrido": row[8]
+                    "id_imagen" : row[1],
+                    "fechaCreacionNotificacion": row[2],
+                    "fechaCreacionNotificacion_formateada": convertir_fecha_a_string_con_hora(row[2]),
+                    "descripcion": row[3],  
+                    "monto_sugerido": row[4],
+                    "monto_sugerido_formateado": convertir_monto_a_string(row[4]),
+                    "url_imagen": row[5],
+                    "public_id": row[6],
+                    "nombres": row[7],
+                    "apellidos": row[8],
+                    "tiempoTranscurrido": row[9]
                 })
             return formatted_result
         else:
             return None
 
+    except Exception as e:
+        print(e)
+        db_session.rollback()
+        raise e
+
+
+def eliminar_notificacionesClientesPagos(db_session, id_notificacionesClientesPagos):
+    try:
+        query = text("""
+        DELETE FROM notificacionesClientesPagos WHERE id_notificacionesClientesPagos = :id_notificacionesClientesPagos;
+        """)
+        db_session.execute(query, {"id_notificacionesClientesPagos": id_notificacionesClientesPagos})
+        return True
     except Exception as e:
         print(e)
         db_session.rollback()

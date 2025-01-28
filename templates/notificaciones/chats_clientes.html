@@ -12,6 +12,36 @@
     .input-style-3 .icon {
         margin-top: 0;
     }
+    .empty-state-card {
+        padding: 2rem;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        max-width: 400px;
+        width: 100%;
+        margin: 2rem auto;
+    }
+    .empty-state {
+        padding: 2rem;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
+    .empty-state-title {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.95rem;
+    }
 </style>
 
 
@@ -68,6 +98,7 @@
                 </form>
                 <!-- end search form -->
                 <div class="chat-list-wrapper">
+                    {% if Clientes %}
                     {% for cliente in Clientes %}
                     <a href="/chats_clientes_detalle/{{ cliente.id_cliente }}" class="chat-list d-block">
                         <div class="chat-list-item">
@@ -89,6 +120,15 @@
                     </a>
                     <!-- end chat-list -->
                     {% endfor %}
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center empty-state">
+                        <div class="text-center">
+                            <i class="lni lni-users empty-state-icon"></i>
+                            <h5 class="empty-state-title">No hay clientes para mostrar</h5>
+                            <p class="empty-state-text">Aún no se han recibido notificaciones de pagos</p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -813,8 +813,9 @@ def procesar_pago():
     tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
     fechaPagoReal = request.form['fechaPagoReal']
     id_usuario_creador = session.get('user_id')
-
-    print(evidenciaPago)
+    
+    # Obtener el valor del proceso de notificación
+    selectProcesoPagoNotificacion = request.form.get('selectProcesoPagoNotificacion', '2')
     
     procesar_todo = False
     id_imagen = None
@@ -838,9 +839,19 @@ def procesar_pago():
         db_session.begin()
         
         try:
-            # Si hay evidencia de pago, subirla primero y obtener id_imagen
-            id_imagen = None  # Por defecto None si no hay evidencia
-            if evidenciaPago:
+            id_notificacion = None  # Declaramos fuera para usarlo después
+            
+            # Si viene de notificación (selectProcesoPagoNotificacion = '1')
+            if selectProcesoPagoNotificacion == '1':
+                id_imagen = request.form.get('id_imagen_notificacion')
+                id_notificacion = request.form.get('id_notificacion')
+                print("ID Notificación a eliminar:", id_notificacion)
+                
+                if id_imagen:
+                    id_imagen = int(id_imagen)
+            
+            # Si no viene de notificación, procesar la evidencia normalmente
+            elif evidenciaPago:
                 cloud_response = cloudinary.uploader.upload(
                     evidenciaPago,
                     resource_type='image',
@@ -856,13 +867,10 @@ def procesar_pago():
                 
                 # Guardar imagen en la base de datos y obtener id
                 id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
-
                 id_imagen = int(id_imagen)
-
                 db_session.commit()
-                
 
-            # Procesar el pago con el id_imagen (que puede ser None)
+            # Procesar el pago con el id_imagen
             response = proceder_pago(
                 db_session, 
                 procesar_todo, 
@@ -878,11 +886,16 @@ def procesar_pago():
                 inputTasaCambioPago,
                 monedaConversion, 
                 id_usuario_creador, 
-                id_imagen  # Puede ser None si no hay evidencia
+                id_imagen
             )
             
             if response is None:
                 raise Exception("Error al procesar el pago: respuesta vacía")
+            
+            # Eliminar la notificación después de procesar el pago exitosamente
+            if selectProcesoPagoNotificacion == '1' and id_notificacion:
+                print("Eliminando notificación:", id_notificacion)
+                eliminar_notificacionesClientesPagos(db_session, int(id_notificacion))
                 
             db_session.commit()
             return response
@@ -893,8 +906,6 @@ def procesar_pago():
             if public_id:
                 cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
             raise db_error
-        
-
 
     except Exception as e:
         print(f"Error al procesar el pago: {str(e)}")
@@ -918,7 +929,6 @@ def chats_clientes():
 
 @app.route('/chats_clientes_detalle/<int:id_cliente>', methods=['GET', 'POST'])
 def chats_clientes_detalle(id_cliente):
-    print(id_cliente)
 
     datos_clienteEImagenes = obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente)
 
@@ -991,18 +1001,66 @@ def chats_clientes_detalle(id_cliente):
         formulario_añadir_pago.update({"saldo_pendiente": saldo_pendiente})
         
 
-    print(datos_clienteEImagenes)
+
     formulario_chats_clientes_detalle = {
-        "nombre_cliente": nombre_cliente,
-        "apellido_cliente": apellido_cliente,
+        "nombre_cliente": pagos_cliente[0]["nombres"],
+        "apellido_cliente": pagos_cliente[0]["apellidos"],
         "datos_clienteEImagenes": datos_clienteEImagenes,
     }
     return render_template('notificaciones/chats_clientes_detalle.html', **formulario_chats_clientes_detalle, **formulario_añadir_pago)
 
 
 
+@app.route('/eliminar_imagenes_notificaciones', methods=['POST'])
+def eliminar_imagenes_notificaciones():
+    data = request.json
+    items = data.get('items', [])
+    print(items)
+
+    try:
+        db_session.begin()
+
+        for item in items:
+            id_imagen = item.get('id_imagen')
+            id_notificacion = item.get('id_notificacion')
+            eliminar_notificacionesClientesPagos(db_session, id_notificacion)
+            eliminar_imagen(db_session, id_imagen)  
+
+        db_session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
+@app.route('/procesar_pago_con_imagenChat', methods=['POST'])
+def procesar_pago_con_imagenChat():
+    data = request.json
+
+    print(data)
+    
+    try:
+        # Validar que los datos necesarios estén presentes
+        required_fields = ['id_notificacion', 'id_imagen', 'monto', 'moneda']
+        if not all(field in data for field in required_fields):
+            return jsonify({
+                "success": False,
+                "message": "Faltan campos requeridos"
+            }), 400
+
+        # Guardar en sesión
+        session['procesar_pago_notificacionPago'] = data
+
+        return jsonify({
+            "success": True, 
+            "redirect_url": "/añadir_pago/20"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 
@@ -1011,7 +1069,7 @@ def chats_clientes_detalle(id_cliente):
 @app.route('/api/prueba', methods=['POST'])
 def prueba():
     data = request.get_json()
-    print(data)
+
     return jsonify(data), 200
 
 
@@ -1020,12 +1078,12 @@ def check_number():
     phone_raw = request.json.get('phone')
     #Elimina los primeros 505 del numero telefonico
     phone_number = phone_raw[3:]
-    print(phone_number)
+
 
     #Buscamos en la base de datos si existe el numero de telefono
     id_cliente = buscar_existenciaNumeroTelefono(db_session, phone_number)
 
-    print(id_cliente)
+
 
 
     if id_cliente:
@@ -1095,7 +1153,7 @@ def upload_file():
             id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
 
             if id_cliente:
-                print("SI HAY ID_CLIENTE " + str(id_cliente))
+
                 id_cliente = int(id_cliente)
             insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, Observacion_sugerida, monto_sugerido, activo)
 
@@ -2575,7 +2633,6 @@ def obtener_pago():
     nombre_cliente = data['person']
 
     cadena_texto_respuesta = obtener_pagoClienteTexto(db_session, nombre_cliente)
-    print(cadena_texto_respuesta)
 
     return jsonify({"respuesta": cadena_texto_respuesta}), 200
 
