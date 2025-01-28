@@ -555,6 +555,7 @@ document.getElementById("filtro-comboBox").addEventListener("change", function (
     .then(response => response.json())
     .then(data => {
       location.reload();
+
     })
     .catch(error => {
       console.error("Error al guardar en sesión:", error);
@@ -899,14 +900,55 @@ btnGuardar.addEventListener('click', async function (event) {
 
     }
     else if (data.estadoPago == 1 || data.estadoPago == 2) {
-      let data = await procesar_pago();
-      console.log(data);
-
-      window.location.reload();
-
+      showPreloader();
+      
+      try {
+        let response = await procesar_pago();
+        console.log(response);
+        
+        // Guardar mensaje de éxito en localStorage
+        localStorage.setItem('pagoMessage', JSON.stringify({
+          type: 'success',
+          message: 'Pago agregado con éxito'
+        }));
+        
+        // Esperar 500ms antes de recargar para que el loader se muestre suavemente
+        await new Promise(resolve => setTimeout(resolve, 500));
+        window.location.reload();
+      } catch (error) {
+        // Guardar mensaje de error en localStorage
+        localStorage.setItem('pagoMessage', JSON.stringify({
+          type: 'error',
+          message: `Error al procesar el pago: ${error.message}`
+        }));
+        
+        // Esperar 500ms antes de recargar para que el loader se muestre suavemente
+        await new Promise(resolve => setTimeout(resolve, 500));
+        window.location.reload();
+      }
     }
   } catch (error) {
     console.error('Error:', error);
+    // Guardar mensaje de error en localStorage
+    localStorage.setItem('pagoMessage', JSON.stringify({
+      type: 'error',
+      message: `Error: ${error.message}`
+    }));
+    
+    // Esperar 500ms antes de recargar para que el loader se muestre suavemente
+    await new Promise(resolve => setTimeout(resolve, 500));
+    window.location.reload();
+  }
+});
+
+// Agregar este código para mostrar el mensaje después de la recarga
+document.addEventListener('DOMContentLoaded', function() {
+  const message = localStorage.getItem('pagoMessage');
+  if (message) {
+    const { type, message: msg } = JSON.parse(message);
+    hidePreloader();
+    createToast(type, msg, 5000, 'bottom-right');
+    localStorage.removeItem('pagoMessage'); // Limpiar el mensaje
   }
 });
 

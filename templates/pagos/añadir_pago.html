@@ -15,6 +15,10 @@
 <!-- (Opcional) Estilos de un editor, como Pintura -->
 <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pintura.css') }}">
 
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/custom_toast/custom_toast.css') }}">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
     /* Ocultar el "Powered by PQINA" */
     .filepond--credits {
@@ -1235,7 +1239,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/rotate/lg-rotate.min.js"></script>
 
-
+<script src="{{ url_for('static', filename='assets/js/custom_toast/custom_toast.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
@@ -1378,6 +1382,19 @@
         }
     });
 </script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function(){
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        await wait(500);
+        
+        // El mensaje toast ahora se maneja en el JavaScript principal
+        hidePreloader();
+    });
+</script>
+
+
 
 
 
