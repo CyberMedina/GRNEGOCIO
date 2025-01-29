@@ -2624,21 +2624,62 @@ def backup_progress():
         mimetype='text/event-stream'
     )
 
-def restore_process(file_url, queue):
+@app.route('/restore_status', methods=['GET'])
+def restore_status():
+    """Endpoint para consultar el estado de la restauración"""
+    status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{session.get("user_id")}.json')
+    try:
+        with open(status_file, 'r') as f:
+            status = json.load(f)
+        return jsonify(status)
+    except FileNotFoundError:
+        return jsonify({'progress': 0, 'status': 'Iniciando...', 'error': False})
+
+@app.route('/restore_progress')
+def restore_progress():
+    file_url = request.args.get('file_url')
+    if not file_url:
+        return jsonify({'progress': 0, 'status': 'Error: No se proporcionó URL del archivo', 'error': True})
+    
+    # Iniciar el proceso de restauración en segundo plano
+    process = Process(target=restore_process, args=(file_url, session.get("user_id")))
+    process.start()
+    
+    return jsonify({'started': True})
+
+def restore_process(file_url, user_id):
+    status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+    start_time = time.time()
+    TIMEOUT_MINUTES = 10
+    
+    def update_status(progress, status, error=False, completed=False):
+        with open(status_file, 'w') as f:
+            json.dump({
+                'progress': progress,
+                'status': status,
+                'error': error,
+                'completed': completed
+            }, f)
+    
+    def check_timeout():
+        if (time.time() - start_time) > (TIMEOUT_MINUTES * 60):
+            raise TimeoutError(f"El proceso ha excedido el límite de {TIMEOUT_MINUTES} minutos")
+    
     try:
         with app.app_context():
-            queue.put({'progress': 0, 'status': 'Iniciando proceso de restauración...'})
+            update_status(0, 'Iniciando proceso de restauración...')
+            check_timeout()
             
-            # Extraer la URL real de Dropbox del parámetro
+            # Extraer la URL real de Dropbox
             if '/restore?file_url=' in file_url:
                 file_url = file_url.split('/restore?file_url=')[1]
             
             # Validar que la URL sea de Dropbox
             if 'dropbox.com' not in file_url:
-                queue.put({'progress': 0, 'status': 'Error: URL no válida de Dropbox', 'error': True})
-                return
+                raise ValueError('URL no válida de Dropbox')
             
-            queue.put({'progress': 5, 'status': f'Conectando con Dropbox...'})
+            update_status(10, 'Conectando con Dropbox...')
+            check_timeout()
             
             try:
                 headers = {
@@ -2651,51 +2692,63 @@ def restore_process(file_url, queue):
                 elif 'dl=1' not in file_url:
                     file_url = file_url + ('&' if '?' in file_url else '?') + 'dl=1'
                 
-                print(f"Intentando descargar desde: {file_url}")  # Para debugging
-                
+                update_status(20, 'Descargando archivo...')
                 response = requests.get(file_url, stream=True, headers=headers, allow_redirects=True)
                 
                 if response.status_code != 200:
-                    queue.put({'progress': 0, 'status': f'Error al descargar el archivo. Status code: {response.status_code}', 'error': True})
-                    return
+                    raise Exception(f'Error al descargar el archivo. Status code: {response.status_code}')
                 
-                content_type = response.headers.get('Content-Type')
-                if 'text/html' in content_type:
-                    queue.put({'progress': 0, 'status': 'Error: No se pudo acceder al archivo', 'error': True})
-                    return
-                
-                queue.put({'progress': 30, 'status': 'Archivo descargado correctamente'})
+                check_timeout()
+                update_status(30, 'Verificando archivo...')
                 
                 # Guardar el archivo temporalmente
-                queue.put({'progress': 40, 'status': 'Preparando archivo para restauración...'})
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.sql') as temp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.sql', mode='wb') as temp_file:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
                             temp_file.write(chunk)
+                        check_timeout()
                     temp_file_path = temp_file.name
-
+                
+                update_status(40, 'Preparando base de datos...')
+                check_timeout()
+                
                 try:
                     # Eliminar todas las tablas existentes
-                    queue.put({'progress': 50, 'status': 'Limpiando base de datos actual...'})
+                    update_status(50, 'Limpiando base de datos actual...')
                     drop_all_tables()
-                    queue.put({'progress': 60, 'status': 'Base de datos preparada'})
-
-                    # Ejecutar el archivo SQL
-                    queue.put({'progress': 70, 'status': 'Iniciando restauración de datos...'})
+                    check_timeout()
                     
-                    def progress_callback(progress, status):
-                        queue.put({'progress': progress, 'status': status})
-
-                    execute_sql_file(temp_file_path, progress_callback)
+                    update_status(60, 'Iniciando restauración...')
                     
-                    queue.put({'progress': 95, 'status': 'Finalizando restauración...'})
+                    # Leer y ejecutar el archivo SQL
+                    with open(temp_file_path, 'r', encoding='utf-8') as f:
+                        sql_content = f.read()
+                        
+                    # Dividir el contenido en statements individuales
+                    statements = sql_content.split(';')
+                    total_statements = len(statements)
                     
-                    queue.put({
-                        'progress': 100,
-                        'status': '¡Restauración completada exitosamente!',
-                        'completed': True
-                    })
-
+                    for i, statement in enumerate(statements, 1):
+                        if statement.strip():
+                            check_timeout()
+                            try:
+                                db_session.execute(text(statement))
+                                progress = 60 + int((i / total_statements) * 35)
+                                update_status(progress, f'Restaurando datos ({i}/{total_statements})')
+                            except Exception as e:
+                                print(f"Error en statement {i}: {str(e)}")
+                                raise
+                    
+                    db_session.commit()
+                    update_status(95, 'Finalizando restauración...')
+                    check_timeout()
+                    
+                    update_status(100, '¡Restauración completada exitosamente!', completed=True)
+                    
+                except Exception as e:
+                    db_session.rollback()
+                    raise Exception(f'Error durante la restauración: {str(e)}')
+                    
                 finally:
                     # Limpiar archivo temporal
                     try:
@@ -2704,68 +2757,14 @@ def restore_process(file_url, queue):
                         print(f"Error al eliminar archivo temporal: {e}")
                 
             except Exception as e:
-                queue.put({'progress': 0, 'status': f'Error en la restauración: {str(e)}', 'error': True})
-                return
+                raise Exception(f'Error en el proceso: {str(e)}')
             
+    except TimeoutError as e:
+        update_status(0, f'Error: {str(e)}', error=True)
     except Exception as e:
-        queue.put({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})
-
-@app.route('/restore_progress')
-def restore_progress():
-    file_url = request.args.get('file_url')
-    if not file_url:
-        return Response(
-            f"data: {json.dumps({'progress': 0, 'status': 'Error: No se proporcionó URL del archivo', 'error': True})}\n\n",
-            mimetype='text/event-stream'
-        )
-
-    # Asegurarse de que estamos usando la URL correcta
-    if file_url.startswith('/restore'):
-        file_url = file_url.split('file_url=')[1]
-    
-    # Decodificar la URL
-    file_url = requests.utils.unquote(file_url)
-    
-    def generate():
-        queue = Queue()
-        p = Process(target=restore_process, args=(file_url, queue))
-        p.start()
-
-        try:
-            while True:
-                try:
-                    progress_data = queue.get(timeout=1)
-                    if not progress_data:
-                        yield "data: nodata\n\n"
-                        continue
-                        
-                    yield f"data: {json.dumps(progress_data)}\n\n"
-                    
-                    if progress_data.get('completed') or progress_data.get('error'):
-                        # Enviar mensaje de finalización para que el cliente cierre la conexión
-                        yield "data: finished\n\n"
-                        break
-                        
-                except Exception:
-                    # Mantener la conexión viva
-                    yield "data: keepalive\n\n"
-                    continue
-                    
-        except GeneratorExit:
-            print('Cliente cerró la conexión')
-        finally:
-            if p.is_alive():
-                p.terminate()
-            p.join(timeout=1)
-
-    response = Response(
-        stream_with_context(generate()),
-        mimetype="text/event-stream"
-    )
-    response.headers['Cache-Control'] = 'no-cache'
-    response.headers['Connection'] = 'keep-alive'
-    
-    return response
+        update_status(0, f'Error: {str(e)}', error=True)
+    finally:
+        db_session.close()
 
 @app.route('/cargar_historial_backups', methods=['GET'])
 def cargar_historial_backups():

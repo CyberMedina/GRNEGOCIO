@@ -150,57 +150,74 @@ function iniciarBackup() {
 }
 
 function iniciarRestauracion(fileUrl) {
-    // Mostrar el modal
     const modal = new bootstrap.Modal(document.getElementById('modalBackupProgress'));
     modal.show();
     
     const progressBar = document.getElementById('backupProgressBar');
     const statusText = document.getElementById('backupStatus');
     
-    // Cambiar título del modal
     document.querySelector('#modalBackupProgress .modal-header h5').textContent = 'Restaurando base de datos';
     
-    // Obtener el token de la sesión actual
-    const access_token = document.getElementById('access_token').value;
-    
-    // Asegurarse de que la URL esté codificada correctamente
-    const encodedUrl = encodeURIComponent(fileUrl);
-    
-    // Conectar al SSE
-    const eventSource = new EventSource(`/restore_progress?access_token=${access_token}&file_url=${encodedUrl}`);
-    
-    eventSource.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        
-        // Actualizar barra de progreso
-        progressBar.style.width = `${data.progress}%`;
-        progressBar.textContent = `${data.progress}%`;
-        statusText.textContent = data.status;
-        
-        // Manejar errores
-        if (data.error) {
+    // Iniciar el proceso de restauración
+    fetch(`/restore_progress?file_url=${encodeURIComponent(fileUrl)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.started) {
+                // Iniciar polling
+                pollRestoreStatus();
+            }
+        })
+        .catch(error => {
+            statusText.textContent = "Error al iniciar la restauración";
             progressBar.classList.remove('blue-light-bg');
             progressBar.classList.add('red-bg');
-            eventSource.close();
-            return;
-        }
-        
-        // Manejar completado
-        if (data.completed) {
-            eventSource.close();
-            setTimeout(() => {
-                modal.hide();
-                window.location.reload();
-            }, 1000);
-        }
+        });
+}
+
+function pollRestoreStatus() {
+    const progressBar = document.getElementById('backupProgressBar');
+    const statusText = document.getElementById('backupStatus');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalBackupProgress'));
+    
+    const checkStatus = () => {
+        fetch('/restore_status')
+            .then(response => response.json())
+            .then(data => {
+                progressBar.style.width = `${data.progress}%`;
+                progressBar.textContent = `${data.progress}%`;
+                statusText.textContent = data.status;
+                
+                if (data.error) {
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('red-bg');
+                    return;
+                }
+                
+                if (data.completed) {
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('green-bg');
+                    
+                    // Esperar 2 segundos antes de recargar para que el usuario vea el mensaje de éxito
+                    setTimeout(() => {
+                        modal.hide();
+                        createToast('success', '¡Base de datos restaurada exitosamente!', 5000, 'bottom-right');
+                        window.location.reload();
+                    }, 2000);
+                    return;
+                }
+                
+                // Continuar el polling solo si no hay error ni está completado
+                setTimeout(checkStatus, 1000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusText.textContent = "Error de conexión";
+                progressBar.classList.remove('blue-light-bg');
+                progressBar.classList.add('red-bg');
+            });
     };
     
-    eventSource.onerror = function() {
-        statusText.textContent = "Error de conexión";
-        progressBar.classList.remove('blue-light-bg');
-        progressBar.classList.add('red-bg');
-        eventSource.close();
-    };
+    checkStatus();
 }
 
 document.getElementById('cargarMasBackups').addEventListener('click', function() {
