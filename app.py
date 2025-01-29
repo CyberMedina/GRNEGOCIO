@@ -2626,13 +2626,6 @@ def backup_progress():
                     yield f"data: {json.dumps({'progress': 93, 'status': 'Registrando respaldo en el sistema...'})}\n\n"
                     time.sleep(0.3)
                     
-                    id_backup = crear_reespaldoBD(db_session, shared_link)
-                    
-                    if not id_backup:
-                        dbx.files_delete_v2(dropbox_destination_path)
-                        yield f"data: {json.dumps({'progress': 0, 'status': 'Error al guardar en base de datos', 'error': True})}\n\n"
-                        return
-                    
                     yield f"data: {json.dumps({'progress': 97, 'status': 'Respaldo registrado correctamente'})}\n\n"
                     time.sleep(0.3)
                     
