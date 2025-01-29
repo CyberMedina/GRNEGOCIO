@@ -563,29 +563,62 @@ document.getElementById("filtro-comboBox").addEventListener("change", function (
 });
 
 function eliminar_pago(id_pago) {
+  showPreloader(); // Mostrar loader antes de la petición
+  
   fetch("/eliminar_pago", {
     method: "POST",
-    body: JSON.stringify({ id_pago }), // Convertir a JSON
+    body: JSON.stringify({ id_pago }), 
     headers: {
       "Content-Type": "application/json"
     }
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.error) {
-        throw new Error(data.error);
-      }
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    
+    // Guardar mensaje en localStorage antes de recargar
+    localStorage.setItem('deleteMessage', JSON.stringify({
+      type: 'success',
+      message: 'Pago eliminado con éxito'
+    }));
+    
+    // Esperar 500ms antes de recargar para que el loader se muestre suavemente
+    setTimeout(() => {
       location.reload();
-    })
-    .catch(error => {
-      console.error("Error al eliminar el pago:", error);
-    });
+    }, 500);
+  })
+  .catch(error => {
+    console.error("Error al eliminar el pago:", error);
+    
+    // Guardar mensaje de error en localStorage
+    localStorage.setItem('deleteMessage', JSON.stringify({
+      type: 'error', 
+      message: `Error al eliminar el pago: ${error.message}`
+    }));
+    
+    setTimeout(() => {
+      location.reload();
+    }, 500);
+  });
 }
+
+// Agregar listener para mostrar el mensaje después de recargar
+document.addEventListener('DOMContentLoaded', function() {
+  const deleteMessage = localStorage.getItem('deleteMessage');
+  if (deleteMessage) {
+    const { type, message } = JSON.parse(deleteMessage);
+    hidePreloader();
+    createToast(type, message, 5000, 'bottom-right');
+    localStorage.removeItem('deleteMessage');
+  }
+});
 
 function fetchInformacionPago(id_pago) {
   return fetch('/informacion_pagoEspecifico', {

@@ -1,7 +1,12 @@
 {% extends 'layout.html' %}
 
 
-{% block title %}Clientes{% endblock %}
+{% block title %}Configuración{% endblock %}
+
+{% block customCSS %}
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/custom_toast/custom_toast.css') }}">
+{% endblock %}
+
 {% block body %}
 
 <style>
@@ -31,7 +36,9 @@
   }
 </style>
 
-<section class="section">
+
+
+
   <div class="container-fluid">
     <!-- ========== title-wrapper start ========== -->
     <div class="title-wrapper pt-30">
@@ -113,16 +120,14 @@
                       <section id="seccionExportar" hidden>
                         <div class="container mb-3">
                           <div class="row">
-                            <a href="/backup"
+                            <button onclick="iniciarBackup()" 
                               class="main-btn primary-btn-light rounded-full btn-hover m-1 col-md-12 offset-md-8">
                               <i class="lni lni-plus"></i>
-                              Realizar nuevo reespaldo
-                            </a>
+                              Realizar nuevo respaldo
+                            </button>
                           </div>
                         </div>
-                        <div class="progress-item progress-item-lg">
-                          <div class="progress-item-bar blue-light-bg" style="width: 89%"></div>
-                        </div>
+
                         <h6 class="mb-2">Backup más reciente</h6>
                         <div class="kanban-header" id="backupBaseDeDatos">
                           <div class="kanban-header-members">
@@ -144,7 +149,7 @@
                               </button>
                               <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
                                 <li class="dropdown-item">
-                                  <a href="{{ backups_files[0]['import_link'] }}" target="_blank"
+                                  <a href="#" onclick="iniciarRestauracion('{{ backups_files[0]['import_link'] }}'); return false;"
                                     class="text-gray text-sm" style="margin-right: 1px !important;">
                                     <i class="fa-solid fa-file-import"></i>
                                     Importar
@@ -174,52 +179,16 @@
 
 
                         <h6 class="mb-2">Historial de backups</h6>
-                        <!-- Realiza una linea que divida al siguiente DIV -->
-                        <hr>
-                        <!-- Aquí es donde quieres el scroll -->
-                        <div style="max-height: 200px; overflow-y: auto;">
-                          {% for files in backups_files %}
-                          {% if loop.index != 1 %}
-                          <div class="kanban-header mb-4" id="backupBaseDeDatos">
-                            <div class="kanban-header-members">
-                              <div class="add-member-button text-gray">
-                                <i class="fa-solid fa-database"></i>
-                                Backup del día {{ files['fileDate'] }}
-                              </div>
-                            </div>
-                            <div class="add-task-button">
-                              <div class="more-btn-wrapper">
-                                <button class="more-btn dropdown-toggle border-0 bg-transparent" id="moreAction"
-                                  data-bs-toggle="dropdown" aria-expanded="false">
-                                  <i class="lni lni-more-alt"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end px-1" aria-labelledby="moreAction">
-                                  <li class="dropdown-item">
-                                    <a href="{{ files['import_link'] }}" target="_blank" class="text-gray text-sm"
-                                      style="margin-right: 1px !important;">
-                                      <i class="fa-solid fa-file-import"></i>
-                                      Importar
-                                    </a>
-                                  </li>
-                                  <li class="dropdown-item">
-                                    <a id="" href="{{ files['download_link'] }}" target="_blank"
-                                      class="text-gray text-sm" style="margin-right: 1px !important;">
-                                      <i class="fa-solid fa-download"></i>
-                                      Ver / Descargar
-                                    </a>
-                                  </li>
-                                  <li class="dropdown-item">
-                                    <a href="{{ files['delete_link'] }}" class="text-gray text-sm">
-                                      <i class="fa-solid fa-trash"></i>
-                                      Eliminar
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                          {% endif %}
-                          {% endfor %}
+                        <hr class="my-3">
+                        <div id="historial-backups">
+                            <!-- Aquí se cargarán los backups adicionales -->
+                        </div>
+                        <div class="text-center mt-3">
+                            <button id="cargarMasBackups" class="main-btn primary-btn-outline rounded-md btn-hover">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                Cargar historial completo
+                            </button>
+                        </div>
 
 
 
@@ -344,16 +313,36 @@
     </div>
     <!-- ModalThree End -->
 
-
+    <!-- Modal de Progreso de Backup -->
+    <div class="warning-modal">
+      <div class="modal fade" id="modalBackupProgress" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content card-style">
+            <div class="modal-header px-0 border-0">
+              <h5 class="text-bold">Realizando respaldo de la base de datos</h5>
+            </div>
+            <div class="modal-body px-0">
+              <div class="content">
+                <div class="progress-wrapper">
+                  <div class="progress-item blue-light-bg-light progress-item-lg">
+                    <div id="backupProgressBar" class="progress-item-bar blue-light-bg" style="width: 0%">0%</div>
+                  </div>
+                </div>
+                <p id="backupStatus" class="text-center mt-3">Iniciando respaldo...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
   <!-- ======== add task modal end =========== -->
 
-
-
-
+  <input type="hidden" id="access_token" value="{{ session.get('access_token', '') }}">
 
   <script src="{{ url_for('static', filename= 'assets/js/base_de_datos/base_de_datos.js') }}"></script>
+  <script src="{{ url_for('static', filename= 'assets/js/custom_toast/custom_toast.js') }}"></script>
 
   {% block customJS %}
 

@@ -16,13 +16,7 @@
   --text-light: #ffffff;
   --text-secondary: #8A8DBA;
 }
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--dark);
-}
+
 .notifications {
   position: fixed;
   width: 400px;

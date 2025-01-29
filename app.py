@@ -2,7 +2,7 @@ from logging import getLogger
 import os
 from urllib.parse import urlencode
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file, stream_with_context
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -26,6 +26,8 @@ import subprocess
 import glob
 import io
 import json
+import dropbox
+import time
 
 
 
@@ -1699,25 +1701,24 @@ def base_de_datos():
     folder_id = "/GRNEGOCIO/Backups"# Reemplaza con tu ID de carpeta
 
     # Obtener el archivo SQL más reciente de la carpeta
-    all_sql_files = get_all_sql_files(dbx, folder_id)
+    last_sql_file = get_most_recent_sql_file(dbx, folder_id)
 
 
     
     backups_files = []
 
-    if all_sql_files:
-        for file in all_sql_files:
-            download_link = obtener_enlace_descarga(dbx, file.path_lower)
-            delete_link = f"/delete_backup/{file.id}"
-            filedate = convertir_fecha(file.client_modified)
-            response = {
-                "filename": file.name,
+    if last_sql_file:
+        download_link = obtener_enlace_descarga(dbx, last_sql_file.path_lower)
+        delete_link = f"/delete_backup/{last_sql_file.id}"
+        filedate = convertir_fecha(last_sql_file.client_modified)
+        response = {
+                "filename": last_sql_file.name,
                 "fileDate": filedate,
                 "import_link": f"/restore?file_url={download_link}",
-                
                 "download_link": download_link,
                 "delete_link": delete_link
             }
+
 
             # response = {
             #     "filename": file.name,
@@ -1728,7 +1729,7 @@ def base_de_datos():
             #     "delete_link": 'delete_link'
             # }
 
-            backups_files.append(response)
+        backups_files.append(response)
     else:
         backups_files = []
 
@@ -1746,6 +1747,7 @@ def base_de_datos():
 
 
     return render_template('base_de_datos/base_de_datos.html', **template_info)
+
 
 ########### TERMINA MODLU DE CONFIGURACION ###########
 
@@ -1815,15 +1817,25 @@ def drop_all_tables():
     metadata.drop_all(bind=engine)
     print("Tablas eliminadas.")
 
-def execute_sql_file(sql_file_path):
+def execute_sql_file(sql_file_path, progress_callback=None):
     """Ejecuta todas las sentencias SQL en un archivo."""
     with engine.connect() as connection:
         try:
             with open(sql_file_path, 'r', encoding='utf-8') as file:
-                sql_statements = file.read()
-                for statement in sql_statements.split(';'):
-                    if statement.strip():
-                        print(f"Ejecutando: {statement.strip()[:100]}...")  # Muestra parte de la sentencia
+                sql_statements = file.read().split(';')
+                total_statements = len(sql_statements)
+                
+                for i, statement in enumerate(sql_statements):
+                    statement = statement.strip()
+                    if statement:
+                        # Detectar si es una sentencia INSERT y obtener el nombre de la tabla
+                        if statement.upper().startswith('INSERT INTO'):
+                            table_name = statement.split()[2].replace('`', '').replace('"', '').split('(')[0]
+                            table_name = table_name.replace('_', ' ').title()
+                            if progress_callback:
+                                progress = 85 + (i / total_statements * 10)  # Progreso entre 85% y 95%
+                                progress_callback(progress, f'Restaurando datos de {table_name}...')
+                        
                         connection.execute(text(statement))
             connection.commit()
         except SQLAlchemyError as e:
@@ -1831,51 +1843,6 @@ def execute_sql_file(sql_file_path):
             print(f"An error occurred: {e}")
             raise
 
-@app.route('/backup', methods=['GET', 'POST'])
-def backup_database_to_sql_file():
-    """Genera un backup de la base de datos en forma de sentencias SQL y lo sube a Dropbox."""
-
-    access_token = session.get('access_token')
-    if not access_token:
-        return redirect(url_for('login'))
-
-    # Inicializa el cliente de Dropbox
-    dbx = dropbox.Dropbox(access_token)
-
-    backup_statements = []
-
-    # Obtener las tablas ordenadas por dependencias de claves foráneas
-    ordered_tables = metadata.sorted_tables
-
-    # Generar CREATE TABLE statements
-    create_statements = generate_create_table_statements(metadata)
-    backup_statements.extend(create_statements)
-
-    # Generar INSERT statements
-    for table in ordered_tables:
-        backup_statements.extend(generate_insert_statements(table))
-
-        # En app.py
-    str_fechahora = obtener_str_fecha_hora()
-    backup_filename = f'backup_{str_fechahora}.sql'
-    backup_file_content = '\n'.join(backup_statements)
-
-    # Crear un archivo en memoria
-    backup_file = io.StringIO(backup_file_content)
-
-    # Ruta de destino en Dropbox donde quieres subir el archivo
-    dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'  # Reemplaza con la ruta deseada
-
-    # Intentar subir el archivo desde memoria y obtener el resultado
-    success, error_message = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
-    
-    if success:
-        print("Backup completed and uploaded to Dropbox")
-        return redirect(url_for('base_de_datos'))
-    else:
-        print(f"Error uploading to Dropbox: {error_message}")
-        return f"Error uploading to Dropbox: {error_message}", 500
-    
 
 
 # Backups automaticos configurables
@@ -1981,16 +1948,15 @@ def get_latest_backup():
 @app.route('/delete_backup/<path:file_path>', methods=['GET'])
 def delete_backup(file_path):
     try:
-
-        
         access_token = session.get('access_token')
         if not access_token:
-            return redirect(url_for('login'))
-        
+            return jsonify({
+                "success": False,
+                "message": "No hay sesión activa"
+            })
         
         # Inicializa el cliente de Dropbox
         dbx = dropbox.Dropbox(access_token)
-
 
         # Obtener la ruta del archivo utilizando su ID
         metadata = dbx.files_get_metadata(file_path)
@@ -1998,103 +1964,25 @@ def delete_backup(file_path):
 
         print(f"Attempting to delete file at path: {correct_path}")
         dbx.files_delete_v2(correct_path)
-        response = {
+        
+        return jsonify({
+            "success": True,
             "message": "File deleted successfully."
-        }
+        })
+        
     except dropbox.exceptions.ApiError as err:
-        response = {
+        return jsonify({
+            "success": False,
             "message": "Failed to delete file.",
             "error": str(err)
-        }
-    
-    return redirect(url_for('base_de_datos'))
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": "An unexpected error occurred.",
+            "error": str(e)
+        })
 
-
-
-# @app.route('/delete_backup/<file_id>', methods=['GET'])
-# def delete_backup(file_id):
-#     # Autenticación con Google Drive
-#     drive = auth_to_drive()
-
-#     # Eliminar el archivo especificado por file_id
-#     try:
-#         file = drive.CreateFile({'id': file_id})
-#         file.Delete()
-#         response = {"message": "File deleted successfully."}
-#     except Exception as e:
-#         response = {"message": f"An error occurred: {str(e)}"}
-
-#     return jsonify(response)
-
-# @app.route('/backup')
-# def backup():
-#     try:
-#         # Define los detalles de la base de datos
-#         db_host = "localhost"
-#         db_user = "root"
-#         db_password = "1233456"
-#         db_name = "GRNEGOCIO"
-
-#         # Define la ruta y el nombre del archivo de respaldo
-#         backup_dir = os.path.join(os.getcwd(), "static/bd/backups")
-#         os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
-
-#         # Obtiene la fecha y hora actual y la formatea como una cadena
-#         now = datetime.datetime.now()
-#         timestamp = now.strftime("%Y%m%d_%H%M%S")
-
-#         backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
-
-#         # Crea el comando de respaldo
-#         command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
-
-#         # Ejecuta el comando
-#         result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-#         crear_reespaldoBD(db_session, backup_file)
-
-#         # Crea una instancia de GoogleDrive con las credenciales de autenticación
-#         drive = auth_to_drive()
-
-#         # Sube el archivo de respaldo a Google Drive
-#         folder_id = get_or_create_folder_id(drive, 'GRNEGOCIO/Bd/Backups')
-#         if folder_id is not None:
-#             upload_to_drive(drive, backup_file, folder_id)
-#         else:
-#             print('No se encontró o no se pudo crear la carpeta especificada en Google Drive.')
-
-#         return "Respaldo realizado con éxito", 200
-#     except Exception as e:
-#         return str(e), 500
-
-
-# @app.route('/importar_backup', methods=['GET', 'POST'])
-# def importar_backup():
-#     if request.method == 'POST':
-#         try:
-#             sql_backup = request.files['sql_backup']
-#             # Define los detalles de la base de datos
-#             db_host = "localhost"
-#             db_user = "root"
-#             db_password = "1233456"
-#             db_name = "GRNEGOCIO"
-#             try:
-#                 sql_commands = sql_backup.read().decode()
-#                 subprocess.run(['mysql', '-u'+db_user, '-p'+db_password, '-h'+db_host, '-P'+str(3306), '-D'+db_name], input=sql_commands, text=True, check=True)
-
-#                 print("Importación exitosa.")
-#             except subprocess.CalledProcessError as e:
-#                 print("Hubo un error durante la importación:", str(e))
-#             return "Importación exitosa", 200
-
-#         except Exception as e:
-#             return str(e), 500
-
-#         finally:
-#             db_session.close()
-    
-#     return 'entró al GET'
-    
 
 
 @app.route('/crear_nuevo_contrato', methods=['GET', 'POST'])
@@ -2648,6 +2536,279 @@ def pruebita():
         return jsonify({"message": "API is working"}), 200
     else:
         return jsonify({"message": "API is notworking"}), 400
+
+
+@app.route('/backup_progress')
+def backup_progress():
+    access_token = request.args.get('access_token')
+    if not access_token:
+        return Response(
+            f"data: {json.dumps({'progress': 0, 'status': 'Error: No hay sesión activa', 'error': True})}\n\n",
+            mimetype='text/event-stream'
+        )
+
+    def generate():
+        try:
+            with app.app_context():
+                with app.test_request_context():
+                    # Inicializar Dropbox
+                    dbx = dropbox.Dropbox(access_token)
+                    
+                    # Inicio (0-5%)
+                    yield f"data: {json.dumps({'progress': 0, 'status': 'Iniciando proceso de respaldo...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 3, 'status': 'Verificando conexión con Dropbox...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 5, 'status': 'Conexión establecida'})}\n\n"
+                    time.sleep(0.5)
+                    
+                    # Preparación (5-15%)
+                    yield f"data: {json.dumps({'progress': 7, 'status': 'Analizando estructura de la base de datos...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 10, 'status': 'Preparando tablas para respaldo...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 15, 'status': 'Iniciando proceso de respaldo de datos...'})}\n\n"
+                    time.sleep(0.5)
+                    
+                    # Generar statements SQL (15-60%)
+                    backup_statements = []
+                    ordered_tables = metadata.sorted_tables
+                    total_tables = len(ordered_tables)
+                    
+                    # CREATE statements (15-30%)
+                    yield f"data: {json.dumps({'progress': 20, 'status': 'Generando scripts de estructura...'})}\n\n"
+                    time.sleep(0.5)
+                    create_statements = generate_create_table_statements(metadata)
+                    backup_statements.extend(create_statements)
+                    yield f"data: {json.dumps({'progress': 25, 'status': 'Estructura de base de datos respaldada'})}\n\n"
+                    time.sleep(0.5)
+                    
+                    # INSERT statements (30-60%)
+                    for i, table in enumerate(ordered_tables):
+                        progress = 30 + int((i / total_tables) * 30)
+                        tabla_actual = table.name.replace('_', ' ').title()
+                        yield f"data: {json.dumps({'progress': progress, 'status': f'Respaldando datos de {tabla_actual}...'})}\n\n"
+                        backup_statements.extend(generate_insert_statements(table))
+                        time.sleep(0.2)
+                    
+                    # Preparar archivo (60-75%)
+                    yield f"data: {json.dumps({'progress': 60, 'status': 'Datos respaldados correctamente'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 65, 'status': 'Preparando archivo de respaldo...'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    str_fechahora = obtener_str_fecha_hora()
+                    backup_filename = f'backup_{str_fechahora}.sql'
+                    backup_file_content = '\n'.join(backup_statements)
+                    backup_file = io.StringIO(backup_file_content)
+                    
+                    yield f"data: {json.dumps({'progress': 70, 'status': 'Archivo de respaldo generado'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 75, 'status': 'Preparando subida a Dropbox...'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    # Subir a Dropbox (75-90%)
+                    dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'
+                    
+                    yield f"data: {json.dumps({'progress': 80, 'status': 'Subiendo archivo a Dropbox...'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    success, error_message, shared_link = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
+                    
+                    if not success:
+                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {error_message}', 'error': True})}\n\n"
+                        return
+                    
+                    yield f"data: {json.dumps({'progress': 90, 'status': 'Archivo subido exitosamente'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    # Guardar en BD (90-100%)
+                    yield f"data: {json.dumps({'progress': 93, 'status': 'Registrando respaldo en el sistema...'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    id_backup = crear_reespaldoBD(db_session, shared_link)
+                    
+                    if not id_backup:
+                        dbx.files_delete_v2(dropbox_destination_path)
+                        yield f"data: {json.dumps({'progress': 0, 'status': 'Error al guardar en base de datos', 'error': True})}\n\n"
+                        return
+                    
+                    yield f"data: {json.dumps({'progress': 97, 'status': 'Respaldo registrado correctamente'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    # Completado
+                    yield f"data: {json.dumps({'progress': 100, 'status': '¡Respaldo completado exitosamente!', 'completed': True})}\n\n"
+                    time.sleep(0.5)
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
+
+@app.route('/restore_progress')
+def restore_progress():
+    file_url = request.args.get('file_url')
+    access_token = request.args.get('access_token')
+    
+    if not file_url or not access_token:
+        return Response(
+            f"data: {json.dumps({'progress': 0, 'status': 'Error: Parámetros faltantes', 'error': True})}\n\n",
+            mimetype='text/event-stream'
+        )
+
+    # Asegurarse de que la URL sea absoluta y tenga el formato correcto
+    if file_url.startswith('/restore'):
+        actual_url = request.args.get('file_url').split('file_url=')[1]
+        file_url = actual_url
+
+    # Preparar URL para descarga directa
+    if "dl=0" in file_url:
+        file_url = file_url.replace("dl=0", "dl=1")
+    elif "&dl=1" not in file_url:
+        file_url = file_url + "&dl=1"
+
+    def generate():
+        try:
+            with app.app_context():
+                with app.test_request_context():
+                    # Inicio (0-5%)
+                    yield f"data: {json.dumps({'progress': 0, 'status': 'Iniciando proceso de restauración...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 3, 'status': 'Verificando parámetros de restauración...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 5, 'status': 'Parámetros verificados correctamente'})}\n\n"
+                    time.sleep(0.5)
+
+                    # Preparación descarga (5-15%)
+                    yield f"data: {json.dumps({'progress': 8, 'status': 'Preparando conexión con Dropbox...'})}\n\n"
+                    time.sleep(0.5)
+                    yield f"data: {json.dumps({'progress': 12, 'status': 'Iniciando descarga del archivo de respaldo...'})}\n\n"
+                    time.sleep(0.5)
+                    
+                    # Descarga del archivo (15-40%)
+                    yield f"data: {json.dumps({'progress': 15, 'status': 'Conectando con el servidor...'})}\n\n"
+                    try:
+                        response = requests.get(file_url, stream=True)
+                        yield f"data: {json.dumps({'progress': 20, 'status': 'Conexión establecida, descargando archivo...'})}\n\n"
+                        time.sleep(0.3)
+                    except Exception as e:
+                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al descargar: {str(e)}', 'error': True})}\n\n"
+                        return
+
+                    if response.status_code != 200:
+                        yield f"data: {json.dumps({'progress': 0, 'status': 'Error al descargar el archivo', 'error': True})}\n\n"
+                        return
+                    
+                    content_type = response.headers.get('Content-Type')
+                    if 'text/html' in content_type:
+                        yield f"data: {json.dumps({'progress': 0, 'status': 'URL de descarga inválida', 'error': True})}\n\n"
+                        return
+
+                    yield f"data: {json.dumps({'progress': 30, 'status': 'Archivo descargado correctamente'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    # Procesamiento del archivo (40-55%)
+                    yield f"data: {json.dumps({'progress': 40, 'status': 'Verificando integridad del archivo...'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 45, 'status': 'Preparando archivo para restauración...'})}\n\n"
+                    try:
+                        with tempfile.NamedTemporaryFile(delete=False, suffix='.sql') as temp_file:
+                            for chunk in response.iter_content(chunk_size=8192):
+                                if chunk:
+                                    temp_file.write(chunk)
+                            temp_file_path = temp_file.name
+                        yield f"data: {json.dumps({'progress': 55, 'status': 'Archivo preparado exitosamente'})}\n\n"
+                    except Exception as e:
+                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al procesar archivo: {str(e)}', 'error': True})}\n\n"
+                        return
+                    
+                    # Limpieza de base de datos (55-70%)
+                    yield f"data: {json.dumps({'progress': 60, 'status': 'Preparando base de datos para restauración...'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 65, 'status': 'Limpiando datos existentes...'})}\n\n"
+                    try:
+                        drop_all_tables()
+                        yield f"data: {json.dumps({'progress': 70, 'status': 'Base de datos preparada'})}\n\n"
+                    except Exception as e:
+                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al limpiar BD: {str(e)}', 'error': True})}\n\n"
+                        return
+                    
+                    # Función para enviar actualizaciones de progreso
+                    def progress_callback(progress, status):
+                        nonlocal generate
+                        return f"data: {json.dumps({'progress': progress, 'status': status})}\n\n"
+
+                    # Restauración de datos (70-95%)
+                    yield f"data: {json.dumps({'progress': 75, 'status': 'Iniciando restauración de datos...'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 80, 'status': 'Restaurando estructura de la base de datos...'})}\n\n"
+                    time.sleep(0.3)
+                    
+                    try:
+                        def update_progress(progress, status):
+                            yield f"data: {json.dumps({'progress': progress, 'status': status})}\n\n"
+                        
+                        execute_sql_file(temp_file_path, update_progress)
+                        yield f"data: {json.dumps({'progress': 95, 'status': 'Datos restaurados exitosamente'})}\n\n"
+                    except Exception as e:
+                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al restaurar: {str(e)}', 'error': True})}\n\n"
+                        return
+                    finally:
+                        if 'temp_file_path' in locals():
+                            os.remove(temp_file_path)
+                    
+                    # Finalización (95-100%)
+                    yield f"data: {json.dumps({'progress': 97, 'status': 'Verificando restauración...'})}\n\n"
+                    time.sleep(0.3)
+                    yield f"data: {json.dumps({'progress': 100, 'status': '¡Restauración completada exitosamente!', 'completed': True})}\n\n"
+                    time.sleep(0.5)
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
+
+@app.route('/cargar_historial_backups', methods=['GET'])
+def cargar_historial_backups():
+    access_token = session.get('access_token')
+    if not access_token:
+        return jsonify({'error': 'No autorizado'}), 401
+    
+    try:
+        dbx = dropbox.Dropbox(access_token)
+        folder_id = "/GRNEGOCIO/Backups"
+        
+        # Obtener todos los archivos SQL
+        sql_files = get_all_sql_files(dbx, folder_id)
+        
+        if not sql_files:
+            return jsonify({'backups': []})
+        
+        backups_files = []
+        for file in sql_files:
+            download_link = obtener_enlace_descarga(dbx, file.path_lower)
+            delete_link = f"/delete_backup/{file.id}"
+            filedate = convertir_fecha(file.client_modified)
+            
+            backups_files.append({
+                "filename": file.name,
+                "fileDate": filedate,
+                "import_link": f"/restore?file_url={download_link}",
+                "download_link": download_link,
+                "delete_link": delete_link
+            })
+        
+        return jsonify({'backups': backups_files})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

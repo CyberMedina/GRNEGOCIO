@@ -337,6 +337,34 @@ def get_all_sql_files(dbx, folder_path):
     
     return sql_files if sql_files else None
 
+
+def get_most_recent_sql_file(dbx, folder_path):
+    """
+    Retorna el archivo SQL más reciente de una carpeta en Dropbox.
+    
+    Args:
+        dbx: Instancia de Dropbox
+        folder_path: Ruta de la carpeta a buscar
+        
+    Returns:
+        El archivo SQL más reciente o None si no hay archivos SQL
+    """
+    try:
+        # Listar todos los archivos en la carpeta
+        response = dbx.files_list_folder(folder_path)
+        
+        # Filtrar y obtener el archivo SQL más reciente
+        sql_files = [file for file in response.entries if file.name.lower().endswith('.sql')]
+        if not sql_files:
+            return None
+            
+        return max(sql_files, key=lambda x: x.client_modified)
+        
+    except Exception as e:
+        print(f"Error al obtener el archivo SQL más reciente: {e}")
+        return None
+
+
 # def convertir_fecha(fecha_str):
 #     # Parsear la fecha y hora original
 #     fecha_utc = datetime.datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -385,13 +413,18 @@ def convertir_fecha(fecha, zona_horaria_local='America/Managua'):
 
 # Función para subir archivo a Dropbox
 def upload_to_dropbox(dbx, file, dropbox_destination_path):
-    """Sube el archivo a Dropbox."""
+    """Sube el archivo a Dropbox y devuelve el enlace compartido."""
     try:
         file.seek(0)  # Asegurarse de que el puntero de lectura del archivo esté al inicio
         dbx.files_upload(file.read().encode('utf-8'), dropbox_destination_path)
-        return True, None
+        
+        # Crear y obtener el enlace compartido
+        shared_link = dbx.sharing_create_shared_link(dropbox_destination_path)
+        download_url = shared_link.url.replace('?dl=0', '?dl=1')  # Convertir a enlace de descarga directa
+        
+        return True, None, download_url
     except Exception as e:
-        return False, str(e)
+        return False, str(e), None
 
 
 
