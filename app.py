@@ -2624,28 +2624,75 @@ def backup_progress():
         mimetype='text/event-stream'
     )
 
-@app.route('/restore_status', methods=['GET'])
+@app.route('/restore_status')
 def restore_status():
-    """Endpoint para consultar el estado de la restauración"""
-    status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{session.get("user_id")}.json')
     try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({
+                'progress': 0,
+                'status': 'Error: Sesión no válida',
+                'error': True
+            }), 400
+
+        status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+        
+        if not os.path.exists(status_file):
+            return jsonify({
+                'progress': 0,
+                'status': 'Proceso no iniciado',
+                'error': True
+            }), 404
+
         with open(status_file, 'r') as f:
             status = json.load(f)
+            
         return jsonify(status)
-    except FileNotFoundError:
-        return jsonify({'progress': 0, 'status': 'Iniciando...', 'error': False})
+    except Exception as e:
+        return jsonify({
+            'progress': 0,
+            'status': f'Error al obtener estado: {str(e)}',
+            'error': True
+        }), 500
 
 @app.route('/restore_progress')
 def restore_progress():
-    file_url = request.args.get('file_url')
-    if not file_url:
-        return jsonify({'progress': 0, 'status': 'Error: No se proporcionó URL del archivo', 'error': True})
-    
-    # Iniciar el proceso de restauración en segundo plano
-    process = Process(target=restore_process, args=(file_url, session.get("user_id")))
-    process.start()
-    
-    return jsonify({'started': True})
+    try:
+        file_url = request.args.get('file_url')
+        user_id = session.get("user_id")
+        
+        if not file_url:
+            return jsonify({
+                'started': False,
+                'error': 'No se proporcionó URL del archivo'
+            }), 400
+            
+        if not user_id:
+            return jsonify({
+                'started': False,
+                'error': 'Sesión no válida'
+            }), 400
+        
+        # Crear el archivo de estado inicial
+        status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+        with open(status_file, 'w') as f:
+            json.dump({
+                'progress': 0,
+                'status': 'Iniciando proceso...',
+                'error': False,
+                'completed': False
+            }, f)
+        
+        # Iniciar el proceso de restauración en segundo plano
+        process = Process(target=restore_process, args=(file_url, user_id))
+        process.start()
+        
+        return jsonify({'started': True})
+    except Exception as e:
+        return jsonify({
+            'started': False,
+            'error': str(e)
+        }), 500
 
 def restore_process(file_url, user_id):
     status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')

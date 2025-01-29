@@ -156,15 +156,27 @@ function iniciarRestauracion(fileUrl) {
     const progressBar = document.getElementById('backupProgressBar');
     const statusText = document.getElementById('backupStatus');
     
+    // Resetear el estado inicial
+    progressBar.style.width = '0%';
+    progressBar.textContent = '0%';
+    progressBar.classList.remove('red-bg', 'green-bg');
+    progressBar.classList.add('blue-light-bg');
+    statusText.textContent = 'Iniciando proceso...';
+    
     document.querySelector('#modalBackupProgress .modal-header h5').textContent = 'Restaurando base de datos';
     
-    // Iniciar el proceso de restauración
+    // Esperar un momento antes de iniciar el polling
     fetch(`/restore_progress?file_url=${encodeURIComponent(fileUrl)}`)
         .then(response => response.json())
         .then(data => {
             if (data.started) {
-                // Iniciar polling
-                pollRestoreStatus();
+                // Esperar 2 segundos antes de iniciar el polling para dar tiempo
+                // a que el proceso en segundo plano cree el archivo de estado
+                setTimeout(() => {
+                    pollRestoreStatus();
+                }, 2000);
+            } else {
+                throw new Error('No se pudo iniciar el proceso');
             }
         })
         .catch(error => {
@@ -179,10 +191,24 @@ function pollRestoreStatus() {
     const statusText = document.getElementById('backupStatus');
     const modal = bootstrap.Modal.getInstance(document.getElementById('modalBackupProgress'));
     
+    let retryCount = 0;
+    const maxRetries = 3;
+    
     const checkStatus = () => {
-        fetch('/restore_status')
-            .then(response => response.json())
+        fetch('/restore_status', {
+            // Agregar timeout
+            timeout: 10000 // 10 segundos
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                // Resetear contador de reintentos si la petición fue exitosa
+                retryCount = 0;
+                
                 progressBar.style.width = `${data.progress}%`;
                 progressBar.textContent = `${data.progress}%`;
                 statusText.textContent = data.status;
@@ -211,9 +237,28 @@ function pollRestoreStatus() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                statusText.textContent = "Error de conexión";
-                progressBar.classList.remove('blue-light-bg');
-                progressBar.classList.add('red-bg');
+                retryCount++;
+                
+                if (retryCount <= maxRetries) {
+                    // Reintentar después de un delay
+                    statusText.textContent = `Error de conexión. Reintentando (${retryCount}/${maxRetries})...`;
+                    setTimeout(checkStatus, 2000); // Esperar 2 segundos antes de reintentar
+                } else {
+                    statusText.textContent = "Error de conexión después de múltiples intentos";
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('red-bg');
+                    
+                    // Mostrar botón para reintentar manualmente
+                    const retryButton = document.createElement('button');
+                    retryButton.className = 'btn btn-primary mt-3';
+                    retryButton.textContent = 'Reintentar';
+                    retryButton.onclick = () => {
+                        retryCount = 0;
+                        statusText.textContent = "Reintentando...";
+                        checkStatus();
+                    };
+                    statusText.parentNode.appendChild(retryButton);
+                }
             });
     };
     
