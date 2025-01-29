@@ -2629,6 +2629,10 @@ def restore_process(file_url, queue):
         with app.app_context():
             queue.put({'progress': 0, 'status': 'Iniciando proceso de restauración...'})
             
+            # Extraer la URL real de Dropbox del parámetro
+            if '/restore?file_url=' in file_url:
+                file_url = file_url.split('/restore?file_url=')[1]
+            
             # Validar que la URL sea de Dropbox
             if 'dropbox.com' not in file_url:
                 queue.put({'progress': 0, 'status': 'Error: URL no válida de Dropbox', 'error': True})
@@ -2641,7 +2645,14 @@ def restore_process(file_url, queue):
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 }
                 
-                # Usar la URL tal como viene, ya debe incluir el parámetro dl=1
+                # Asegurarse que la URL termine con dl=1
+                if 'dl=0' in file_url:
+                    file_url = file_url.replace('dl=0', 'dl=1')
+                elif 'dl=1' not in file_url:
+                    file_url = file_url + ('&' if '?' in file_url else '?') + 'dl=1'
+                
+                print(f"Intentando descargar desde: {file_url}")  # Para debugging
+                
                 response = requests.get(file_url, stream=True, headers=headers, allow_redirects=True)
                 
                 if response.status_code != 200:
@@ -2708,41 +2719,53 @@ def restore_progress():
             mimetype='text/event-stream'
         )
 
-    # Asegurarse de que estamos usando la URL correcta, no la ruta completa
+    # Asegurarse de que estamos usando la URL correcta
     if file_url.startswith('/restore'):
         file_url = file_url.split('file_url=')[1]
     
     # Decodificar la URL
     file_url = requests.utils.unquote(file_url)
     
-    # Asegurarse que la URL termine con dl=1
-    if 'dl=0' in file_url:
-        file_url = file_url.replace('dl=0', 'dl=1')
-    elif 'dl=1' not in file_url:
-        file_url = file_url + ('&' if '?' in file_url else '?') + 'dl=1'
-
     def generate():
         queue = Queue()
         p = Process(target=restore_process, args=(file_url, queue))
         p.start()
 
-        while True:
-            try:
-                progress_data = queue.get(timeout=1)
-                yield f"data: {json.dumps(progress_data)}\n\n"
-                
-                if progress_data.get('completed') or progress_data.get('error'):
-                    break
+        try:
+            while True:
+                try:
+                    progress_data = queue.get(timeout=1)
+                    if not progress_data:
+                        yield "data: nodata\n\n"
+                        continue
+                        
+                    yield f"data: {json.dumps(progress_data)}\n\n"
                     
-            except Exception:
-                continue
-            
-        p.join()
+                    if progress_data.get('completed') or progress_data.get('error'):
+                        # Enviar mensaje de finalización para que el cliente cierre la conexión
+                        yield "data: finished\n\n"
+                        break
+                        
+                except Exception:
+                    # Mantener la conexión viva
+                    yield "data: keepalive\n\n"
+                    continue
+                    
+        except GeneratorExit:
+            print('Cliente cerró la conexión')
+        finally:
+            if p.is_alive():
+                p.terminate()
+            p.join(timeout=1)
 
-    return Response(
+    response = Response(
         stream_with_context(generate()),
-        mimetype='text/event-stream'
+        mimetype="text/event-stream"
     )
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Connection'] = 'keep-alive'
+    
+    return response
 
 @app.route('/cargar_historial_backups', methods=['GET'])
 def cargar_historial_backups():

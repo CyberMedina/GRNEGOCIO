@@ -1528,3 +1528,21 @@ document.addEventListener('DOMContentLoaded', function () {
     saldoAFavorElement.addEventListener('click', alternarValores);
   }
 });
+
+const eventSource = new EventSource('/restore_progress?file_url=' + encodeURIComponent(fileUrl));
+
+eventSource.onmessage = function(event) {
+    if (!event.data) return;
+    
+    if (event.data === 'finished') {
+        console.log('Cerrando conexión');
+        eventSource.close();
+        return;
+    }
+    
+    if (event.data === 'keepalive') return;
+    
+    const data = JSON.parse(event.data);
+    // Actualizar la barra de progreso con data.progress
+    // ...
+};
