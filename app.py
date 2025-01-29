@@ -28,6 +28,8 @@ import io
 import json
 import dropbox
 import time
+from multiprocessing import Process, Queue
+import requests
 
 
 
@@ -2538,6 +2540,57 @@ def pruebita():
         return jsonify({"message": "API is notworking"}), 400
 
 
+def backup_process(access_token, queue):
+    try:
+        with app.app_context():
+            # Inicializar Dropbox
+            dbx = dropbox.Dropbox(access_token)
+            
+            # Informar progreso inicial
+            queue.put({'progress': 0, 'status': 'Iniciando proceso de respaldo...'})
+            
+            # Generar backup
+            backup_statements = []
+            ordered_tables = metadata.sorted_tables
+            
+            # CREATE statements
+            queue.put({'progress': 20, 'status': 'Generando scripts de estructura...'})
+            create_statements = generate_create_table_statements(metadata)
+            backup_statements.extend(create_statements)
+            
+            # INSERT statements
+            total_tables = len(ordered_tables)
+            for i, table in enumerate(ordered_tables):
+                progress = 30 + int((i / total_tables) * 30)
+                tabla_actual = table.name.replace('_', ' ').title()
+                queue.put({'progress': progress, 'status': f'Respaldando datos de {tabla_actual}...'})
+                backup_statements.extend(generate_insert_statements(table))
+            
+            # Preparar archivo
+            queue.put({'progress': 70, 'status': 'Preparando archivo de respaldo...'})
+            str_fechahora = obtener_str_fecha_hora()
+            backup_filename = f'backup_{str_fechahora}.sql'
+            backup_file_content = '\n'.join(backup_statements)
+            backup_file = io.StringIO(backup_file_content)
+            
+            # Subir a Dropbox
+            queue.put({'progress': 80, 'status': 'Subiendo archivo a Dropbox...'})
+            dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'
+            success, error_message, shared_link = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
+            
+            if not success:
+                queue.put({'progress': 0, 'status': f'Error: {error_message}', 'error': True})
+                return
+            
+            queue.put({
+                'progress': 100, 
+                'status': '¡Respaldo completado exitosamente!', 
+                'completed': True
+            })
+            
+    except Exception as e:
+        queue.put({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})
+
 @app.route('/backup_progress')
 def backup_progress():
     access_token = request.args.get('access_token')
@@ -2548,219 +2601,143 @@ def backup_progress():
         )
 
     def generate():
-        try:
-            with app.app_context():
-                with app.test_request_context():
-                    # Inicializar Dropbox
-                    dbx = dropbox.Dropbox(access_token)
+        queue = Queue()
+        p = Process(target=backup_process, args=(access_token, queue))
+        p.start()
+
+        while True:
+            try:
+                progress_data = queue.get(timeout=1)  # Espera 1 segundo por nuevos datos
+                yield f"data: {json.dumps(progress_data)}\n\n"
+                
+                if progress_data.get('completed') or progress_data.get('error'):
+                    break
                     
-                    # Inicio (0-5%)
-                    yield f"data: {json.dumps({'progress': 0, 'status': 'Iniciando proceso de respaldo...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 3, 'status': 'Verificando conexión con Dropbox...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 5, 'status': 'Conexión establecida'})}\n\n"
-                    time.sleep(0.5)
-                    
-                    # Preparación (5-15%)
-                    yield f"data: {json.dumps({'progress': 7, 'status': 'Analizando estructura de la base de datos...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 10, 'status': 'Preparando tablas para respaldo...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 15, 'status': 'Iniciando proceso de respaldo de datos...'})}\n\n"
-                    time.sleep(0.5)
-                    
-                    # Generar statements SQL (15-60%)
-                    backup_statements = []
-                    ordered_tables = metadata.sorted_tables
-                    total_tables = len(ordered_tables)
-                    
-                    # CREATE statements (15-30%)
-                    yield f"data: {json.dumps({'progress': 20, 'status': 'Generando scripts de estructura...'})}\n\n"
-                    time.sleep(0.5)
-                    create_statements = generate_create_table_statements(metadata)
-                    backup_statements.extend(create_statements)
-                    yield f"data: {json.dumps({'progress': 25, 'status': 'Estructura de base de datos respaldada'})}\n\n"
-                    time.sleep(0.5)
-                    
-                    # INSERT statements (30-60%)
-                    for i, table in enumerate(ordered_tables):
-                        progress = 30 + int((i / total_tables) * 30)
-                        tabla_actual = table.name.replace('_', ' ').title()
-                        yield f"data: {json.dumps({'progress': progress, 'status': f'Respaldando datos de {tabla_actual}...'})}\n\n"
-                        backup_statements.extend(generate_insert_statements(table))
-                        time.sleep(0.2)
-                    
-                    # Preparar archivo (60-75%)
-                    yield f"data: {json.dumps({'progress': 60, 'status': 'Datos respaldados correctamente'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 65, 'status': 'Preparando archivo de respaldo...'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    str_fechahora = obtener_str_fecha_hora()
-                    backup_filename = f'backup_{str_fechahora}.sql'
-                    backup_file_content = '\n'.join(backup_statements)
-                    backup_file = io.StringIO(backup_file_content)
-                    
-                    yield f"data: {json.dumps({'progress': 70, 'status': 'Archivo de respaldo generado'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 75, 'status': 'Preparando subida a Dropbox...'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    # Subir a Dropbox (75-90%)
-                    dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'
-                    
-                    yield f"data: {json.dumps({'progress': 80, 'status': 'Subiendo archivo a Dropbox...'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    success, error_message, shared_link = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
-                    
-                    if not success:
-                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {error_message}', 'error': True})}\n\n"
-                        return
-                    
-                    yield f"data: {json.dumps({'progress': 90, 'status': 'Archivo subido exitosamente'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    # Guardar en BD (90-100%)
-                    yield f"data: {json.dumps({'progress': 93, 'status': 'Registrando respaldo en el sistema...'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    yield f"data: {json.dumps({'progress': 97, 'status': 'Respaldo registrado correctamente'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    # Completado
-                    yield f"data: {json.dumps({'progress': 100, 'status': '¡Respaldo completado exitosamente!', 'completed': True})}\n\n"
-                    time.sleep(0.5)
+            except Exception:
+                # Si no hay datos nuevos después del timeout
+                continue
             
-        except Exception as e:
-            yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})}\n\n"
+        p.join()  # Espera a que el proceso termine
 
     return Response(
         stream_with_context(generate()),
         mimetype='text/event-stream'
     )
 
+def restore_process(file_url, queue):
+    try:
+        with app.app_context():
+            queue.put({'progress': 0, 'status': 'Iniciando proceso de restauración...'})
+            
+            # Validar que la URL sea de Dropbox
+            if 'dropbox.com' not in file_url:
+                queue.put({'progress': 0, 'status': 'Error: URL no válida de Dropbox', 'error': True})
+                return
+            
+            queue.put({'progress': 5, 'status': f'Conectando con Dropbox...'})
+            
+            try:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                
+                # Usar la URL tal como viene, ya debe incluir el parámetro dl=1
+                response = requests.get(file_url, stream=True, headers=headers, allow_redirects=True)
+                
+                if response.status_code != 200:
+                    queue.put({'progress': 0, 'status': f'Error al descargar el archivo. Status code: {response.status_code}', 'error': True})
+                    return
+                
+                content_type = response.headers.get('Content-Type')
+                if 'text/html' in content_type:
+                    queue.put({'progress': 0, 'status': 'Error: No se pudo acceder al archivo', 'error': True})
+                    return
+                
+                queue.put({'progress': 30, 'status': 'Archivo descargado correctamente'})
+                
+                # Guardar el archivo temporalmente
+                queue.put({'progress': 40, 'status': 'Preparando archivo para restauración...'})
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.sql') as temp_file:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            temp_file.write(chunk)
+                    temp_file_path = temp_file.name
+
+                try:
+                    # Eliminar todas las tablas existentes
+                    queue.put({'progress': 50, 'status': 'Limpiando base de datos actual...'})
+                    drop_all_tables()
+                    queue.put({'progress': 60, 'status': 'Base de datos preparada'})
+
+                    # Ejecutar el archivo SQL
+                    queue.put({'progress': 70, 'status': 'Iniciando restauración de datos...'})
+                    
+                    def progress_callback(progress, status):
+                        queue.put({'progress': progress, 'status': status})
+
+                    execute_sql_file(temp_file_path, progress_callback)
+                    
+                    queue.put({'progress': 95, 'status': 'Finalizando restauración...'})
+                    
+                    queue.put({
+                        'progress': 100,
+                        'status': '¡Restauración completada exitosamente!',
+                        'completed': True
+                    })
+
+                finally:
+                    # Limpiar archivo temporal
+                    try:
+                        os.remove(temp_file_path)
+                    except Exception as e:
+                        print(f"Error al eliminar archivo temporal: {e}")
+                
+            except Exception as e:
+                queue.put({'progress': 0, 'status': f'Error en la restauración: {str(e)}', 'error': True})
+                return
+            
+    except Exception as e:
+        queue.put({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})
+
 @app.route('/restore_progress')
 def restore_progress():
     file_url = request.args.get('file_url')
-    access_token = request.args.get('access_token')
-    
-    if not file_url or not access_token:
+    if not file_url:
         return Response(
-            f"data: {json.dumps({'progress': 0, 'status': 'Error: Parámetros faltantes', 'error': True})}\n\n",
+            f"data: {json.dumps({'progress': 0, 'status': 'Error: No se proporcionó URL del archivo', 'error': True})}\n\n",
             mimetype='text/event-stream'
         )
 
-    # Asegurarse de que la URL sea absoluta y tenga el formato correcto
+    # Asegurarse de que estamos usando la URL correcta, no la ruta completa
     if file_url.startswith('/restore'):
-        actual_url = request.args.get('file_url').split('file_url=')[1]
-        file_url = actual_url
-
-    # Preparar URL para descarga directa
-    if "dl=0" in file_url:
-        file_url = file_url.replace("dl=0", "dl=1")
-    elif "&dl=1" not in file_url:
-        file_url = file_url + "&dl=1"
+        file_url = file_url.split('file_url=')[1]
+    
+    # Decodificar la URL
+    file_url = requests.utils.unquote(file_url)
+    
+    # Asegurarse que la URL termine con dl=1
+    if 'dl=0' in file_url:
+        file_url = file_url.replace('dl=0', 'dl=1')
+    elif 'dl=1' not in file_url:
+        file_url = file_url + ('&' if '?' in file_url else '?') + 'dl=1'
 
     def generate():
-        try:
-            with app.app_context():
-                with app.test_request_context():
-                    # Inicio (0-5%)
-                    yield f"data: {json.dumps({'progress': 0, 'status': 'Iniciando proceso de restauración...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 3, 'status': 'Verificando parámetros de restauración...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 5, 'status': 'Parámetros verificados correctamente'})}\n\n"
-                    time.sleep(0.5)
+        queue = Queue()
+        p = Process(target=restore_process, args=(file_url, queue))
+        p.start()
 
-                    # Preparación descarga (5-15%)
-                    yield f"data: {json.dumps({'progress': 8, 'status': 'Preparando conexión con Dropbox...'})}\n\n"
-                    time.sleep(0.5)
-                    yield f"data: {json.dumps({'progress': 12, 'status': 'Iniciando descarga del archivo de respaldo...'})}\n\n"
-                    time.sleep(0.5)
+        while True:
+            try:
+                progress_data = queue.get(timeout=1)
+                yield f"data: {json.dumps(progress_data)}\n\n"
+                
+                if progress_data.get('completed') or progress_data.get('error'):
+                    break
                     
-                    # Descarga del archivo (15-40%)
-                    yield f"data: {json.dumps({'progress': 15, 'status': 'Conectando con el servidor...'})}\n\n"
-                    try:
-                        response = requests.get(file_url, stream=True)
-                        yield f"data: {json.dumps({'progress': 20, 'status': 'Conexión establecida, descargando archivo...'})}\n\n"
-                        time.sleep(0.3)
-                    except Exception as e:
-                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al descargar: {str(e)}', 'error': True})}\n\n"
-                        return
-
-                    if response.status_code != 200:
-                        yield f"data: {json.dumps({'progress': 0, 'status': 'Error al descargar el archivo', 'error': True})}\n\n"
-                        return
-                    
-                    content_type = response.headers.get('Content-Type')
-                    if 'text/html' in content_type:
-                        yield f"data: {json.dumps({'progress': 0, 'status': 'URL de descarga inválida', 'error': True})}\n\n"
-                        return
-
-                    yield f"data: {json.dumps({'progress': 30, 'status': 'Archivo descargado correctamente'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    # Procesamiento del archivo (40-55%)
-                    yield f"data: {json.dumps({'progress': 40, 'status': 'Verificando integridad del archivo...'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 45, 'status': 'Preparando archivo para restauración...'})}\n\n"
-                    try:
-                        with tempfile.NamedTemporaryFile(delete=False, suffix='.sql') as temp_file:
-                            for chunk in response.iter_content(chunk_size=8192):
-                                if chunk:
-                                    temp_file.write(chunk)
-                            temp_file_path = temp_file.name
-                        yield f"data: {json.dumps({'progress': 55, 'status': 'Archivo preparado exitosamente'})}\n\n"
-                    except Exception as e:
-                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al procesar archivo: {str(e)}', 'error': True})}\n\n"
-                        return
-                    
-                    # Limpieza de base de datos (55-70%)
-                    yield f"data: {json.dumps({'progress': 60, 'status': 'Preparando base de datos para restauración...'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 65, 'status': 'Limpiando datos existentes...'})}\n\n"
-                    try:
-                        drop_all_tables()
-                        yield f"data: {json.dumps({'progress': 70, 'status': 'Base de datos preparada'})}\n\n"
-                    except Exception as e:
-                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al limpiar BD: {str(e)}', 'error': True})}\n\n"
-                        return
-                    
-                    # Función para enviar actualizaciones de progreso
-                    def progress_callback(progress, status):
-                        nonlocal generate
-                        return f"data: {json.dumps({'progress': progress, 'status': status})}\n\n"
-
-                    # Restauración de datos (70-95%)
-                    yield f"data: {json.dumps({'progress': 75, 'status': 'Iniciando restauración de datos...'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 80, 'status': 'Restaurando estructura de la base de datos...'})}\n\n"
-                    time.sleep(0.3)
-                    
-                    try:
-                        def update_progress(progress, status):
-                            yield f"data: {json.dumps({'progress': progress, 'status': status})}\n\n"
-                        
-                        execute_sql_file(temp_file_path, update_progress)
-                        yield f"data: {json.dumps({'progress': 95, 'status': 'Datos restaurados exitosamente'})}\n\n"
-                    except Exception as e:
-                        yield f"data: {json.dumps({'progress': 0, 'status': f'Error al restaurar: {str(e)}', 'error': True})}\n\n"
-                        return
-                    finally:
-                        if 'temp_file_path' in locals():
-                            os.remove(temp_file_path)
-                    
-                    # Finalización (95-100%)
-                    yield f"data: {json.dumps({'progress': 97, 'status': 'Verificando restauración...'})}\n\n"
-                    time.sleep(0.3)
-                    yield f"data: {json.dumps({'progress': 100, 'status': '¡Restauración completada exitosamente!', 'completed': True})}\n\n"
-                    time.sleep(0.5)
+            except Exception:
+                continue
             
-        except Exception as e:
-            yield f"data: {json.dumps({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})}\n\n"
+        p.join()
 
     return Response(
         stream_with_context(generate()),
@@ -2805,4 +2782,5 @@ def cargar_historial_backups():
 
 
 if __name__ == '__main__':
+    # Esto asegura que el código del servidor solo se ejecute en el proceso principal
     app.run(host='127.0.0.1', port=8000, debug=True)
