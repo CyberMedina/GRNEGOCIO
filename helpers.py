@@ -28,6 +28,15 @@ from pydrive2.drive import GoogleDrive
 from functools import wraps
 from flask import session, redirect, url_for
 import cloudinary
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    api_proxy = os.getenv('API_PROXY', default=None),
+    secure=True
+)
 import cloudinary.uploader
 import cloudinary.api
 from cloudinary.utils import private_download_url
