@@ -5,9 +5,9 @@ def insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, descripci
     
     try:
         # Obtener el ID de la tabla persona
-        id_notificacionesClientesPagos = (ObtenerIDTabla(db_session, "id_notificacionesClientesPagos", "notificacionesClientesPagos"))
+        id_notificacionesClientesPagos = (ObtenerIDTabla(db_session, "id_notificacionesClientesPagos", "notificacionesclientespagos"))
         
-        query = text("""INSERT INTO notificacionesClientesPagos(id_notificacionesClientesPagos, id_imagen, id_cliente, descripcion, monto_sugerido, fechaCreacionNotificacion, estado)
+        query = text("""INSERT INTO notificacionesclientespagos(id_notificacionesClientesPagos, id_imagen, id_cliente, descripcion, monto_sugerido, fechaCreacionNotificacion, estado)
         VALUES (:id_notificacionesClientesPagos, :id_imagen, :id_cliente, :descripcion, :monto_sugerido, NOW(), :estado); """)
         
         db_session.execute(query, {
@@ -157,7 +157,7 @@ WHERE c.id_cliente = :id_cliente """)
 def eliminar_notificacionesClientesPagos(db_session, id_notificacionesClientesPagos):
     try:
         query = text("""
-        DELETE FROM notificacionesClientesPagos WHERE id_notificacionesClientesPagos = :id_notificacionesClientesPagos;
+        DELETE FROM notificacionesclientespagos WHERE id_notificacionesClientesPagos = :id_notificacionesClientesPagos;
         """)
         db_session.execute(query, {"id_notificacionesClientesPagos": id_notificacionesClientesPagos})
         return True
