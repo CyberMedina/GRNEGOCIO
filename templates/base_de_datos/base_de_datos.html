@@ -346,6 +346,23 @@
 
   {% block customJS %}
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Crear el elemento de audio
+      var audio = new Audio('{{ url_for('static', filename= 'assets/audio/307_GTS.mp3') }}');
+      audio.loop = true; // Habilitar la reproducción en loop
+      
+      // Reproducir audio después de la primera interacción del usuario
+      document.addEventListener('click', function iniciarAudio() {
+        audio.play().catch(function(error) {
+          console.log("Error al reproducir audio:", error);
+        });
+        // Remover el event listener después de la primera reproducción
+        document.removeEventListener('click', iniciarAudio);
+      }, { once: true });
+    });
+  </script>
+
 
   {% endblock %}
 
