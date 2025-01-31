@@ -3,7 +3,7 @@ from flask_mail import Message
 from decimal import Decimal
 import re
 from app import *
-from db import *
+from database_connection import *
 from bs4 import BeautifulSoup
 import requests
 import calendar
@@ -27,10 +27,31 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive 
 from functools import wraps
 from flask import session, redirect, url_for
+import cloudinary
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
+
+# Configurar el proxy para Cloudinary si existe en las variables de entorno
+proxy = os.getenv('API_PROXY')
+if proxy:
+    cloudinary.config(
+        api_proxy = proxy
+    )
+import cloudinary.uploader
+import cloudinary.api
+from cloudinary.utils import private_download_url
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
 
 
 def login_requiredUser(f):
@@ -331,6 +352,34 @@ def get_all_sql_files(dbx, folder_path):
     
     return sql_files if sql_files else None
 
+
+def get_most_recent_sql_file(dbx, folder_path):
+    """
+    Retorna el archivo SQL más reciente de una carpeta en Dropbox.
+    
+    Args:
+        dbx: Instancia de Dropbox
+        folder_path: Ruta de la carpeta a buscar
+        
+    Returns:
+        El archivo SQL más reciente o None si no hay archivos SQL
+    """
+    try:
+        # Listar todos los archivos en la carpeta
+        response = dbx.files_list_folder(folder_path)
+        
+        # Filtrar y obtener el archivo SQL más reciente
+        sql_files = [file for file in response.entries if file.name.lower().endswith('.sql')]
+        if not sql_files:
+            return None
+            
+        return max(sql_files, key=lambda x: x.client_modified)
+        
+    except Exception as e:
+        print(f"Error al obtener el archivo SQL más reciente: {e}")
+        return None
+
+
 # def convertir_fecha(fecha_str):
 #     # Parsear la fecha y hora original
 #     fecha_utc = datetime.datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M:%S.%fZ')
@@ -379,13 +428,18 @@ def convertir_fecha(fecha, zona_horaria_local='America/Managua'):
 
 # Función para subir archivo a Dropbox
 def upload_to_dropbox(dbx, file, dropbox_destination_path):
-    """Sube el archivo a Dropbox."""
+    """Sube el archivo a Dropbox y devuelve el enlace compartido."""
     try:
         file.seek(0)  # Asegurarse de que el puntero de lectura del archivo esté al inicio
         dbx.files_upload(file.read().encode('utf-8'), dropbox_destination_path)
-        return True, None
+        
+        # Crear y obtener el enlace compartido
+        shared_link = dbx.sharing_create_shared_link(dropbox_destination_path)
+        download_url = shared_link.url.replace('?dl=0', '?dl=1')  # Convertir a enlace de descarga directa
+        
+        return True, None, download_url
     except Exception as e:
-        return False, str(e)
+        return False, str(e), None
 
 
 
@@ -488,3 +542,123 @@ VALUES (:id_imagen, :id_proveedorImagen, :url_imagen, :public_id, NOW(), :estado
         db_session.rollback()
         print(f"Error: {e}")
         raise
+
+
+
+
+def actualizar_imagen(db_session, id_imagen, url, public_id):
+    """
+    Actualiza los datos de una imagen existente en la base de datos.
+    
+    Args:
+        db_session: Sesión de la base de datos
+        id_imagen: ID de la imagen a actualizar
+        url: URL segura de Cloudinary
+        public_id: ID público de Cloudinary
+    """
+    try:
+        query = text("""
+            UPDATE imagenes 
+            SET url_imagen = :url_imagen,
+                public_id = :public_id,
+                fechaHoraModificacion = NOW()
+            WHERE id_imagen = :id_imagen
+        """)
+        
+        db_session.execute(query, {
+            "id_imagen": id_imagen,
+            "url_imagen": url,
+            "public_id": public_id
+        })
+        
+    except SQLAlchemyError as e:
+        print(f"Error al actualizar la imagen: {e}")
+        raise
+
+
+
+def eliminar_imagen(db_session, id_imagen):
+    """
+    Elimina una imagen de Cloudinary y actualiza su estado en la base de datos.
+    
+    Args:
+        db_session: Sesión de la base de datos
+        id_imagen: ID de la imagen a eliminar
+    
+    Returns:
+        bool: True si la eliminación fue exitosa, False en caso contrario
+    """
+    try:
+        # Primero obtener el public_id de la imagen
+        query = text("SELECT public_id FROM imagenes WHERE id_imagen = :id_imagen")
+        result = db_session.execute(query, {"id_imagen": id_imagen}).fetchone()
+        
+        if not result:
+            return False
+            
+        public_id = result[0]
+        
+        # Eliminar la imagen de Cloudinary
+        cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+        
+        # Actualizar el estado de la imagen en la base de datos
+        query = text("""
+            DELETE FROM imagenes WHERE id_imagen = :id_imagen;
+        """)
+        
+        db_session.execute(query, {"id_imagen": id_imagen})
+        
+        return True
+        
+    except cloudinary.exceptions.Error as e:
+        print(f"Error de Cloudinary: {e}")
+        db_session.rollback()
+        return False
+    except SQLAlchemyError as e:
+        print(f"Error de base de datos: {e}")
+        db_session.rollback()
+        return False
+
+
+
+
+
+def obtener_url_temporal_cloudinary(public_id, file_format='jpg'):
+    """
+    Generate a time-limited, signed URL for an authenticated resource in Cloudinary.
+    
+    :param public_id: The public ID of the uploaded asset.
+    :param file_format: The file format/extension for the output (e.g., jpg, png).
+    :return: A signed URL that can be used to access the authenticated asset.
+    """
+    # resource_type defaults to 'image', but can be adjusted (e.g., 'video') if needed.
+    resource_type = 'image'
+    url = private_download_url(
+        public_id=public_id,
+        format=file_format,
+        resource_type=resource_type,
+        type='authenticated',
+        # sign_url is True by default in private_download_url, but we can explicitly set it:
+        sign_url=True
+    )
+    return url
+
+def convertir_monto_a_string(monto):
+    # Convierte el mont a un string en el siguiente formato C$ 1,000.00
+    return f"C${monto:,.2f}"
+
+def convertir_fecha_a_string(fecha):
+    # Convierte la fecha a un string en el siguiente formato 14 de enero de 2025
+    return fecha.strftime("%d de %B de %Y")
+
+def convertir_fecha_a_string_con_hora(fecha):
+    # Primero formateamos la fecha en español
+    fecha_base = fecha.strftime("%d de %B de %Y a las %I:%M:%S")
+    
+    # Añadimos AM/PM manualmente basado en la hora
+    hora = fecha.hour
+    periodo = "Am" if hora < 12 else "Pm"
+    
+    fecha_formateada = f"{fecha_base} {periodo}"
+    return fecha_formateada
+

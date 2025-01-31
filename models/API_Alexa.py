@@ -3,8 +3,8 @@ from models.clientes import *
 from models.contratos import *
 from models.constantes import *
 from models.pagos import *
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 from num2words import num2words
 from rapidfuzz import process, fuzz
 import unidecode

@@ -2,7 +2,7 @@ from logging import getLogger
 import os
 from urllib.parse import urlencode
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file
+from flask import Flask, render_template, jsonify, request, session, url_for, redirect, Response, send_file, stream_with_context
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -13,6 +13,21 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy.orm import scoped_session, sessionmaker
 from num2words import num2words
 import cloudinary
+# Configure Cloudinary credentials
+# (You can also store these in environment variables for security)
+cloudinary.config(
+    cloud_name= os.getenv('CLOUD_NAME'),
+    api_key= os.getenv('API_KEY'),
+    api_secret= os.getenv('API_SECRET'),
+    secure=True
+)
+
+# Configurar el proxy para Cloudinary si existe en las variables de entorno
+proxy = os.getenv('API_PROXY')
+if proxy:
+    cloudinary.config(
+        api_proxy = proxy
+    )
 import cloudinary.uploader
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS, cross_origin
@@ -26,12 +41,16 @@ import subprocess
 import glob
 import io
 import json
+import dropbox
+import time
+from multiprocessing import Process, Queue
+import requests
 
 
 
 # Importando desde archivos locales
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 from models.clientes import *
 from models.constantes import *
 from models.prestamos import *
@@ -43,11 +62,11 @@ from models.base_de_datos import *
 from models.info_login import *
 from flask_cors import CORS
 from serverEmail import mail
-from utils import login_requiredUser
-from utils import obtener_tasa_cambio_local
-from utils import actualizar_tasa_cambio_oficial
-from utils import contar_resultados
-from utils import obtener_index_columna
+from helpers import login_requiredUser
+from helpers import obtener_tasa_cambio_local
+from helpers import actualizar_tasa_cambio_oficial
+from helpers import contar_resultados
+from helpers import obtener_index_columna
 
 app = Flask(__name__)
 app.secret_key = "tu_clave_secreta"
@@ -71,6 +90,10 @@ mail.init_app(app)
 app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+
+
+
 
 
 
@@ -593,11 +616,11 @@ def datos_prestamoV1():
 
     if ultimo_pago:
     #Extraer datos necesarios del ultimo pago
-        cifra_ultimo_pagoDolares = ultimo_pago[0][8]
-        cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][8]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
+        cifra_ultimo_pagoDolares = ultimo_pago[0][7]
+        cifra_ultimo_pagoCordobas = Decimal(tasa_cambioJSON["cifraTasaCambio"] * ultimo_pago[0][7]).quantize(Decimal('0.00'), rounding=ROUND_DOWN)
 
-        fecha_ultimo_pago = ultimo_pago[0][3]
-        fecha_ultimo_pago_letras = ultimo_pago[0][15]
+        fecha_ultimo_pago = ultimo_pago[0][2]
+        fecha_ultimo_pago_letras = ultimo_pago[0][14]
         ultimoPago_json = {
             "cifra_ultimo_pagoDolares": cifra_ultimo_pagoDolares,
             "cifra_ultimo_pagoCordobas": cifra_ultimo_pagoCordobas,
@@ -766,7 +789,7 @@ def verificar_tipo_saldo_insertar():
         inputTasaCambioPago = request.form['inputTasaCambioPago']
         fechaPago = request.form['fechaPago']
         observacionPago = request.form['observacionPago']
-        evidenciaPago = request.files['evidenciaPago']
+        evidenciaPago = request.files.get('filepond')
         tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
 
         cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
@@ -789,56 +812,266 @@ def verificar_tipo_saldo_insertar():
 
 @app.route('/procesar_pago', methods=['POST'])
 def procesar_pago():
-
-    id_cliente = request.form['formId_cliente']  # Cambié () a []
+    # Obtener datos del formulario
+    id_cliente = request.form['formId_cliente']
     id_moneda = request.form['tipoMonedaPago']
     cantidadPagarDolares = request.form['cantidadPagar$']
     cantidadPagarCordobas = request.form.get('cantidadPagoCordobas')
     inputTasaCambioPago = request.form['inputTasaCambioPago']
     fechaPago = request.form['fechaPago']
     observacionPago = request.form['observacionPago']
-    evidenciaPago = request.files['evidenciaPago']
+    evidenciaPago = request.files.get('evidenciaPago')
     tipoPagoCompletoForm = int(request.form['tipoPagoCompleto'])
     fechaPagoReal = request.form['fechaPagoReal']
     id_usuario_creador = session.get('user_id')
-
+    
+    # Obtener el valor del proceso de notificación
+    selectProcesoPagoNotificacion = request.form.get('selectProcesoPagoNotificacion', '2')
     
     procesar_todo = False
-
+    id_imagen = None
+    public_id = None
 
     cantidadPagarDolares = convertir_string_a_decimal(cantidadPagarDolares)
 
-
-    # Verifica si el checkbox de no pago está marcado
+    # Determinar estado de pago
     if 'checkBoxNoPago' in request.form:
-        estadoPago = no_hay_pago  # Establece el estado de pago como no pagado
-
+        estadoPago = no_hay_pago
     elif 'checkBoxPrimerPago' in request.form:
-        # Establece el estado de pago como primer pago
         estadoPago = primer_pago_del_prestamo
     else:
-        estadoPago = tipoPagoCompletoForm  # Utiliza el estado de pago completo
-    
-
+        estadoPago = tipoPagoCompletoForm
 
     if 'checkbox_confirmacion' in request.form:
-        procesar_todo =  True
+        procesar_todo = True
 
-    response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
-                fechaPago, fechaPagoReal, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                monedaConversion, id_usuario_creador)
-    return response
+    try:
+        # Iniciar transacción de base de datos
+        db_session.begin()
         
-########### Termina el modulo de pagos ############
+        try:
+            id_notificacion = None  # Declaramos fuera para usarlo después
+            
+            # Si viene de notificación (selectProcesoPagoNotificacion = '1')
+            if selectProcesoPagoNotificacion == '1':
+                id_imagen = request.form.get('id_imagen_notificacion')
+                id_notificacion = request.form.get('id_notificacion')
+                print("ID Notificación a eliminar:", id_notificacion)
+                
+                if id_imagen:
+                    id_imagen = int(id_imagen)
+            
+            # Si no viene de notificación, procesar la evidencia normalmente
+            elif evidenciaPago:
+                cloud_response = cloudinary.uploader.upload(
+                    evidenciaPago,
+                    resource_type='image',
+                    type='authenticated',
+                    folder='my_private_folder'
+                )
+                
+                public_id = cloud_response.get("public_id")
+                secure_url = cloud_response.get("secure_url")
+                
+                if not public_id or not secure_url:
+                    raise Exception('No se recibió respuesta válida de Cloudinary')
+                
+                # Guardar imagen en la base de datos y obtener id
+                id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
+                id_imagen = int(id_imagen)
+                db_session.commit()
 
-########### Empieza el modulo de notificaciones ############
+            # Procesar el pago con el id_imagen
+            response = proceder_pago(
+                db_session, 
+                procesar_todo, 
+                id_cliente, 
+                id_moneda, 
+                cantidadPagarDolares, 
+                estadoPago, 
+                cantidadPagarCordobas,
+                fechaPago, 
+                fechaPagoReal, 
+                tipoPagoCompletoForm, 
+                observacionPago, 
+                inputTasaCambioPago,
+                monedaConversion, 
+                id_usuario_creador, 
+                id_imagen
+            )
+            
+            if response is None:
+                raise Exception("Error al procesar el pago: respuesta vacía")
+            
+            # Eliminar la notificación después de procesar el pago exitosamente
+            if selectProcesoPagoNotificacion == '1' and id_notificacion:
+                print("Eliminando notificación:", id_notificacion)
+                eliminar_notificacionesClientesPagos(db_session, int(id_notificacion))
+                
+            db_session.commit()
+            return response
+
+        except Exception as db_error:
+            db_session.rollback()
+            # Si hay error y se subió imagen a Cloudinary, eliminarla
+            if public_id:
+                cloudinary.uploader.destroy(public_id, resource_type='image', type='authenticated')
+            raise db_error
+
+    except Exception as e:
+        print(f"Error al procesar el pago: {str(e)}")
+        return jsonify({'error': f'Error al procesar el pago: {str(e)}'}), 500
+
+    finally:
+        db_session.close()
+
 
 @app.route('/chats_clientes', methods=['GET', 'POST'])
 def chats_clientes():
-    return render_template('notificaciones/chats_clientes.html')
+
+    Clientes = obtenerClientesChatNotificaciones(db_session)
+
+    formulario_chats_clientes = {
+        "Clientes": Clientes
+    }
+
+    return render_template('notificaciones/chats_clientes.html', **formulario_chats_clientes)
+
+
+@app.route('/chats_clientes_detalle/<int:id_cliente>', methods=['GET', 'POST'])
+def chats_clientes_detalle(id_cliente):
+
+    datos_clienteEImagenes = obtener_todas_las_imagenes_de_un_cliente(db_session, id_cliente)
+
+    if datos_clienteEImagenes:
+        nombre_cliente = datos_clienteEImagenes[0]["nombres"]
+        apellido_cliente = datos_clienteEImagenes[0]["apellidos"]
+
+    id_contrato = obtener_IdContrato(db_session, id_cliente)
+
+    num_pagos = comprobar_primerPago(db_session, id_contrato)
+
+    pagos_cliente = datos_pagov2(id_cliente, db_session)
 
 
 
+    # saldo_pendiente = validar_saldo_pendiente_en_contra(db_session, id_cliente)
+    # Definimos la cifra pago especial
+    monto_pagoEspecial = 0.00
+
+    fecha_actual = datetime.datetime.now()
+
+    monto_pagoEspecial = obtener_pagoEspecial(
+        db_session, id_cliente, fecha_actual)
+
+    # Procesos para las sesiones de los filtros de los pagos
+    años_pagos = obtener_años_pagos(db_session, id_cliente, activo)
+
+    pagos = []
+
+    if años_pagos:
+        # Convertir los elementos de años_pagos a enteros
+        años_pagos_verificar = [int(año[0]) for año in años_pagos]
+
+        # Luego validamos si está en sesión el año de los pagos de ese contrato
+        if session["año_seleccionado"] in años_pagos_verificar:
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                session.get("año_seleccionado"))
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+
+        else:
+            fecha_formateadaInicio, fecha_formateadaFin = obtener_fechaIncioYFin_con_año(
+                años_pagos[0][0])
+            pagos = pagos_por_contrato(db_session, id_cliente, añoInicio=fecha_formateadaInicio,
+                                       añoFin=fecha_formateadaFin, estado_contrato=activo, estado_detalle_pago=monedaOriginal)
+    else:
+        pagos = []
+
+
+
+
+    formulario_añadir_pago = {
+        "datos_cliente": pagos_cliente,
+        "monto_pagoEspecial": monto_pagoEspecial,
+        "pagos": pagos,
+        "años_pagos": años_pagos,
+        "saldo_pendiente": validar_existencia_saldo_frontEnd(db_session, id_cliente),
+        "estado_pago_corte" : obtener_estadoPagoClienteCorte(db_session, id_cliente, id_contrato, pagos_cliente[0]["pagoQuincenal"], pagos_cliente[0]["pagoMensual"], datetime.datetime.now()),
+    }
+
+
+
+
+    
+    if pagos_cliente[0]["id_tipoCliente"] == cliente_especial:
+        total_pagos = Decimal(sumatoria_de_pagos_Cliente_especial(db_session, id_contrato))
+        capital = Decimal(pagos_cliente[0]["monto_solicitado"])
+        saldo_pendiente = capital - total_pagos
+
+        formulario_añadir_pago.update({"saldo_pendiente": saldo_pendiente})
+        
+
+
+    formulario_chats_clientes_detalle = {
+        "nombre_cliente": pagos_cliente[0]["nombres"],
+        "apellido_cliente": pagos_cliente[0]["apellidos"],
+        "datos_clienteEImagenes": datos_clienteEImagenes,
+    }
+    return render_template('notificaciones/chats_clientes_detalle.html', **formulario_chats_clientes_detalle, **formulario_añadir_pago)
+
+
+
+@app.route('/eliminar_imagenes_notificaciones', methods=['POST'])
+def eliminar_imagenes_notificaciones():
+    data = request.json
+    items = data.get('items', [])
+    print(items)
+
+    try:
+        db_session.begin()
+
+        for item in items:
+            id_imagen = item.get('id_imagen')
+            id_notificacion = item.get('id_notificacion')
+            eliminar_notificacionesClientesPagos(db_session, id_notificacion)
+            eliminar_imagen(db_session, id_imagen)  
+
+        db_session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/procesar_pago_con_imagenChat', methods=['POST'])
+def procesar_pago_con_imagenChat():
+    data = request.json
+
+    print(data)
+    
+    try:
+        # Validar que los datos necesarios estén presentes
+        required_fields = ['id_notificacion', 'id_imagen', 'monto', 'moneda']
+        if not all(field in data for field in required_fields):
+            return jsonify({
+                "success": False,
+                "message": "Faltan campos requeridos"
+            }), 400
+
+        # Guardar en sesión
+        session['procesar_pago_notificacionPago'] = data
+
+        return jsonify({
+            "success": True, 
+            "redirect_url": "/añadir_pago/20"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 
@@ -847,7 +1080,7 @@ def chats_clientes():
 @app.route('/api/prueba', methods=['POST'])
 def prueba():
     data = request.get_json()
-    print(data)
+
     return jsonify(data), 200
 
 
@@ -856,12 +1089,12 @@ def check_number():
     phone_raw = request.json.get('phone')
     #Elimina los primeros 505 del numero telefonico
     phone_number = phone_raw[3:]
-    print(phone_number)
+
 
     #Buscamos en la base de datos si existe el numero de telefono
     id_cliente = buscar_existenciaNumeroTelefono(db_session, phone_number)
 
-    print(id_cliente)
+
 
 
     if id_cliente:
@@ -876,14 +1109,6 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configure Cloudinary credentials
-# (You can also store these in environment variables for security)
-cloudinary.config(
-    cloud_name= os.getenv('CLOUD_NAME'),
-    api_key= os.getenv('API_KEY'),
-    api_secret= os.getenv('API_SECRET'),
-    secure=True
-)
 
 
 
@@ -939,11 +1164,21 @@ def upload_file():
             id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
 
             if id_cliente:
-                print("SI HAY ID_CLIENTE " + str(id_cliente))
+
                 id_cliente = int(id_cliente)
             insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, Observacion_sugerida, monto_sugerido, activo)
 
+            datos_cliente = seleccionar_datos_cliente(db_session, id_cliente)
+
+            nombre_cliente = datos_cliente[1]
+            apellido_cliente = datos_cliente[2]
+
         return jsonify({
+            "Nombre_cliente": nombre_cliente,
+            "Apellido_cliente": apellido_cliente,
+            "observacion_sugerida": Observacion_sugerida,
+            "monto_sugerido": monto_sugerido,
+            "url_chat": f"{os.getenv('FLASK_SERVER_URL')}/chats_clientes_detalle/{id_cliente}",
             'mensaje': 'Archivo subido e información insertada con éxito',
             'numero': numero,
             'cloudinary_public_id': public_id,
@@ -1238,7 +1473,6 @@ def informacion_pagoEspecifico():
 
         pago = buscar_detalle_pago_idPagos(db_session, id_pagos)
 
-
         return jsonify({"pago": pago}), 200
     except SQLAlchemyError as e:
         db_session.rollback()
@@ -1476,25 +1710,24 @@ def base_de_datos():
     folder_id = "/GRNEGOCIO/Backups"# Reemplaza con tu ID de carpeta
 
     # Obtener el archivo SQL más reciente de la carpeta
-    all_sql_files = get_all_sql_files(dbx, folder_id)
+    last_sql_file = get_most_recent_sql_file(dbx, folder_id)
 
 
     
     backups_files = []
 
-    if all_sql_files:
-        for file in all_sql_files:
-            download_link = obtener_enlace_descarga(dbx, file.path_lower)
-            delete_link = f"/delete_backup/{file.id}"
-            filedate = convertir_fecha(file.client_modified)
-            response = {
-                "filename": file.name,
+    if last_sql_file:
+        download_link = obtener_enlace_descarga(dbx, last_sql_file.path_lower)
+        delete_link = f"/delete_backup/{last_sql_file.id}"
+        filedate = convertir_fecha(last_sql_file.client_modified)
+        response = {
+                "filename": last_sql_file.name,
                 "fileDate": filedate,
                 "import_link": f"/restore?file_url={download_link}",
-                
                 "download_link": download_link,
                 "delete_link": delete_link
             }
+
 
             # response = {
             #     "filename": file.name,
@@ -1505,7 +1738,7 @@ def base_de_datos():
             #     "delete_link": 'delete_link'
             # }
 
-            backups_files.append(response)
+        backups_files.append(response)
     else:
         backups_files = []
 
@@ -1523,6 +1756,7 @@ def base_de_datos():
 
 
     return render_template('base_de_datos/base_de_datos.html', **template_info)
+
 
 ########### TERMINA MODLU DE CONFIGURACION ###########
 
@@ -1592,15 +1826,25 @@ def drop_all_tables():
     metadata.drop_all(bind=engine)
     print("Tablas eliminadas.")
 
-def execute_sql_file(sql_file_path):
+def execute_sql_file(sql_file_path, progress_callback=None):
     """Ejecuta todas las sentencias SQL en un archivo."""
     with engine.connect() as connection:
         try:
             with open(sql_file_path, 'r', encoding='utf-8') as file:
-                sql_statements = file.read()
-                for statement in sql_statements.split(';'):
-                    if statement.strip():
-                        print(f"Ejecutando: {statement.strip()[:100]}...")  # Muestra parte de la sentencia
+                sql_statements = file.read().split(';')
+                total_statements = len(sql_statements)
+                
+                for i, statement in enumerate(sql_statements):
+                    statement = statement.strip()
+                    if statement:
+                        # Detectar si es una sentencia INSERT y obtener el nombre de la tabla
+                        if statement.upper().startswith('INSERT INTO'):
+                            table_name = statement.split()[2].replace('`', '').replace('"', '').split('(')[0]
+                            table_name = table_name.replace('_', ' ').title()
+                            if progress_callback:
+                                progress = 85 + (i / total_statements * 10)  # Progreso entre 85% y 95%
+                                progress_callback(progress, f'Restaurando datos de {table_name}...')
+                        
                         connection.execute(text(statement))
             connection.commit()
         except SQLAlchemyError as e:
@@ -1608,51 +1852,6 @@ def execute_sql_file(sql_file_path):
             print(f"An error occurred: {e}")
             raise
 
-@app.route('/backup', methods=['GET', 'POST'])
-def backup_database_to_sql_file():
-    """Genera un backup de la base de datos en forma de sentencias SQL y lo sube a Dropbox."""
-
-    access_token = session.get('access_token')
-    if not access_token:
-        return redirect(url_for('login'))
-
-    # Inicializa el cliente de Dropbox
-    dbx = dropbox.Dropbox(access_token)
-
-    backup_statements = []
-
-    # Obtener las tablas ordenadas por dependencias de claves foráneas
-    ordered_tables = metadata.sorted_tables
-
-    # Generar CREATE TABLE statements
-    create_statements = generate_create_table_statements(metadata)
-    backup_statements.extend(create_statements)
-
-    # Generar INSERT statements
-    for table in ordered_tables:
-        backup_statements.extend(generate_insert_statements(table))
-
-        # En app.py
-    str_fechahora = obtener_str_fecha_hora()
-    backup_filename = f'backup_{str_fechahora}.sql'
-    backup_file_content = '\n'.join(backup_statements)
-
-    # Crear un archivo en memoria
-    backup_file = io.StringIO(backup_file_content)
-
-    # Ruta de destino en Dropbox donde quieres subir el archivo
-    dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'  # Reemplaza con la ruta deseada
-
-    # Intentar subir el archivo desde memoria y obtener el resultado
-    success, error_message = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
-    
-    if success:
-        print("Backup completed and uploaded to Dropbox")
-        return redirect(url_for('base_de_datos'))
-    else:
-        print(f"Error uploading to Dropbox: {error_message}")
-        return f"Error uploading to Dropbox: {error_message}", 500
-    
 
 
 # Backups automaticos configurables
@@ -1758,16 +1957,15 @@ def get_latest_backup():
 @app.route('/delete_backup/<path:file_path>', methods=['GET'])
 def delete_backup(file_path):
     try:
-
-        
         access_token = session.get('access_token')
         if not access_token:
-            return redirect(url_for('login'))
-        
+            return jsonify({
+                "success": False,
+                "message": "No hay sesión activa"
+            })
         
         # Inicializa el cliente de Dropbox
         dbx = dropbox.Dropbox(access_token)
-
 
         # Obtener la ruta del archivo utilizando su ID
         metadata = dbx.files_get_metadata(file_path)
@@ -1775,103 +1973,25 @@ def delete_backup(file_path):
 
         print(f"Attempting to delete file at path: {correct_path}")
         dbx.files_delete_v2(correct_path)
-        response = {
+        
+        return jsonify({
+            "success": True,
             "message": "File deleted successfully."
-        }
+        })
+        
     except dropbox.exceptions.ApiError as err:
-        response = {
+        return jsonify({
+            "success": False,
             "message": "Failed to delete file.",
             "error": str(err)
-        }
-    
-    return redirect(url_for('base_de_datos'))
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": "An unexpected error occurred.",
+            "error": str(e)
+        })
 
-
-
-# @app.route('/delete_backup/<file_id>', methods=['GET'])
-# def delete_backup(file_id):
-#     # Autenticación con Google Drive
-#     drive = auth_to_drive()
-
-#     # Eliminar el archivo especificado por file_id
-#     try:
-#         file = drive.CreateFile({'id': file_id})
-#         file.Delete()
-#         response = {"message": "File deleted successfully."}
-#     except Exception as e:
-#         response = {"message": f"An error occurred: {str(e)}"}
-
-#     return jsonify(response)
-
-# @app.route('/backup')
-# def backup():
-#     try:
-#         # Define los detalles de la base de datos
-#         db_host = "localhost"
-#         db_user = "root"
-#         db_password = "1233456"
-#         db_name = "GRNEGOCIO"
-
-#         # Define la ruta y el nombre del archivo de respaldo
-#         backup_dir = os.path.join(os.getcwd(), "static/bd/backups")
-#         os.makedirs(backup_dir, exist_ok=True)  # Crea el directorio si no existe
-
-#         # Obtiene la fecha y hora actual y la formatea como una cadena
-#         now = datetime.datetime.now()
-#         timestamp = now.strftime("%Y%m%d_%H%M%S")
-
-#         backup_file = os.path.join(backup_dir, f"backup_{timestamp}.sql").replace("\\", "/")
-
-#         # Crea el comando de respaldo
-#         command = f'mysqldump --host={db_host} --user={db_user} --password={db_password} {db_name} > "{backup_file}"'
-
-#         # Ejecuta el comando
-#         result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-#         crear_reespaldoBD(db_session, backup_file)
-
-#         # Crea una instancia de GoogleDrive con las credenciales de autenticación
-#         drive = auth_to_drive()
-
-#         # Sube el archivo de respaldo a Google Drive
-#         folder_id = get_or_create_folder_id(drive, 'GRNEGOCIO/Bd/Backups')
-#         if folder_id is not None:
-#             upload_to_drive(drive, backup_file, folder_id)
-#         else:
-#             print('No se encontró o no se pudo crear la carpeta especificada en Google Drive.')
-
-#         return "Respaldo realizado con éxito", 200
-#     except Exception as e:
-#         return str(e), 500
-
-
-# @app.route('/importar_backup', methods=['GET', 'POST'])
-# def importar_backup():
-#     if request.method == 'POST':
-#         try:
-#             sql_backup = request.files['sql_backup']
-#             # Define los detalles de la base de datos
-#             db_host = "localhost"
-#             db_user = "root"
-#             db_password = "1233456"
-#             db_name = "GRNEGOCIO"
-#             try:
-#                 sql_commands = sql_backup.read().decode()
-#                 subprocess.run(['mysql', '-u'+db_user, '-p'+db_password, '-h'+db_host, '-P'+str(3306), '-D'+db_name], input=sql_commands, text=True, check=True)
-
-#                 print("Importación exitosa.")
-#             except subprocess.CalledProcessError as e:
-#                 print("Hubo un error durante la importación:", str(e))
-#             return "Importación exitosa", 200
-
-#         except Exception as e:
-#             return str(e), 500
-
-#         finally:
-#             db_session.close()
-    
-#     return 'entró al GET'
-    
 
 
 @app.route('/crear_nuevo_contrato', methods=['GET', 'POST'])
@@ -2238,7 +2358,7 @@ def procesarPagoNormal():
 
             response = proceder_pago(db_session, procesar_todo, id_cliente, id_moneda, cantidadPagarDolares, estadoPago, cantidadPagarCordobas, 
                          fechaPago, fecha_pago_real, tipoPagoCompletoForm, observacionPago, evidenciaPago, inputTasaCambioPago, 
-                         monedaConversion, Amazon_Alexa)
+                         monedaConversion, Amazon_Alexa, None)
 
         
             return response
@@ -2410,7 +2530,6 @@ def obtener_pago():
     nombre_cliente = data['person']
 
     cadena_texto_respuesta = obtener_pagoClienteTexto(db_session, nombre_cliente)
-    print(cadena_texto_respuesta)
 
     return jsonify({"respuesta": cadena_texto_respuesta}), 200
 
@@ -2428,5 +2547,316 @@ def pruebita():
         return jsonify({"message": "API is notworking"}), 400
 
 
+def backup_process(access_token, queue):
+    try:
+        with app.app_context():
+            # Inicializar Dropbox
+            dbx = dropbox.Dropbox(access_token)
+            
+            # Informar progreso inicial
+            queue.put({'progress': 0, 'status': 'Iniciando proceso de respaldo...'})
+            
+            # Generar backup
+            backup_statements = []
+            ordered_tables = metadata.sorted_tables
+            
+            # CREATE statements
+            queue.put({'progress': 20, 'status': 'Generando scripts de estructura...'})
+            create_statements = generate_create_table_statements(metadata)
+            backup_statements.extend(create_statements)
+            
+            # INSERT statements
+            total_tables = len(ordered_tables)
+            for i, table in enumerate(ordered_tables):
+                progress = 30 + int((i / total_tables) * 30)
+                tabla_actual = table.name.replace('_', ' ').title()
+                queue.put({'progress': progress, 'status': f'Respaldando datos de {tabla_actual}...'})
+                backup_statements.extend(generate_insert_statements(table))
+            
+            # Preparar archivo
+            queue.put({'progress': 70, 'status': 'Preparando archivo de respaldo...'})
+            str_fechahora = obtener_str_fecha_hora()
+            backup_filename = f'backup_{str_fechahora}.sql'
+            backup_file_content = '\n'.join(backup_statements)
+            backup_file = io.StringIO(backup_file_content)
+            
+            # Subir a Dropbox
+            queue.put({'progress': 80, 'status': 'Subiendo archivo a Dropbox...'})
+            dropbox_destination_path = f'/GRNEGOCIO/Backups/{backup_filename}'
+            success, error_message, shared_link = upload_to_dropbox(dbx, backup_file, dropbox_destination_path)
+            
+            if not success:
+                queue.put({'progress': 0, 'status': f'Error: {error_message}', 'error': True})
+                return
+            
+            queue.put({
+                'progress': 100, 
+                'status': '¡Respaldo completado exitosamente!', 
+                'completed': True
+            })
+            
+    except Exception as e:
+        queue.put({'progress': 0, 'status': f'Error: {str(e)}', 'error': True})
+
+@app.route('/backup_progress')
+def backup_progress():
+    access_token = request.args.get('access_token')
+    if not access_token:
+        return Response(
+            f"data: {json.dumps({'progress': 0, 'status': 'Error: No hay sesión activa', 'error': True})}\n\n",
+            mimetype='text/event-stream'
+        )
+
+    def generate():
+        queue = Queue()
+        p = Process(target=backup_process, args=(access_token, queue))
+        p.start()
+
+        while True:
+            try:
+                progress_data = queue.get(timeout=1)  # Espera 1 segundo por nuevos datos
+                yield f"data: {json.dumps(progress_data)}\n\n"
+                
+                if progress_data.get('completed') or progress_data.get('error'):
+                    break
+                    
+            except Exception:
+                # Si no hay datos nuevos después del timeout
+                continue
+            
+        p.join()  # Espera a que el proceso termine
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream'
+    )
+
+@app.route('/restore_status')
+def restore_status():
+    try:
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({
+                'progress': 0,
+                'status': 'Error: Sesión no válida',
+                'error': True
+            }), 400
+
+        status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+        
+        if not os.path.exists(status_file):
+            return jsonify({
+                'progress': 0,
+                'status': 'Proceso no iniciado',
+                'error': True
+            }), 404
+
+        with open(status_file, 'r') as f:
+            status = json.load(f)
+            
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({
+            'progress': 0,
+            'status': f'Error al obtener estado: {str(e)}',
+            'error': True
+        }), 500
+
+@app.route('/restore_progress')
+def restore_progress():
+    try:
+        file_url = request.args.get('file_url')
+        user_id = session.get("user_id")
+        
+        if not file_url:
+            return jsonify({
+                'started': False,
+                'error': 'No se proporcionó URL del archivo'
+            }), 400
+            
+        if not user_id:
+            return jsonify({
+                'started': False,
+                'error': 'Sesión no válida'
+            }), 400
+        
+        # Crear el archivo de estado inicial
+        status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+        with open(status_file, 'w') as f:
+            json.dump({
+                'progress': 0,
+                'status': 'Iniciando proceso...',
+                'error': False,
+                'completed': False
+            }, f)
+        
+        # Iniciar el proceso de restauración en segundo plano
+        process = Process(target=restore_process, args=(file_url, user_id))
+        process.start()
+        
+        return jsonify({'started': True})
+    except Exception as e:
+        return jsonify({
+            'started': False,
+            'error': str(e)
+        }), 500
+
+def restore_process(file_url, user_id):
+    status_file = os.path.join(tempfile.gettempdir(), f'restore_status_{user_id}.json')
+    start_time = time.time()
+    TIMEOUT_MINUTES = 10
+    
+    def update_status(progress, status, error=False, completed=False):
+        with open(status_file, 'w') as f:
+            json.dump({
+                'progress': progress,
+                'status': status,
+                'error': error,
+                'completed': completed
+            }, f)
+    
+    def check_timeout():
+        if (time.time() - start_time) > (TIMEOUT_MINUTES * 60):
+            raise TimeoutError(f"El proceso ha excedido el límite de {TIMEOUT_MINUTES} minutos")
+    
+    try:
+        with app.app_context():
+            update_status(0, 'Iniciando proceso de restauración...')
+            check_timeout()
+            
+            # Extraer la URL real de Dropbox
+            if '/restore?file_url=' in file_url:
+                file_url = file_url.split('/restore?file_url=')[1]
+            
+            # Validar que la URL sea de Dropbox
+            if 'dropbox.com' not in file_url:
+                raise ValueError('URL no válida de Dropbox')
+            
+            update_status(10, 'Conectando con Dropbox...')
+            check_timeout()
+            
+            try:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                
+                # Asegurarse que la URL termine con dl=1
+                if 'dl=0' in file_url:
+                    file_url = file_url.replace('dl=0', 'dl=1')
+                elif 'dl=1' not in file_url:
+                    file_url = file_url + ('&' if '?' in file_url else '?') + 'dl=1'
+                
+                update_status(20, 'Descargando archivo...')
+                response = requests.get(file_url, stream=True, headers=headers, allow_redirects=True)
+                
+                if response.status_code != 200:
+                    raise Exception(f'Error al descargar el archivo. Status code: {response.status_code}')
+                
+                check_timeout()
+                update_status(30, 'Verificando archivo...')
+                
+                # Guardar el archivo temporalmente
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.sql', mode='wb') as temp_file:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            temp_file.write(chunk)
+                        check_timeout()
+                    temp_file_path = temp_file.name
+                
+                update_status(40, 'Preparando base de datos...')
+                check_timeout()
+                
+                try:
+                    # Eliminar todas las tablas existentes
+                    update_status(50, 'Limpiando base de datos actual...')
+                    drop_all_tables()
+                    check_timeout()
+                    
+                    update_status(60, 'Iniciando restauración...')
+                    
+                    # Leer y ejecutar el archivo SQL
+                    with open(temp_file_path, 'r', encoding='utf-8') as f:
+                        sql_content = f.read()
+                        
+                    # Dividir el contenido en statements individuales
+                    statements = sql_content.split(';')
+                    total_statements = len(statements)
+                    
+                    for i, statement in enumerate(statements, 1):
+                        if statement.strip():
+                            check_timeout()
+                            try:
+                                db_session.execute(text(statement))
+                                progress = 60 + int((i / total_statements) * 35)
+                                update_status(progress, f'Restaurando datos ({i}/{total_statements})')
+                            except Exception as e:
+                                print(f"Error en statement {i}: {str(e)}")
+                                raise
+                    
+                    db_session.commit()
+                    update_status(95, 'Finalizando restauración...')
+                    check_timeout()
+                    
+                    update_status(100, '¡Restauración completada exitosamente!', completed=True)
+                    
+                except Exception as e:
+                    db_session.rollback()
+                    raise Exception(f'Error durante la restauración: {str(e)}')
+                    
+                finally:
+                    # Limpiar archivo temporal
+                    try:
+                        os.remove(temp_file_path)
+                    except Exception as e:
+                        print(f"Error al eliminar archivo temporal: {e}")
+                
+            except Exception as e:
+                raise Exception(f'Error en el proceso: {str(e)}')
+            
+    except TimeoutError as e:
+        update_status(0, f'Error: {str(e)}', error=True)
+    except Exception as e:
+        update_status(0, f'Error: {str(e)}', error=True)
+    finally:
+        db_session.close()
+
+@app.route('/cargar_historial_backups', methods=['GET'])
+def cargar_historial_backups():
+    access_token = session.get('access_token')
+    if not access_token:
+        return jsonify({'error': 'No autorizado'}), 401
+    
+    try:
+        dbx = dropbox.Dropbox(access_token)
+        folder_id = "/GRNEGOCIO/Backups"
+        
+        # Obtener todos los archivos SQL
+        sql_files = get_all_sql_files(dbx, folder_id)
+        
+        if not sql_files:
+            return jsonify({'backups': []})
+        
+        backups_files = []
+        for file in sql_files:
+            download_link = obtener_enlace_descarga(dbx, file.path_lower)
+            delete_link = f"/delete_backup/{file.id}"
+            filedate = convertir_fecha(file.client_modified)
+            
+            backups_files.append({
+                "filename": file.name,
+                "fileDate": filedate,
+                "import_link": f"/restore?file_url={download_link}",
+                "download_link": download_link,
+                "delete_link": delete_link
+            })
+        
+        return jsonify({'backups': backups_files})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 if __name__ == '__main__':
+    # Esto asegura que el código del servidor solo se ejecute en el proceso principal
     app.run(host='127.0.0.1', port=8000, debug=True)

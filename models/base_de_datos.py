@@ -1,5 +1,5 @@
-from db import *
-from utils import *
+from database_connection import *
+from helpers import *
 
 def crear_reespaldoBD(db_session, ruta_archivo):
     try:
@@ -56,3 +56,35 @@ LIMIT 1;
         return None
     finally:
         db_session.close()
+
+
+def obtener_backups_bd(db_session):
+    """
+    Obtiene los backups desde la tabla backupsbd y los formatea para la vista
+    """
+    try:
+        query = text("""
+            SELECT id_backupsBD, nombre_backup, ruta_backup, fechaHora 
+            FROM backupsbd
+            ORDER BY fechaHora DESC
+        """)
+        
+        result = db_session.execute(query).fetchall()
+        
+        backups_files = []
+        
+        for backup in result:
+            response = {
+                "filename": backup.nombre_backup,
+                "fileDate": backup.fechaHora.strftime("%Y-%m-%d %H:%M:%S"),
+                "import_link": f"/restore?file_url={backup.ruta_backup}",
+                "download_link": backup.ruta_backup,
+                "delete_link": f"/delete_backup/{backup.id_backupsBD}"
+            }
+            backups_files.append(response)
+            
+        return backups_files
+        
+    except Exception as e:
+        print(f"Error al obtener backups: {str(e)}")
+        return []

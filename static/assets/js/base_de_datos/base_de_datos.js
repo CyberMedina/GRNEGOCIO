@@ -4,8 +4,53 @@ const seccionExportar = document.getElementById('seccionExportar');
 const seccionBackupsAutomaticos = document.getElementById('seccionBackupsAutomaticos');
 const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBackupCreacionBd');
 
+// Al inicio del archivo, verificar si hay una acción pendiente
+document.addEventListener('DOMContentLoaded', function() {
+    const pendingAction = localStorage.getItem('pendingBackupAction');
+    if (pendingAction) {
+        // Limpiar la acción pendiente
+        localStorage.removeItem('pendingBackupAction');
+        
+        // Mostrar el toast
+        createToast('success', 'El archivo de respaldo ha sido eliminado correctamente.', 5000, 'bottom-right');
+        
+        // Abrir el modal y cambiar el select
+        const modalThree = new bootstrap.Modal(document.getElementById('ModalThree'));
+        modalThree.show();
+        
+        // Cambiar el valor del select
+        const comboTipoGestion = document.getElementById('comboTipoGestion');
+        comboTipoGestion.value = 'Exportar';
+        // Disparar el evento change manualmente
+        comboTipoGestion.dispatchEvent(new Event('change'));
+    }
+});
 
-
+// Modificar el event listener del delete
+document.addEventListener('click', function(e) {
+    // Detectar si el clic fue en un enlace de eliminar
+    if (e.target.closest('a[href*="/delete_backup"]')) {
+        e.preventDefault();
+        const deleteLink = e.target.closest('a');
+        
+        fetch(deleteLink.href)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Guardar la acción pendiente antes de recargar
+                    localStorage.setItem('pendingBackupAction', 'delete_success');
+                    // Recargar la página
+                    window.location.reload();
+                } else {
+                    createToast('error', 'No se pudo eliminar el archivo de respaldo.', 5000, 'bottom-right');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                createToast('error', 'Ocurrió un error al eliminar el archivo.', 5000, 'bottom-right');
+            });
+    }
+});
 
 // document.addEventListener('DOMContentLoaded', () => {
 //     const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBackupCreacionBd');
@@ -50,26 +95,235 @@ const spanfechaHoraBackupCreacionBd = document.getElementById('spanfechaHoraBack
 
 
 comboTipoGestion.addEventListener('change', function() {
+    const valor = this.value;
+    document.getElementById('seccionExportar').hidden = valor !== 'Exportar';
+    document.getElementById('seccionImportar').hidden = valor !== 'Importar/restaurar';
+    document.getElementById('seccionBackupsAutomaticos').hidden = valor !== 'Backups automáticos';
+});
 
-    if (comboTipoGestion.value === 'Importar/restaurar') {
-        seccionImportar.hidden = false;
-    } else {
-        seccionImportar.hidden = true;
-    }
+function iniciarBackup() {
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalBackupProgress'));
+    modal.show();
+    
+    const progressBar = document.getElementById('backupProgressBar');
+    const statusText = document.getElementById('backupStatus');
+    
+    // Obtener el token de la sesión actual
+    const access_token = document.getElementById('access_token').value;
+    
+    // Conectar al SSE con el token
+    const eventSource = new EventSource(`/backup_progress?access_token=${access_token}`);
+    
+    eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        // Actualizar barra de progreso
+        progressBar.style.width = `${data.progress}%`;
+        progressBar.textContent = `${data.progress}%`;
+        statusText.textContent = data.status;
+        
+        // Manejar errores
+        if (data.error) {
+            progressBar.classList.remove('blue-light-bg');
+            progressBar.classList.add('red-bg');
+            eventSource.close();
+            return;
+        }
+        
+        // Manejar completado
+        if (data.completed) {
+            eventSource.close();
+            setTimeout(() => {
+                modal.hide();
+                window.location.reload();
+            }, 1000);
+        }
+    };
+    
+    eventSource.onerror = function() {
+        statusText.textContent = "Error de conexión";
+        progressBar.classList.remove('blue-light-bg');
+        progressBar.classList.add('red-bg');
+        eventSource.close();
+    };
+}
 
-    if (comboTipoGestion.value === 'Exportar') {
-        seccionExportar.hidden = false;
-    } else {
-        seccionExportar.hidden = true;
-    }
+function iniciarRestauracion(fileUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('modalBackupProgress'));
+    modal.show();
+    
+    const progressBar = document.getElementById('backupProgressBar');
+    const statusText = document.getElementById('backupStatus');
+    
+    // Resetear el estado inicial
+    progressBar.style.width = '0%';
+    progressBar.textContent = '0%';
+    progressBar.classList.remove('red-bg', 'green-bg');
+    progressBar.classList.add('blue-light-bg');
+    statusText.textContent = 'Iniciando proceso...';
+    
+    document.querySelector('#modalBackupProgress .modal-header h5').textContent = 'Restaurando base de datos';
+    
+    // Esperar un momento antes de iniciar el polling
+    fetch(`/restore_progress?file_url=${encodeURIComponent(fileUrl)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.started) {
+                // Esperar 2 segundos antes de iniciar el polling para dar tiempo
+                // a que el proceso en segundo plano cree el archivo de estado
+                setTimeout(() => {
+                    pollRestoreStatus();
+                }, 2000);
+            } else {
+                throw new Error('No se pudo iniciar el proceso');
+            }
+        })
+        .catch(error => {
+            statusText.textContent = "Error al iniciar la restauración";
+            progressBar.classList.remove('blue-light-bg');
+            progressBar.classList.add('red-bg');
+        });
+}
 
-    if (comboTipoGestion.value === 'Backups automáticos') {
-        seccionBackupsAutomaticos.hidden = false;
-    } else {
-        seccionBackupsAutomaticos.hidden = true;
-    }
+function pollRestoreStatus() {
+    const progressBar = document.getElementById('backupProgressBar');
+    const statusText = document.getElementById('backupStatus');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalBackupProgress'));
+    
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    const checkStatus = () => {
+        fetch('/restore_status', {
+            // Agregar timeout
+            timeout: 10000 // 10 segundos
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Resetear contador de reintentos si la petición fue exitosa
+                retryCount = 0;
+                
+                progressBar.style.width = `${data.progress}%`;
+                progressBar.textContent = `${data.progress}%`;
+                statusText.textContent = data.status;
+                
+                if (data.error) {
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('red-bg');
+                    return;
+                }
+                
+                if (data.completed) {
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('green-bg');
+                    
+                    // Esperar 2 segundos antes de recargar para que el usuario vea el mensaje de éxito
+                    setTimeout(() => {
+                        modal.hide();
+                        createToast('success', '¡Base de datos restaurada exitosamente!', 5000, 'bottom-right');
+                        window.location.reload();
+                    }, 2000);
+                    return;
+                }
+                
+                // Continuar el polling solo si no hay error ni está completado
+                setTimeout(checkStatus, 1000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                retryCount++;
+                
+                if (retryCount <= maxRetries) {
+                    // Reintentar después de un delay
+                    statusText.textContent = `Error de conexión. Reintentando (${retryCount}/${maxRetries})...`;
+                    setTimeout(checkStatus, 2000); // Esperar 2 segundos antes de reintentar
+                } else {
+                    statusText.textContent = "Error de conexión después de múltiples intentos";
+                    progressBar.classList.remove('blue-light-bg');
+                    progressBar.classList.add('red-bg');
+                    
+                    // Mostrar botón para reintentar manualmente
+                    const retryButton = document.createElement('button');
+                    retryButton.className = 'btn btn-primary mt-3';
+                    retryButton.textContent = 'Reintentar';
+                    retryButton.onclick = () => {
+                        retryCount = 0;
+                        statusText.textContent = "Reintentando...";
+                        checkStatus();
+                    };
+                    statusText.parentNode.appendChild(retryButton);
+                }
+            });
+    };
+    
+    checkStatus();
+}
 
+document.getElementById('cargarMasBackups').addEventListener('click', function() {
+    const button = this;
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
 
+    fetch('/cargar_historial_backups')
+        .then(response => response.json())
+        .then(data => {
+            const historialContainer = document.getElementById('historial-backups');
+            
+            data.backups.forEach(backup => {
+                const backupHtml = `
+                    <div class="kanban-header mb-3" id="backupBaseDeDatos">
+                        <div class="kanban-header-members">
+                            <div class="add-member-button text-gray">
+                                <i class="fa-solid fa-database"></i>
+                                Backup del día ${backup.fileDate}
+                            </div>
+                        </div>
+                        <div class="add-task-button">
+                            <div class="more-btn-wrapper">
+                                <button class="more-btn dropdown-toggle border-0 bg-transparent" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="lni lni-more-alt"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end px-1">
+                                    <li class="dropdown-item">
+                                        <a href="#" onclick="iniciarRestauracion('${backup.import_link}'); return false;" class="text-gray text-sm">
+                                            <i class="fa-solid fa-file-import"></i>
+                                            Importar
+                                        </a>
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <a href="${backup.download_link}" target="_blank" class="text-gray text-sm">
+                                            <i class="fa-solid fa-download"></i>
+                                            Ver / Descargar
+                                        </a>
+                                    </li>
+                                    <li class="dropdown-item">
+                                        <a href="${backup.delete_link}" class="text-gray text-sm">
+                                            <i class="fa-solid fa-trash"></i>
+                                            Eliminar
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                historialContainer.insertAdjacentHTML('beforeend', backupHtml);
+            });
 
-
+            // Ocultar el botón después de cargar
+            button.style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            button.innerHTML = '<i class="fa-solid fa-exclamation-triangle"></i> Error al cargar';
+        })
+        .finally(() => {
+            button.disabled = false;
+        });
 });

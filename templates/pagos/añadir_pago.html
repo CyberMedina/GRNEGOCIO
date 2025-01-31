@@ -6,6 +6,133 @@
 {% block customCSS %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pagos/añadir_pago.css') }}">
+<!-- Estilos de FilePond -->
+<link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-edit/dist/filepond-plugin-image-edit.css" rel="stylesheet" />
+<link href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css" rel="stylesheet" />
+
+<!-- (Opcional) Estilos de un editor, como Pintura -->
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/pintura.css') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/custom_toast/custom_toast.css') }}">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Ocultar el "Powered by PQINA" */
+    .filepond--credits {
+        display: none !important;
+    }
+
+    /* use a hand cursor intead of arrow for the action buttons */
+    .filepond--file-action-button {
+        cursor: pointer;
+    }
+
+    /* the text color of the drop label*/
+    .filepond--drop-label {
+        color: #555;
+    }
+
+    /* underline color for "Browse" button */
+    .filepond--label-action {
+        text-decoration-color: #aaa;
+    }
+
+    /* the background color of the filepond drop area */
+    .filepond--panel-root {
+        background-color: #eee;
+    }
+
+    /* the border radius of the drop area */
+    .filepond--panel-root {
+        border-radius: 0.5em;
+    }
+
+    /* the border radius of the file item */
+    .filepond--item-panel {
+        border-radius: 0.5em;
+    }
+
+    /* the background color of the file and file panel (used when dropping an image) */
+    .filepond--item-panel {
+        background-color: #555;
+    }
+
+    /* the background color of the drop circle */
+    .filepond--drip-blob {
+        background-color: #999;
+    }
+
+    /* the background color of the black action buttons */
+    .filepond--file-action-button {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    /* the icon color of the black action buttons */
+    .filepond--file-action-button {
+        color: white;
+    }
+
+    /* the color of the focus ring */
+    .filepond--file-action-button:hover,
+    .filepond--file-action-button:focus {
+        box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
+    }
+
+    /* the text color of the file status and info labels */
+    .filepond--file {
+        color: white;
+    }
+
+    /* error state color */
+    [data-filepond-item-state*='error'] .filepond--item-panel,
+    [data-filepond-item-state*='invalid'] .filepond--item-panel {
+        background-color: red;
+    }
+
+    [data-filepond-item-state='processing-complete'] .filepond--item-panel {
+        background-color: green;
+    }
+
+    /* bordered drop area */
+    .filepond--panel-root {
+        background-color: transparent;
+        border: 2px solid #2c3340;
+    }
+
+    /* Estilos para la animación del indicador de carga */
+    .filepond--processing-progress {
+        background-color: #007bff;
+        height: 4px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        transition: width 0.2s ease-in-out;
+    }
+
+    .filepond--processing-progress-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 12px;
+        color: #fff;
+        animation: rotate 2s linear infinite;
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+
+        100% {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+</style>
 
 {% endblock %}
 
@@ -609,9 +736,8 @@
                         <div class="col-12">
                             <div class="input-style-3">
                                 <label>Evidencia del pago</label>
-                                <input type="file" placeholder="" accept="image/*" name="evidenciaPago"
-                                    id="evidenciaPago" />
-                                <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                                <input type="file" class="filepond" name="filepond" id="filepond" multiple
+                                    data-allow-reorder="false" data-max-file-size="10MB" data-max-files="1" />
                             </div>
                         </div>
 
@@ -735,7 +861,7 @@
 
                     <div class="col-12">
                         <div class="input-style-1">
-                            <label class="text-bold">Fecha del pago*</label>
+                            <label class="text-bold">Quincena correspondiente</label>
                             <input type="text" name="fechaPagoVP" id="fechaPagoVP" readonly />
                             <p id="tiempoPagoLetrasVP"></p>
                         </div>
@@ -750,11 +876,11 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="input-style-3">
-                            <label>Evidencia del pago</label>
-                            <input type="file" placeholder="" accept="image/*" name="evidenciaPagoVP"
-                                id="evidenciaPagoVP" />
-                            <span class="icon"><i class="fa-solid fa-receipt"></i></span>
+                        <label>Evidencia del pago</label>
+                        <div class="evidenciaPagoVP" id="lightgallery">
+                            <a data-src="" data-lg-size="1400-1400" class="gallery-item">
+                                <img src="" alt="imagen" />
+                            </a>
                         </div>
                     </div>
 
@@ -773,8 +899,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- end row -->
-                </form>
             </div>
         </div>
     </div>
@@ -1083,7 +1207,7 @@
                         </div>
                         <div class="action d-flex flex-wrap justify-content-end">
                             <button data-bs-dismiss="modal" class="main-btn btn-sm danger-btn-outline btn-hover m-1">
-                                Cancelelar
+                                Cancelar
                             </button>
                             <button type="submit" class="main-btn btn-sm primary-btn btn-hover m-1">
                                 Eliminar
@@ -1102,12 +1226,177 @@
 {% endblock %}
 
 {% block customJS %}
+
+<!-- Scripts de FilePond y Plugins -->
+
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/zoom/lg-zoom.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/plugins/rotate/lg-rotate.min.js"></script>
+
+<script src="{{ url_for('static', filename='assets/js/custom_toast/custom_toast.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/añadir.pago.js') }}"></script>
 <script src="{{ url_for('static', filename='assets/js/pagos/impresion.js') }}"></script>
 
-<script>
+<style>
+    .lg-zoom-in,
+    .lg-zoom-out {
+        cursor: pointer !important;
+    }
 
+    .lg-toolbar .lg-icon {
+        color: #fff;
+        opacity: 0.8;
+    }
+
+    .lg-toolbar .lg-icon:hover {
+        opacity: 1;
+    }
+
+    /* Añadir estos estilos para controlar el tamaño de las imágenes thumbnail */
+    .content img {
+        max-width: 150px;
+        /* o el tamaño que prefieras */
+        height: auto;
+        object-fit: cover;
+    }
+</style>
+
+
+<script>
+    // Primero agregamos los inputs hidden al inicio del script
+    const inputHidden = document.createElement('input');
+    inputHidden.type = 'hidden';
+    inputHidden.name = 'selectProcesoPagoNotificacion';
+    inputHidden.id = 'selectProcesoPagoNotificacion';
+    inputHidden.value = '2'; // Por defecto es false
+    document.querySelector('form').appendChild(inputHidden);
+
+    document.addEventListener("DOMContentLoaded", function(){
+        // Verificar si existen datos en el localStorage
+        const datosPagoNotificacion = localStorage.getItem('datosPagoNotificacion');
+        
+        if (datosPagoNotificacion) {
+            // Convertir el string JSON a objeto
+            const datos = JSON.parse(datosPagoNotificacion);
+            
+            // Marcar como True ya que los datos vienen del localStorage
+            document.getElementById('selectProcesoPagoNotificacion').value = '1';
+            
+            // Agregar input hidden para el id_imagen
+            const inputIdImagen = document.createElement('input');
+            inputIdImagen.type = 'hidden';
+            inputIdImagen.name = 'id_imagen_notificacion';
+            inputIdImagen.value = datos.id_imagen;
+            document.querySelector('form').appendChild(inputIdImagen);
+            
+            // Agregar input hidden para el id_notificacion
+            const inputIdNotificacion = document.createElement('input');
+            inputIdNotificacion.type = 'hidden';
+            inputIdNotificacion.name = 'id_notificacion';
+            inputIdNotificacion.value = datos.id_notificacion;
+            document.querySelector('form').appendChild(inputIdNotificacion);
+            
+            let modalAñadirPago = new bootstrap.Modal(document.getElementById('modalAñadirPago'));
+            modalAñadirPago.show();
+
+            // Seleccionar el tipo de moneda
+            const selectMoneda = document.getElementById('tipoMonedaPago');
+            selectMoneda.value = datos.moneda;
+            
+            // Esperar a que el modal esté completamente mostrado
+            modalAñadirPago._element.addEventListener('shown.bs.modal', function () {
+                setTimeout(async () => {
+                    // Obtener la tasa de cambio actual primero
+                    await obtenerTasaCambioConversion();
+                    
+                    // Disparar el cambio de moneda
+                    selectMoneda.dispatchEvent(new Event('change'));
+                    
+                    // Esperar a que se procese el cambio de moneda
+                    setTimeout(async () => {
+                        // Colocar el monto en el input correspondiente
+                        if (datos.moneda === "2") {
+                            const divCordobas = document.getElementById('cantidadPagoCordobasRow');
+                            divCordobas.hidden = false;
+                            const inputCordobas = document.getElementById('cantidadPagoCordobas');
+                            
+                            // Establecer el valor en córdobas
+                            inputCordobas.value = datos.monto;
+                            // Crear y disparar un evento de input que imite la entrada real
+                            const inputEvent = new InputEvent('input', {
+                                bubbles: true,
+                                cancelable: true,
+                                inputType: 'insertText'
+                            });
+                            inputCordobas.dispatchEvent(inputEvent);
+                        } else {
+                            const inputDolares = document.getElementById('cantidadPagar$');
+                            inputDolares.value = datos.monto;
+                            // Crear y disparar un evento de input que imite la entrada real
+                            const inputEvent = new InputEvent('input', {
+                                bubbles: true,
+                                cancelable: true,
+                                inputType: 'insertText'
+                            });
+                            inputDolares.dispatchEvent(inputEvent);
+                        }
+
+                        // Cargar la imagen
+                        if (datos.url_imagen) {
+                            try {
+                                const response = await fetch(datos.url_imagen);
+                                const blob = await response.blob();
+                                const file = new File([blob], 'imagen.jpg', { type: 'image/jpeg' });
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                const input = document.querySelector('input[name="filepond"]');
+                                input.files = dataTransfer.files;
+                                input.dispatchEvent(new Event('change', { bubbles: true }));
+                            } catch (error) {
+                                console.error('Error al cargar la imagen:', error);
+                            }
+                        }
+                        
+                        // Forzar el cálculo después de todo
+                        setTimeout(() => {
+                            calculoDolaresCordobas();
+                            
+                            // Validar los montos
+                            if (typeof validacionDolares === 'function') {
+                                validacionDolares({ target: document.getElementById('cantidadPagar$') });
+                            }
+                        }, 200);
+                        
+                    }, 200);
+                }, 200);
+            });
+            
+            // Opcional: Limpiar el localStorage después de usarlo
+            localStorage.removeItem('datosPagoNotificacion');
+        }
+    });
 </script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function(){
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        await wait(500);
+        
+        // El mensaje toast ahora se maneja en el JavaScript principal
+        hidePreloader();
+    });
+</script>
+
+
+
+
 
 
 

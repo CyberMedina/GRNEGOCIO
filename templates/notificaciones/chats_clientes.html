@@ -7,6 +7,138 @@
 
 {% block body %}
 
+<!-- ========== Acá irán los fixs de los estilos ========== -->
+<style>
+    .input-style-3 .icon {
+        margin-top: 0;
+    }
+    .empty-state-card {
+        padding: 2rem;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        max-width: 400px;
+        width: 100%;
+        margin: 2rem auto;
+    }
+    .empty-state {
+        padding: 2rem;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
+    .empty-state-title {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state-text {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.95rem;
+    }
+</style>
+
+
+<div class="container-fluid">
+    <!-- ========== title-wrapper start ========== -->
+    <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="title">
+                    <h2>Chats de pagos</h2>
+                </div>
+            </div>
+            <!-- end col -->
+            <div class="col-md-6">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#0">Dashboard</a>
+                            </li>
+                            <li class="breadcrumb-item"><a href="#0">Pages</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                Chats de pagos
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+    </div>
+    <!-- ========== title-wrapper end ========== -->
+
+    <div class="row">
+        <div class="col-xxl-3 col-xl-12 col-lg-5 col-md-8 mb-30">
+            <div class="card-style chat-list-card h-100">
+                <div class="title mb-20 d-flex justify-content-between align-items-center">
+                    <div class="select-style-3 mb-0">
+                        <div class="select-position">
+                            <select name="" id="">
+                                <option value="">Todas las conversaciones</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <form action="#">
+                    <div class="input-style-3">
+                        <input type="text" placeholder="Buscar...." />
+                        <span class="icon">
+                            <i class="lni lni-search-alt"></i>
+                        </span>
+                    </div>
+                </form>
+                <!-- end search form -->
+                <div class="chat-list-wrapper">
+                    {% if Clientes %}
+                    {% for cliente in Clientes %}
+                    <a href="/chats_clientes_detalle/{{ cliente.id_cliente }}" class="chat-list d-block">
+                        <div class="chat-list-item">
+                            <div class="image">
+                                <img src="https://ui-avatars.com/api/?name={{ cliente.nombres }}+{{ cliente.apellidos }}/?rounded=true&size=128"
+                                    alt="" />
+                                <span class="status bg-success"></span>
+                            </div>
+                            <div class="content">
+                                <div class="title">
+                                    <h6 class="text-sm text-medium">{{ cliente.nombres }} {{ cliente.apellidos }}</h6>
+                                    <div class="d-flex align-items-center">
+                                        <span>Hace {{ cliente.tiempoTranscurrido }}</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm">{{ cliente.descripcion }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- end chat-list -->
+                    {% endfor %}
+                    {% else %}
+                    <div class="d-flex flex-column align-items-center justify-content-center empty-state">
+                        <div class="text-center">
+                            <i class="lni lni-users empty-state-icon"></i>
+                            <h5 class="empty-state-title">No hay clientes para mostrar</h5>
+                            <p class="empty-state-text">Aún no se han recibido notificaciones de pagos</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- end col -->
+    </div>
+</div>
+
+
+
+
 {% endblock %}
 
 {% block customJS %}

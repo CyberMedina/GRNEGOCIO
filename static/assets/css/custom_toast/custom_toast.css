@@ -1,0 +1,236 @@
+/* Import Google font - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+:root {
+  --dark: #0C0C1E;
+  --light: #151937;
+  --success: #219653;
+  --error: #FF3B3B;
+  --warning: #FFB800;
+  --info: #4461F2;
+  --text-light: #ffffff;
+  --text-secondary: #8A8DBA;
+}
+
+.notifications {
+  position: fixed;
+  width: 400px;
+  z-index: 999999;
+}
+.notifications :where(.toast, .column) {
+  display: flex;
+  align-items: center;
+}
+.notifications .toast {
+  width: 400px;
+  position: relative;
+  overflow: hidden;
+  list-style: none;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
+  background: var(--light);
+  justify-content: space-between;
+  display: flex;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: show_toast 0.3s ease forwards;
+}
+@keyframes show_toast {
+  0% {
+    transform: translateX(100%);
+  }
+  40% {
+    transform: translateX(-5%);
+  }
+  80% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-10px);
+  }
+}
+.notifications .toast.hide {
+  animation: hide_toast 0.3s ease forwards;
+}
+@keyframes hide_toast {
+  0% {
+    transform: translateX(-10px);
+  }
+  40% {
+    transform: translateX(0%);
+  }
+  80% {
+    transform: translateX(-5%);
+  }
+  100% {
+    transform: translateX(calc(100% + 20px));
+  }
+}
+.toast::before {
+  position: absolute;
+  content: "";
+  height: 3px;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  animation: progress var(--progress-time) linear forwards;
+}
+@keyframes progress {
+  100% {
+    width: 0%;
+  }
+}
+.toast.success::before {
+  background: var(--success);
+}
+.toast.error::before {
+  background: var(--error);
+}
+.toast.warning::before {
+  background: var(--warning);
+}
+.toast.info::before {
+  background: var(--info);
+}
+.toast .column i {
+  font-size: 24px;
+}
+.toast.success .column i {
+  color: var(--success);
+}
+.toast.error .column i {
+  color: var(--error);
+}
+.toast.warning .column i {
+  color: var(--warning);
+}
+.toast.info .column i {
+  color: var(--info);
+}
+.toast .column span {
+  font-size: 14px;
+  margin-left: 12px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+.toast i:last-child {
+  color: var(--text-secondary);
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 18px;
+}
+.toast i:last-child:hover {
+  opacity: 1;
+  color: var(--text-light);
+}
+.buttons .btn {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  margin: 0 5px;
+  color: var(--light);
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border-radius: 4px;
+}
+
+@media screen and (max-width: 530px) {
+  .notifications {
+    width: 95%;
+  }
+  .notifications .toast {
+    width: 100%;
+    font-size: 1rem;
+    margin-left: 20px;
+  }
+  .buttons .btn {
+    margin: 0 1px;
+    font-size: 1.1rem;
+    padding: 8px 15px;
+  }
+}
+
+/* Posiciones */
+.notifications.top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.notifications.top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.notifications.bottom-right {
+  bottom: 20px;
+  right: 20px;
+}
+
+.notifications.bottom-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+/* Ajustamos las animaciones según la posición */
+/* Para toasts en la izquierda */
+.notifications.top-left .toast,
+.notifications.bottom-left .toast {
+  animation: show_toast_left 0.3s ease forwards;
+}
+
+.notifications.top-left .toast.hide,
+.notifications.bottom-left .toast.hide {
+  animation: hide_toast_left 0.3s ease forwards;
+}
+
+@keyframes show_toast_left {
+  0% {
+    transform: translateX(-100%);
+  }
+  40% {
+    transform: translateX(5%);
+  }
+  80% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes hide_toast_left {
+  0% {
+    transform: translateX(10px);
+  }
+  40% {
+    transform: translateX(0%);
+  }
+  80% {
+    transform: translateX(5%);
+  }
+  100% {
+    transform: translateX(calc(-100% - 20px));
+  }
+}
+
+/* Mantenemos las animaciones originales para la derecha */
+.notifications.top-right .toast,
+.notifications.bottom-right .toast {
+  animation: show_toast 0.3s ease forwards;
+}
+
+.notifications.top-right .toast.hide,
+.notifications.bottom-right .toast.hide {
+  animation: hide_toast 0.3s ease forwards;
+}
+
+/* Añadir al inicio del archivo para sobrescribir Bootstrap */
+.toast:not(.show) {
+    display: flex !important;
+}

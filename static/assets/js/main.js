@@ -1,12 +1,22 @@
+// Declaramos las funciones fuera de la IIFE para hacerlas globales
+function showPreloader() {
+  const preloader = document.querySelectorAll('#preloader')
+  if (preloader.length) {
+    document.getElementById('preloader').style.display = 'block';
+  }
+}
+
+function hidePreloader() {
+  const preloader = document.querySelectorAll('#preloader')
+  if (preloader.length) {
+    document.getElementById('preloader').style.display = 'none';
+  }
+}
+
 (function () {
   /* ========= Preloader ======== */
-  const preloader = document.querySelectorAll('#preloader')
-
-  window.addEventListener('load', function () {
-    if (preloader.length) {
-      this.document.getElementById('preloader').style.display = 'none'
-    }
-  })
+  // El evento original del preloader ahora usa la función hidePreloader
+  window.addEventListener('load', hidePreloader);
 
   /* ========= Add Box Shadow in Header on Scroll ======== */
   window.addEventListener('scroll', function () {
@@ -21,10 +31,10 @@
   /* ========= sidebar toggle ======== */
   const sidebarNavWrapper = document.querySelector('.sidebar-nav-wrapper')
   const mainWrapper = document.querySelector('.main-wrapper')
-  const menuToggleButton = document.querySelector('#menu-toggle')
-  const menuToggleButtonIcon = document.querySelector('#menu-toggle i')
+/*   const menuToggleButton = document.querySelector('#menu-toggle')
+  const menuToggleButtonIcon = document.querySelector('#menu-toggle i') */
   const overlay = document.querySelector('.overlay')
-
+/* 
   menuToggleButton.addEventListener('click', () => {
     sidebarNavWrapper.classList.toggle('active')
     overlay.classList.add('active')
@@ -49,7 +59,7 @@
     sidebarNavWrapper.classList.remove('active')
     overlay.classList.remove('active')
     mainWrapper.classList.remove('active')
-  })
+  }) */
 
   // ========== theme switcher ==========
   // const optionButton = document.querySelector('.option-btn')
@@ -135,8 +145,6 @@
     toggleTheme(); // Cambiar el tema
   });
 
-
-
   // Enabling bootstrap tooltips
   const tooltipTriggerList = document.querySelectorAll(
     '[data-bs-toggle="tooltip"]'
@@ -146,16 +154,9 @@
   )
 })();
 
-
-
-
 function inputTasaCambioCordobas() {
   let inputTasaCambioCordobas = document.getElementById('inputTasaCambioCordobas');
 }
-
-
-
-
 
 function actualizar_tasa_interes(e) {
   e.preventDefault();
@@ -192,13 +193,7 @@ function actualizar_tasa_interes(e) {
     console.error('Error:', error.message);
     alert('Error al enviar la tasa de cambio');
   }
-
-
-
-
 }
-
-
 
 function configuracionTasaCambio() {
   console.log('debería entrar a la función conversionMoneda');
@@ -232,9 +227,6 @@ function configuracionTasaCambio() {
 
   let modalTasaCambio = new bootstrap.Modal(document.getElementById('modalTasaCambio'));
   modalTasaCambio.show();
-
-
-
 }
 
 
