@@ -357,6 +357,8 @@
         audio.play().catch(function(error) {
           console.log("Error al reproducir audio:", error);
         });
+        // Mostrar toast con el nombre de la canción
+        createToast('info', 'Reproduciendo: Pokémon B&W GTS', 5000, 'bottom-right');
         // Remover el event listener después de la primera reproducción
         document.removeEventListener('click', iniciarAudio);
       }, { once: true });
