@@ -1110,20 +1110,69 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-
+def save_base64_image(imagen_b64, output_dir='temp_uploads', filename='temp_image.jpg'):
+    # Si viene con encabezado (data:image/...), quitarlo
+    if ',' in imagen_b64:
+        _, imagen_b64 = imagen_b64.split(',', 1)
+    try:
+        image_data = base64.b64decode(imagen_b64)
+    except Exception as e:
+        raise ValueError(f'No se pudo decodificar imagen base64: {e}')
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, filename)
+    with open(output_path, 'wb') as f:
+        f.write(image_data)
+    return output_path
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'imagen' not in request.files:
-        return jsonify({'error': 'No se encontró el archivo de imagen'}), 400
+    file = request.files.get('imagenFile')
+    imagen_b64 = request.form.get('imagen', None)
 
-    file = request.files['imagen']
+    if not file and not imagen_b64:
+        return jsonify({'error': 'No se encontró el archivo de imagen ni el campo imagen_b64'}), 400
+
+    # Manejo de archivos y base64 (esto puede ser refactorizado si quieres evitar duplicidad)
+    if file:
+        filename = secure_filename(file.filename)
+        local_path = os.path.join('temp_uploads', filename)
+        os.makedirs('temp_uploads', exist_ok=True)
+        file.save(local_path)
+    elif imagen_b64:
+        filename = f"image_{request.form.get('numero', 'temp')}.jpg"
+        try:
+            local_path = save_base64_image(imagen_b64, filename=filename)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+
     numero = request.form.get('numero', '')
     id_cliente = request.form.get('id_cliente', None)
-    resultado_gemini = json.loads(request.form.get('resultado_gemini', '{}'))
+    resultado_gemini_raw = request.form.get('resultado_gemini', '{}')
+
+    # Limpia el string antes de intentar parsearlo como JSON
+    resultado_gemini_cleaned = re.sub(r'```json\n|\n```', '', resultado_gemini_raw).strip()
+    print(resultado_gemini_cleaned)
+
+    try:
+        resultado_gemini = json.loads(resultado_gemini_cleaned)
+        print(f"resultado_gemini: {resultado_gemini}")
+    except json.JSONDecodeError as e:
+        print(f"Error decodificando resultado_gemini: {e}")
+        print(f"String original: '{resultado_gemini_raw}'")
+        print(f"String limpiado: '{resultado_gemini_cleaned}'")
+        return jsonify({'error': 'Formato de resultado_gemini inválido'}), 400
+
+    # ------ CORTA EL FLUJO SI NO DEBE SEGUIR ------
+    if isinstance(resultado_gemini, dict) and resultado_gemini.get('recibo') is False:
+        # Opcional: elimina el archivo temporal si lo guardaste antes
+        if 'local_path' in locals() and os.path.exists(local_path):
+            os.remove(local_path)
+        return jsonify({'mensaje': 'No se procesó la imagen porque recibo es False'}), 200
+    # ----------------------------------------------
+
     if resultado_gemini:
         monto_sugerido = resultado_gemini.get('monto', None)
-        if resultado_gemini.get('retiro_sin_tarjeta',) == True:
+        if resultado_gemini.get('retiro_sin_tarjeta', ) == True:
             Observacion_sugerida = "Retiro sin tarjeta"
         else:
             Observacion_sugerida = "Deposito bancario"
@@ -1131,14 +1180,7 @@ def upload_file():
         monto_sugerido = None
         Observacion_sugerida = None
 
-
-    filename = secure_filename(file.filename)
-    local_path = os.path.join('temp_uploads', filename)
-    os.makedirs('temp_uploads', exist_ok=True)
-
-    # Guarda la imagen en una carpeta temporal
-    file.save(local_path)
-
+    public_id = None  # Asegura que esté definido para el manejo de errores
     try:
         # Sube la imagen a Cloudinary
         cloud_response = cloudinary.uploader.upload(
@@ -1148,11 +1190,9 @@ def upload_file():
             folder='my_private_folder'
         )
 
-        # Extrae datos de Cloudinary
         public_id = cloud_response.get("public_id")
         secure_url = cloud_response.get("secure_url")
 
-        # Limpia el archivo local
         if os.path.exists(local_path):
             os.remove(local_path)
 
@@ -1164,12 +1204,9 @@ def upload_file():
             id_imagen = subirImagen(db_session, secure_url, public_id, VarCloudinary, activo)
 
             if id_cliente:
-
                 id_cliente = int(id_cliente)
             insertarNotificacionPagoCliente(db_session, id_imagen, id_cliente, Observacion_sugerida, monto_sugerido, activo)
-
             datos_cliente = seleccionar_datos_cliente(db_session, id_cliente)
-
             nombre_cliente = datos_cliente[1]
             apellido_cliente = datos_cliente[2]
 
