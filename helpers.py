@@ -2,29 +2,24 @@ from serverEmail import mail
 from flask_mail import Message
 from decimal import Decimal
 import re
+import pytz
 from app import *
 from database_connection import *
-from bs4 import BeautifulSoup
 import requests
 import calendar
 import locale
-import pytz
 import dropbox
 import base64
+
 
 # Establecer el locale a español para formatear los nombres de días y meses
 locale.setlocale(locale.LC_TIME, 'es_ES')
 
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import random
 import time
 from datetime import datetime, timedelta
 import datetime
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive 
 from functools import wraps
 from flask import session, redirect, url_for
 import cloudinary
@@ -90,37 +85,6 @@ def contar_resultados(db_session, tabla, estado):
     query = text(f'SELECT COUNT(*) FROM {tabla} WHERE estado = :estado')
     result = db_session.execute(query, {"estado": estado})
     return result.fetchone()[0]
-
-
-
-
-
-def obtener_tasa_cambio_oficial():
-
-    try:
-
-        time.sleep(5)
-         # Hacer una petición GET a la página de la tasa de cambio
-        page = requests.get("https://www.bcn.gob.ni/")
-        soup = BeautifulSoup(page.content, 'html.parser')
-
-        print(soup.prettify())
-
-        # Buscar la tabla que contiene la tasa de cambio
-        table = soup.find_all('table')[0]
-
-        # Buscar la fila que contiene la tasa de cambio
-        row = table.find_all('tr')[4]
-
-        # Obtener el valor de la tasa de cambio
-        tasa_cambio = row.find_all('td')[0].text
-
-    except Exception as e:
-        print(e)
-        tasa_cambio = "Error"
-   
-
-    return tasa_cambio
 
 
 def obtener_tasa_cambio_local():
