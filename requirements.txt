@@ -51,9 +51,9 @@ psycopg2
 pyasn1
 pyasn1_modules
 pycparser
-PyDrive2
 pydyf
 pyhtml2pdf
+PyJWT
 pyOpenSSL
 pyparsing
 pyphen
@@ -67,7 +67,6 @@ PyYAML
 rapidfuzz
 requests
 rsa
-selenium
 simple-websocket
 six
 sniffio
